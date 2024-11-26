@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-geth
+spec:
+  storageClassName: {{ default "efs-sc" .Values.op_geth.volume.storage_class_name }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ default "500Gi" .Values.op_geth.volume.capacity }}
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-op-geth

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-node
+  labels:
+    app: {{ include "thanos-stack.fullname" . }}-op-node
+spec:
+  capacity:
+    storage: {{ default "500Gi" .Values.op_node.volume.capacity }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ default "efs-sc" .Values.op_node.volume.storage_class_name }}
+  csi:
+    driver: {{ default "efs.csi.aws.com" .Values.op_node.volume.csi.driver }} 
+    volumeHandle: {{ .Values.op_node.volume.csi.volumeHandle }}

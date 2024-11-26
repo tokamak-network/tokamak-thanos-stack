@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-batcher
+data:
+{{- range $key, $value := .Values.op_batcher.env }}
+  OP_BATCHER_{{ $key | upper }}: {{ $value | quote }}
+{{- end }}
+  OP_BATCHER_L2_ETH_RPC: {{ .Values.l2_rpc.geth | default (printf "http://%s-op-geth:8545" (include "thanos-stack.fullname" .)) | quote }}
+  OP_BATCHER_ROLLUP_RPC: {{ .Values.l2_rpc.node | default (printf "http://%s-op-node:8545" (include "thanos-stack.fullname" .)) | quote }}
+  OP_BATCHER_L1_ETH_RPC: {{ .Values.l1_rpc.url }}
+

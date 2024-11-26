@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-geth
+  labels:
+    {{- include "thanos-stack.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-op-geth
+  replicas: 1
+  serviceName: {{ include "thanos-stack.fullname" . }}-op-geth
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-op-geth
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: {{ include "thanos-stack.fullname" . }}-op-geth
+          image: "tokamaknetwork/thanos-op-geth:nightly-c61a056f"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/op-geth-scripts/entrypoint-op-geth.sh"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-op-geth
+          ports:
+            - containerPort: 8545
+              protocol: TCP
+            - containerPort: 8546
+              protocol: TCP
+            - containerPort: 8551
+              protocol: TCP
+            - containerPort: 30303
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          volumeMounts:
+            - name: op-geth-scripts
+              mountPath: /op-geth-scripts
+            - name: op-geth-auth
+              mountPath: /op-geth-auth
+            - name: op-geth-volume
+              mountPath: /db
+              subPath: {{ include "thanos-stack.fullname" . }}-op-geth
+          resources:
+            requests:
+              cpu: {{ default 1 .Values.op_geth.resources.cpu }}
+              memory: {{ default "1.75Gi" .Values.op_geth.resources.memory }}
+      volumes:
+        - name: op-geth-volume
+          persistentVolumeClaim:
+            claimName: {{ include "thanos-stack.fullname" . }}-op-geth
+        - name: op-geth-scripts
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-op-geth-scripts
+            defaultMode: 0777
+        - name: op-geth-auth
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-op-geth-auth
+            defaultMode: 0777

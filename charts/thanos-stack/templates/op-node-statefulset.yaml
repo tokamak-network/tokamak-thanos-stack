@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-node
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-op-node
+  replicas: 1
+  serviceName: {{ include "thanos-stack.fullname" . }}-op-node
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-op-node
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-l2
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-l2.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-common
+      containers:
+        - name: op-node
+          image: "tokamaknetwork/thanos-op-node:nightly-011bec4a"
+          imagePullPolicy: IfNotPresent
+          command: ['/bin/sh', '/op-node-scripts/entrypoint-op-node.sh']
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-op-node
+            - secretRef:
+                name: {{ include "thanos-stack.fullname" . }}-secret
+          ports:
+            - containerPort: 8545
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          volumeMounts:
+            - name: op-node-safedb
+              mountPath: /safedb
+              subPath: op-node
+            - name: op-node-scripts
+              mountPath: /op-node-scripts
+            - name: op-geth-auth
+              mountPath: /op-geth-auth
+          resources:
+            requests:
+              cpu: {{ default 1 .Values.op_node.resources.cpu }}
+              memory: {{ default "1.75Gi" .Values.op_node.resources.memory }}
+
+      volumes:
+        - name: op-node-safedb
+          persistentVolumeClaim:
+            claimName: {{ include "thanos-stack.fullname" . }}-op-node
+        - name: wait-scripts
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-wait-scripts
+            defaultMode: 0777
+        - name: op-node-scripts
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-op-node-scripts
+            defaultMode: 0777
+        - name: op-geth-auth
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-op-geth-auth
+            defaultMode: 0777
