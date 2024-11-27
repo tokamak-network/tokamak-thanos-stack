@@ -96,10 +96,33 @@ data "http" "iam_policy" {
   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.6.0/docs/install/iam_policy.json"
 }
 
+
 resource "aws_iam_role_policy" "controller" {
   name_prefix = "AWSLoadBalancerControllerIAMPolicy"
   policy      = data.http.iam_policy.response_body
   role        = module.lb_controller_role.iam_role_name
+}
+
+resource "aws_iam_policy" "load_balancer_controller_policy" {
+  name        = "LoadBalancerControllerPolicy"
+  description = "Policy for AWS Load Balancer Controller to allow DescribeListenerAttributes"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticloadbalancing:DescribeListenerAttributes"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "load_balancer_controller_policy_attachment" {
+  role       = module.lb_controller_role.iam_role_name
+  policy_arn = aws_iam_policy.load_balancer_controller_policy.arn
 }
 
 resource "helm_release" "aws-load-balancer-controller" {
