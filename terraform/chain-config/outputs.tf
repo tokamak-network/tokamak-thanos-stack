@@ -7,3 +7,8 @@ output "rollup_file_url" {
   description = "URL of the rollup file"
   value       = "https://${aws_s3_bucket.config_files.id}.s3.${aws_s3_bucket.config_files.region}.amazonaws.com/${aws_s3_object.provision_rollup_file.key}"
 }
+
+output "prestate_file_url" {
+  description = "URL of the rollup file"
+  value       = "https://${aws_s3_bucket.config_files.id}.s3.${aws_s3_bucket.config_files.region}.amazonaws.com/${aws_s3_object.provision_prestate_file.key}"
+}
