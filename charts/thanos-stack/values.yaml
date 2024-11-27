@@ -30,8 +30,8 @@ op_geth:
       driver: "" # option
       volumeHandle: "" # required
 
-  service:
-    domain: "" # required
+  ingress:
+    hostname: "" # required
 
   env:
     geth_verbosity: 3
@@ -132,3 +132,33 @@ op_challenger:
     cannon_server: /usr/local/bin/op-program
     cannon_prestates_url: "" # required or option
     num_confirmations: 1
+
+## Graph-node & ipfs values
+graph_node:
+  enabled: true # option
+  resources:
+    cpu: # option
+    memory: # option
+  ingress:
+    hostname: "" # required
+  env:
+    postgres_host: "" # required
+    postgres_user: "postgres" # option
+    postgres_db: "graphnode" # option
+    GRAPH_LOG: info # option
+  secret:
+    postgres_pass: ""
+    PGPASSWORD: ""
+
+ipfs:
+  ingress:
+    hostname: ""
+  resources:
+    cpu: # option
+    memory: # option
+  volume:
+    capacity: # option
+    storage_class_name: # option
+    csi:
+      driver: "" # option
+      volumeHandle: "" # required

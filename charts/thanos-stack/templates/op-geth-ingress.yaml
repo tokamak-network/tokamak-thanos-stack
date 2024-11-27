@@ -38,9 +38,9 @@ spec:
   ingressClassName: alb
   tls:
     - hosts:
-        - {{ .Values.op_geth.service.domain }}
+        - {{ .Values.op_geth.ingress.hostname }}
   rules:
-    - host: {{ .Values.op_geth.service.domain }}
+    - host: {{ .Values.op_geth.ingress.hostname }}
       http:
         paths:
           - path: /
@@ -79,7 +79,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: {{ .Values.op_geth.service.domain }}
+    - host: {{ .Values.op_geth.ingress.hostname }}
       http:
         paths:
           - path: /
