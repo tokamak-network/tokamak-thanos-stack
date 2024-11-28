@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-proposer
+data:
+{{- range $key, $value := .Values.op_proposer.env }}
+  OP_PROPOSER_{{ $key | upper }}: {{ $value | quote }}
+{{- end }}
+  OP_PROPOSER_ROLLUP_RPC: {{ .Values.l2_rpc.node | default (printf "http://%s-op-node:8545" (include "thanos-stack.fullname" .)) | quote }}
+  OP_PROPOSER_L1_ETH_RPC: {{ .Values.l1_rpc.url }}

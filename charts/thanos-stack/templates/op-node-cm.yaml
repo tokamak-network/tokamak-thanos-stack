@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-node
+data:
+{{- range $key, $value := .Values.op_node.env }}
+  OP_NODE_{{ $key | upper }}: {{ $value | quote }}
+{{- end }}
+  OP_NODE_L2_ENGINE_RPC: {{ .Values.l2_rpc.geth | default (printf "http://%s-op-geth:8551" (include "thanos-stack.fullname" .)) | quote }}
+  OP_NODE_L1_ETH_RPC: {{ .Values.l1_rpc.url }}
+  OP_NODE_L1_RPC_KIND: {{ .Values.l1_rpc.kind }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-node-scripts
+data:
+{{- (.Files.Glob "files/op-node/entrypoint-op-node.sh").AsConfig | nindent 2}}

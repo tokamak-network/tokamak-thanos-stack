@@ -1,0 +1,16 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-ipfs
+spec:
+  storageClassName: {{ default "efs-sc" .Values.ipfs.volume.storage_class_name }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ default "500Gi" .Values.ipfs.volume.capacity }}
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-ipfs
+{{- end}}

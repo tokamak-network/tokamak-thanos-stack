@@ -1,0 +1,19 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-ipfs
+  labels:
+    app: {{ include "thanos-stack.fullname" . }}-ipfs
+spec:
+  capacity:
+    storage: {{ default "500Gi" .Values.ipfs.volume.capacity }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ default "efs-sc" .Values.ipfs.volume.storage_class_name }}
+  csi:
+    driver: {{ default "efs.csi.aws.com" .Values.ipfs.volume.csi.driver }} 
+    volumeHandle: {{ .Values.ipfs.volume.csi.volumeHandle }}
+{{- end}}

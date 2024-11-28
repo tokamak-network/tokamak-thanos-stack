@@ -1,0 +1,25 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-graph-node
+spec:
+  selector:
+    app: {{ include "thanos-stack.fullname" . }}-graph-node
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: ws
+      port: 8001
+      targetPort: 8001
+    - name: rpc
+      port: 8020
+      targetPort: 8020
+    - name: index
+      port: 8030
+      targetPort: 8030
+    - name: metric
+      port: 8040
+      targetPort: 8040
+{{- end}}

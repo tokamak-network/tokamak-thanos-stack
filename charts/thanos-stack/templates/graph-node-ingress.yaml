@@ -1,0 +1,105 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-graph-node-ingress-alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/conditions.auth: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Authorization",
+            "values": ["Bearer dGl0YW4gaXMgdGhlIGJlc3QgbWFpbm5ldA=="]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.auth: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [
+            {
+              "serviceName": "{{ include "thanos-stack.fullname" . }}-graph-node",
+              "servicePort": "8020"
+            }
+          ]
+        }
+      }
+    alb.ingress.kubernetes.io/conditions.ws-rule: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+              "httpHeaderName": "Upgrade",
+              "values": ["websocket"]
+          }
+        },
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Connection",
+            "values": ["Upgrade"]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.ws-rule: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [{
+            "serviceName": "{{ include "thanos-stack.fullname" . }}-graph-node",
+            "servicePort": "8001"
+          }]
+        }
+      }
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - {{ .Values.graph_node.ingress.hostname }}
+  rules:
+    - host: {{ .Values.graph_node.ingress.hostname }}
+      http:
+        paths:
+          - path: /deploy
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  name: use-annotation
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "thanos-stack.fullname" . }}-graph-node
+                port:
+                  number: 8040
+          - path: /subgraphs
+            pathType: Prefix
+            backend:
+              service:
+                name: ws-rule
+                port:
+                  name: use-annotation
+          - path: /subgraphs
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "thanos-stack.fullname" . }}-graph-node
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "thanos-stack.fullname" . }}-graph-node
+                port:
+                  number: 8030
+{{- end}}
