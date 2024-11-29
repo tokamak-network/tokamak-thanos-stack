@@ -9,3 +9,7 @@ variable "rollup_file_path" {
 variable "prestate_file_path" {
   description = "Local path to the Rollup file for uploading"
 }
+
+variable "prestate_hash" {
+  description = "Prestate hash"
+}

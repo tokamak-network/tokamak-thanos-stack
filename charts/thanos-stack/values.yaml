@@ -94,15 +94,9 @@ op_batcher:
 
 ## Proposer values
 op_proposer:
-  volume:
-    capacity: # option
-    storage_class_name: # option
-    csi:
-      driver: "" # option
-      volumeHandle: "" # required
-
+  enabled: true # option
   env:
-    poll_interval: 12s # option
+    poll_interval: 6s # option
     rpc_port: 8560
 
     metrics_enabled: true
@@ -110,7 +104,7 @@ op_proposer:
     metrics_port: 7300
 
     # TODO: not use faultproof game
-    # l2oo_address: 0xaB8A5Ac696675D65D09E24C2876Aa8a7e1Af5640
+    # l2oo_address:
 
     game_factory_address: # required
     game_type: 0
@@ -121,6 +115,14 @@ op_proposer:
 
 ## Challenger values
 op_challenger:
+  enabled: true # option
+  volume:
+    capacity: # option
+    storage_class_name: # option
+    csi:
+      driver: "" # option
+      volumeHandle: "" # required
+
   env:
     l1_beacon: "" # required
     trace_type: "cannon"

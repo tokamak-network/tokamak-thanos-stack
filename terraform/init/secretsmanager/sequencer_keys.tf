@@ -10,5 +10,6 @@ resource "aws_secretsmanager_secret_version" "sequencer_keys" {
     OP_NODE_P2P_SEQUENCER_KEY = var.sequencer_key
     OP_BATCHER_PRIVATE_KEY    = var.batcher_key
     OP_PROPOSER_PRIVATE_KEY   = var.proposer_key
+    OP_CHALLENGER_PRIVATE_KEY = var.challenger_key
   })
 }
