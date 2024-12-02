@@ -103,7 +103,6 @@ op_proposer:
     metrics_addr: 0.0.0.0
     metrics_port: 7300
 
-    # TODO: not use faultproof game
     # l2oo_address:
 
     game_factory_address: # required
@@ -138,6 +137,8 @@ op_challenger:
 ## Graph-node & ipfs values
 graph_node:
   enabled: true # option
+  network_name: "" # required
+  ethereum: "" # option
   resources:
     cpu: # option
     memory: # option
