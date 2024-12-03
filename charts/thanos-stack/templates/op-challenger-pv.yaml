@@ -1,3 +1,4 @@
+{{- if .Values.op_challenger.enabled }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -15,3 +16,4 @@ spec:
   csi:
     driver: {{ default "efs.csi.aws.com" .Values.op_challenger.volume.csi.driver }} 
     volumeHandle: {{ .Values.op_challenger.volume.csi.volumeHandle }}
+{{- end}}

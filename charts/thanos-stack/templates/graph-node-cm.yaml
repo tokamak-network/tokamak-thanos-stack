@@ -7,6 +7,6 @@ data:
 {{- range $key, $value := .Values.graph_node.env }}
   {{ $key }}: {{ $value | quote }}
 {{- end }}
-  ethereum: {{ .Values.l2_rpc.node | default (printf "thanos-stack:http://%s-op-geth:8545" (include "thanos-stack.fullname" .)) | quote }}
+  ethereum: {{ .Values.graph_node.ethereum | default (printf "%s:http://%s-op-geth:8545" .Values.graph_node.network_name (include "thanos-stack.fullname" .)) | quote }}
   ipfs: {{ printf "%s-ipfs:5001" (include "thanos-stack.fullname" .) | quote }}
 {{- end}}

@@ -31,7 +31,7 @@ resource "aws_s3_object" "provision_rollup_file" {
 
 resource "aws_s3_object" "provision_prestate_file" {
   bucket = aws_s3_bucket.config_files.id
-  key    = "thanos-stack/prestate.json"
+  key    = "thanos-stack/${var.prestate_hash}.json"
   source = var.prestate_file_path
 }
 

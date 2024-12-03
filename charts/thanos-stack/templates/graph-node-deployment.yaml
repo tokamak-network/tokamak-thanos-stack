@@ -22,7 +22,6 @@ spec:
             - /bin/sh
             - -c
             - >-
-              echo $PGPASSWORD
               echo "SELECT 'CREATE DATABASE ${postgres_db} TEMPLATE template0 ENCODING UTF8 LC_COLLATE \"C\" LC_CTYPE \"C\"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${postgres_db}')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
               echo "SELECT 'CREATE EXTENSION pg_trgm' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'pg_trgm')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
               echo "SELECT 'CREATE EXTENSION pg_stat_statements' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'pg_stat_statements')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
