@@ -51,7 +51,7 @@ reqenv_vars=(
     "stack_blockscout_hostname"
     "stack_blockscout_stats_hostname"
     "stack_network_name"
-    "wallet_connect_project_id"
+    "stack_wallet_connect_project_id"
 )
 
 # Optional environment variables
@@ -73,7 +73,7 @@ for var in "${optenv_vars[@]}"; do
 done
 
 # Extract values from Terraform output
-extract_from_terraform() {
+extract_from_tf() {
     local key=$1
     local dir=$2
     local current_dir=$(pwd)
@@ -87,23 +87,28 @@ extract_from_terraform() {
         echo "Error: Failed to retrieve $key from terraform output in $dir."
         exit 1
     fi
+    
     echo "$value"
 }
 
 # Extract values from Terraform outputs
 thanos_stack_dir="../terraform/thanos-stack"
-efs_id=$(extract_from_terraform "efs_id" "$thanos_stack_dir")
-rds_endpoint=$(extract_from_terraform "rds_endpoint" "$thanos_stack_dir")
+efs_id=$(extract_from_tf "efs_id" "$thanos_stack_dir")
+rds_address=$(extract_from_tf "rds_address" "$thanos_stack_dir")
+rds_endpoint=$(extract_from_tf "rds_endpoint" "$thanos_stack_dir")
+rds_port=$(extract_from_tf "rds_port" "$thanos_stack_dir")
 
 chain_config_dir="../terraform/chain-config"
-genesis_file_url=$(extract_from_terraform "genesis_file_url" "$chain_config_dir")
-prestate_file_url=$(extract_from_terraform "prestate_file_url" "$chain_config_dir")
-rollup_file_url=$(extract_from_terraform "rollup_file_url" "$chain_config_dir")
+genesis_file_url=$(extract_from_tf "genesis_file_url" "$chain_config_dir")
+prestate_file_url=$(extract_from_tf "prestate_file_url" "$chain_config_dir")
+rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
 # Extracted values
-echo "======================================="
+echo "=====================terraform output====================="
 echo "efs_id: $efs_id"
+echo "rds_address: $rds_address"
 echo "rds_endpoint: $rds_endpoint"
+echo "rds_port: $rds_port"
 echo "genesis_file_url: $genesis_file_url"
 echo "prestate_file_url: $prestate_file_url"
 echo "rollup_file_url: $rollup_file_url"
@@ -114,6 +119,7 @@ curl -o prestate.json "$prestate_file_url"
 curl -o rollup.json "$rollup_file_url"
 
 # Extract values from the chain-config file
+l1_system_config_address=$(jq '.l1_system_config_address' rollup.json)
 l1_batch_start_block=$(jq '.genesis.l1.number' rollup.json)
 batch_inbox_address=$(jq '.batch_inbox_address' rollup.json)
 l1_batch_submitter=$(jq '.genesis.system_config.batcherAddr' rollup.json)
@@ -176,12 +182,13 @@ op-challenger:
 
 graph_node:
   enabled: true
+  network_name: "$stack_network_name"
   ingress:
     hostname: "$stack_graph_node_hostname"
   env:
     postgres_host: $rds_endpoint
-    secret:
-      postgres_pass: postgres
+  secret:
+    postgres_pass: postgres
     PGPASSWORD: postgres
 
 ipfs:
@@ -193,12 +200,14 @@ ipfs:
 
 blockscout-stack:
   blockscout:
+    enabled:true
     image:
       repository: blockscout/blockscout-optimism
       tag: 6.9.2
     env:
       CHAIN_TYPE: "optimism"
-      DATABASE_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
+      DATABASE_URL: "postgresql://postgres:postgres@$rds_address/blockscout"
+
       ETHEREUM_JSONRPC_VARIANT: geth
       ETHEREUM_JSONRPC_HTTP_URL: "http://sepolia-thanos-stack-op-geth:8545"
       ETHEREUM_JSONRPC_TRACE_URL: "http://sepolia-thanos-stack-op-geth:8545"
@@ -215,32 +224,33 @@ blockscout-stack:
       MICROSERVICE_SC_VERIFIER_TYPE: eth_bytecode_db
       # Optimism
       INDEXER_OPTIMISM_L1_RPC: "$stack_l1_rpc_url"
+      INDEXER_OPTIMISM_L1_SYSTEM_CONFIG_CONTRACT: $l1_system_config_address
       INDEXER_OPTIMISM_L1_BATCH_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L1_BATCH_INBOX: $batch_inbox_address
       INDEXER_OPTIMISM_L1_BATCH_SUBMITTER: $l1_batch_submitter
       INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL: "https://eth.blockscout.com/api/v2/blobs"
       INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER: "$l2_batch_genesis_block_number"
       INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK: "$l1_batch_start_block"
-      INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: $l1_output_oracle_contract
+      INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: $l1_output_oracle_contract #deployment에서 추가해야함
       INDEXER_OPTIMISM_L1_PORTAL_CONTRACT: $l1_portal_contract
       INDEXER_OPTIMISM_L1_DEPOSITS_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L2_WITHDRAWALS_START_BLOCK: "$l2_withdrawals_start_block"
       INDEXER_OPTIMISM_L2_MESSAGE_PASSER_CONTRACT: "0x4200000000000000000000000000000000000016"
-      INDEXER_OPTIMISM_BLOCK_DURATION: "$block_duration"
-  ingress:
-    enabled: true
-    className: alb
-    annotations:
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-      alb.ingress.kubernetes.io/ssl-redirect: "443"
-      alb.ingress.kubernetes.io/group.name: thanos-stack
-    tls:
-      enabled: true
-    hostname: "$stack_blockscout_hostname"
+      INDEXER_OPTIMISM_BLOCK_DURATION: $block_duration
 
+    ingress:
+      enabled: true
+      className: alb
+      annotations:
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+        alb.ingress.kubernetes.io/ssl-redirect: "443"
+        alb.ingress.kubernetes.io/group.name: thanos-stack
+      tls:
+        enabled: true
+      hostname: $stack_blockscout_hostname
   config:
     network:
       id: "$stack_chain_id"
@@ -250,13 +260,16 @@ blockscout-stack:
         name: $stack_nativetoken_name
         symbol: $stack_nativetoken_symbol
         decimals: $stack_nativetoken_decimals
-  prometheus:
-    enabled: false
+
+    prometheus:
+      enabled: false
 
   frontend:
+    enabled: true
     image:
       tag: v1.36.4
     replicaCount: 1
+
     env:
       NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: "$stack_wallet_connect_project_id"
       NEXT_PUBLIC_NETWORK_RPC_URL: https://$stack_op_geth_hostname
@@ -277,45 +290,49 @@ blockscout-stack:
       NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth.blockscout.com"
       NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
       NEXT_PUBLIC_FAULT_PROOF_ENABLED: true
-  ingress:
-    enabled: true
-    className: alb
-    annotations:
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-      alb.ingress.kubernetes.io/ssl-redirect: "443"
-      alb.ingress.kubernetes.io/group.name: thanos-stack
-    tls:
+
+    ingress:
       enabled: true
-    hostname: $stack_blockscout_hostname
+      className: alb
+      annotations:
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+        alb.ingress.kubernetes.io/ssl-redirect: "443"
+        alb.ingress.kubernetes.io/group.name: thanos-stack
+      tls:
+        enabled: true
+      hostname: $stack_blockscout_hostname
 
   stats:
     enabled: true
     image:
       tag: v2.2.3
+
     env:
-      STATS__DB_URL: "postgresql://postgres:postgres@$rds_endpoint/stats"
-      STATS__BLOCKSCOUT_DB_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
+      STATS__DB_URL: "postgresql://postgres:postgres@$rds_address/stats"
+      STATS__BLOCKSCOUT_DB_URL: "postgresql://postgres:postgres@$rds_address/blockscout"
       STATS__CREATE_DATABASE: true
       STATS__RUN_MIGRATIONS: true
       STATS__FORCE_UPDATE_ON_START: true
       STATS__SERVER__HTTP__CORS__ENABLED: true
       STATS__SERVER__HTTP__CORS__ALLOWED_ORIGIN: "https://$stack_blockscout_hostname"
-  ingress:
-    enabled: true
-    className: alb
-    annotations:
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-      alb.ingress.kubernetes.io/ssl-redirect: "443"
-      alb.ingress.kubernetes.io/group.name: thanos-stack
-    tls:
+
+    ingress:
       enabled: true
-    hostname: $stack_blockscout_stats_hostname
+      className: alb
+      annotations:
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+        alb.ingress.kubernetes.io/ssl-redirect: "443"
+        alb.ingress.kubernetes.io/group.name: thanos-stack
+      tls:
+        enabled: true
+      hostname: $stack_blockscout_stats_hostname
+
 EOL
 )
 
-echo "$yaml" > ./stack-values_3.yaml
+echo "$yaml" > ./thanos-stack-values.yaml
 echo "Generated YAML configuration in scripts/stack-values.yaml"
