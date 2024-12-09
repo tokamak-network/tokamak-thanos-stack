@@ -1,0 +1,13 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-redis
+spec:
+  selector:
+    app: {{ include "thanos-stack.fullname" . }}-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+{{- end}}

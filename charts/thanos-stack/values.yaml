@@ -165,3 +165,18 @@ ipfs:
     csi:
       driver: "" # option
       volumeHandle: "" # required
+
+l1_proxyd:
+  enabled: false
+  on_premise:
+    rpc: ""
+    ws: ""
+  alchemy:
+    rpc: ""
+    ws: ""
+
+redis:
+  enabled: false
+  resources:
+    cpu: # option
+    memory: # option
