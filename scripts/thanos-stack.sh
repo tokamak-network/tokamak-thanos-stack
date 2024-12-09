@@ -101,19 +101,23 @@ rds_port=$(extract_from_tf "rds_port" "$thanos_stack_dir")
 chain_config_dir="../terraform/chain-config"
 genesis_file_url=$(extract_from_tf "genesis_file_url" "$chain_config_dir")
 prestate_file_url=$(extract_from_tf "prestate_file_url" "$chain_config_dir")
+prestate_file=${prestate_file_url%/*}
 rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
 # Extracted values
-echo "=====================terraform output====================="
+echo ""
+echo -e "=====================terraform output=====================\n"
 echo "efs_id: $efs_id"
 echo "rds_address: $rds_address"
 echo "rds_endpoint: $rds_endpoint"
 echo "rds_port: $rds_port"
 echo "genesis_file_url: $genesis_file_url"
-echo "prestate_file_url: $prestate_file_url"
+echo "prestate_file_url: $prestate_file"
 echo "rollup_file_url: $rollup_file_url"
 
 # Download chain-config files
+echo ""
+echo -e "=====================downloading....=====================\n"
 curl -o genesis.json "$genesis_file_url"
 curl -o prestate.json "$prestate_file_url"
 curl -o rollup.json "$rollup_file_url"
@@ -162,7 +166,7 @@ op_batcher:
   env:
     max_channel_duration: 60
 
-op-proposer:
+op_proposer:
   enabled: true
   env:
     game_factory_address: "addresses.json"
@@ -178,7 +182,7 @@ op-challenger:
     game_factory_address: "addresses.json"
     cannon_rollup_config_url: $rollup_file_url
     cannon_l2_genesis_url: $genesis_file_url
-    cannon_prestates_url: $prestate_file_url
+    cannon_prestates_url: $prestate_file
 
 graph_node:
   enabled: true
@@ -186,11 +190,10 @@ graph_node:
   ingress:
     hostname: "$stack_graph_node_hostname"
   env:
-    postgres_host: $rds_endpoint
+    postgres_host: $rds_address
   secret:
     postgres_pass: postgres
     PGPASSWORD: postgres
-
 ipfs:
   ingress:
     hostname: "$stack_ipfs_hostname"
@@ -200,7 +203,7 @@ ipfs:
 
 blockscout-stack:
   blockscout:
-    enabled:true
+    enabled: true
     image:
       repository: blockscout/blockscout-optimism
       tag: 6.9.2
@@ -254,8 +257,8 @@ blockscout-stack:
   config:
     network:
       id: "$stack_chain_id"
-      name: $stack_network_name
-      shortname: $stack_network_name
+      name: $stack_infra_name
+      shortname: $stack_infra_name
       currency:
         name: $stack_nativetoken_name
         symbol: $stack_nativetoken_symbol
@@ -330,9 +333,9 @@ blockscout-stack:
       tls:
         enabled: true
       hostname: $stack_blockscout_stats_hostname
-
 EOL
 )
 
 echo "$yaml" > ./thanos-stack-values.yaml
+echo ""
 echo "Generated YAML configuration in scripts/stack-values.yaml"
