@@ -168,6 +168,11 @@ ipfs:
 
 l1_proxyd:
   enabled: false
+  backends:
+    - name: ""
+      groups: # array [ main, heavy_request, alchemy ]
+      rpc: ""
+      ws: ""
   on_premise:
     rpc: ""
     ws: ""

@@ -82,37 +82,56 @@ data:
     max_retries = 3
     out_of_service_seconds = 20
 
-
     [backends]
-    [backends.onpremise]
-    rpc_url = "{{ .Values.l1_proxyd.on_premise.rpc }}"
-    ws_url = "{{ .Values.l1_proxyd.on_premise.ws }}"
+{{- if .Values.l1_proxyd.backends }}
+{{- range .Values.l1_proxyd.backends }}
+    [backends.{{ .name }}]
+    rpc_url = "{{ .rpc }}"
+    ws_url = "{{ .ws }}"
     max_rps = 1000
     max_ws_conns = 0
     strip_trailing_xff = true
-
-    [backends.alchemy]
-    rpc_url = "{{ .Values.l1_proxyd.alchemy.rpc }}"
-    ws_url = "{{ .Values.l1_proxyd.alchemy.ws }}"
-    max_rps = 1000
-    max_ws_conns = 0
-    consensus_receipts_target = "alchemy_getTransactionReceipts"
-    strip_trailing_xff = true
-
+{{- if .consensus_receipts_target }}
+    consensus_receipts_target = "{{ .consensus_receipts_target }}"
+{{- end }}
+{{ end }}
     [backend_groups]
     [backend_groups.main]
     backends = [
-      "onpremise",
-      "alchemy",
+{{- range .Values.l1_proxyd.backends }}
+{{- $backend := . }}
+{{- range .groups }}
+{{- if eq . "main" }}
+      "{{ $backend.name }}",
+{{- end }}
+{{- end }}
+{{- end }}
     ]
 
     [backend_groups.heavy_request]
     backends = [
-      "alchemy",
+{{- range .Values.l1_proxyd.backends }}
+{{- $backend := . }}
+{{- range .groups }}
+{{- if eq . "heavy_request" }}
+      "{{ $backend.name }}",
+{{- end }}
+{{- end }}
+{{- end }}
     ]
 
     [backend_groups.alchemy]
-    backends = ["alchemy"]
+    backends = [
+{{- range .Values.l1_proxyd.backends }}
+{{- $backend := . }}
+{{- range .groups }}
+{{- if eq . "alchemy" }}
+      "{{ $backend.name }}",
+{{- end }}
+{{- end }}
+{{- end }}
+    ]
+{{- end }}
 
     [rpc_method_mappings]
     debug_getBadBlocks = "main"
