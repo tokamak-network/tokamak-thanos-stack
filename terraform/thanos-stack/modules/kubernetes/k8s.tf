@@ -104,7 +104,7 @@ resource "aws_iam_role_policy" "controller" {
 }
 
 resource "aws_iam_policy" "load_balancer_controller_policy" {
-  name        = "LoadBalancerControllerPolicy"
+  name        = "LoadBalancerControllerPolicy-${var.cluster_name}"
   description = "Policy for AWS Load Balancer Controller to allow DescribeListenerAttributes"
   policy = jsonencode({
     Version = "2012-10-17"
