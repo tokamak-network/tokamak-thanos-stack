@@ -1,76 +1,63 @@
 #!/usr/bin/env bash
 
-# This script is used to generate the thanos-stack-values.yaml
+# This script generates the thanos-stack-values.yaml based on environment variables.
 
-echo -e "* indicates a required input. Please enter the values.\n"
+echo -e "[INFO] Starting environment variable validation..."
 
-# Check required environment variables
+# Check and validate required environment variables
 reqenv() {
-    local var_name=$1
-    while true; do
-        if [ -z "${!var_name}" ]; then
-            read -p "* $var_name : " input
-            if [ -z "$input" ]; then
-                echo "Error! $var_name is required."
-            else
-                export $var_name="$input"
-                break
-            fi
-        else
-            break
-        fi
-    done
-}
-
-# Check optional environment variables
-optenv() {
-    local var_name=$1
-    local default_value=$2
-    read -p "$var_name (default: $default_value): " input
-    if [ -z "$input" ]; then
-        export $var_name="$default_value"
-        echo "$var_name is not set. Using default value: $default_value"
-    else
-        export $var_name="$input"
+    if [ -z "${!1}" ]; then
+        echo "Error: Required environment variable '$1' is undefined."
+        exit 1
     fi
 }
 
 # Required environment variables
-reqenv_vars=(
-    "stack_infra_name"
-    "stack_infra_region"
-    "stack_l1_rpc_url"
-    "stack_l1_rpc_kind"
-    "stack_op_geth_hostname"
-    "stack_chain_id"
-    "stack_l1_beacon_url"
-    "stack_graph_node_hostname"
-    "stack_ipfs_hostname"
-    "stack_coinmarketcap_api_key"
-    "stack_coinmarketcap_coin_id"
-    "stack_blockscout_hostname"
-    "stack_blockscout_stats_hostname"
-    "stack_network_name"
-    "stack_wallet_connect_project_id"
-)
+reqenv "stack_deployments_path"
+reqenv "stack_infra_name"
+reqenv "stack_infra_region"
+reqenv "stack_l1_rpc_url"
+reqenv "stack_l1_rpc_provider"
+reqenv "stack_op_geth_hostname"
+reqenv "stack_chain_id"
+reqenv "stack_l1_beacon_url"
+reqenv "stack_graph_node_network_name"
+reqenv "stack_graph_node_hostname"
+reqenv "stack_ipfs_hostname"
+reqenv "stack_coinmarketcap_api_key"
+reqenv "stack_coinmarketcap_coin_id"
+reqenv "stack_blockscout_hostname"
+reqenv "stack_blockscout_stats_hostname"
+reqenv "stack_network_name"
+reqenv "stack_wallet_connect_project_id"
 
-# Optional environment variables
-optenv_vars=(
-    "stack_nativetoken_name:Tokamak Network Token"
-    "stack_nativetoken_symbol:TON"
-    "stack_nativetoken_decimals:18"
-)
+# Customizable variables with defaults
+: "${stack_nativetoken_name:=Tokamak Network Token}"
+: "${stack_nativetoken_symbol:=TON}"
+: "${stack_nativetoken_decimals:=18}"
 
-# Prompt for required environment variables
-for var in "${reqenv_vars[@]}"; do
-    reqenv "$var"
-done
+# Verify deployments JSON file existence
+deployments_file="$stack_deployments_path/address.json"
 
-# Prompt for optional environment variables
-for var in "${optenv_vars[@]}"; do
-    IFS=":" read -r var_name default_value <<< "$var"
-    optenv "$var_name" "$default_value"
-done
+if [ ! -f "$deployments_file" ]; then
+    echo "Error: Deployments file not found at $deployments_file"
+    exit 1
+fi
+
+# Parse and store values
+DisputeGameFactoryProxy=$(jq -r '.DisputeGameFactoryProxy // empty' "$deployments_file")
+L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$deployments_file")
+
+# Validate parsed values
+if [ -z "$DisputeGameFactoryProxy" ]; then
+    echo "Error: DisputeGameFactoryProxy value not found in $deployments_file"
+    exit 1
+fi
+
+if [ -z "$L2OutputOracleProxy" ]; then
+    echo "Error: L2OutputOracleProxy value not found in $deployments_file"
+    exit 1
+fi
 
 # Extract values from Terraform output
 extract_from_tf() {
@@ -91,7 +78,7 @@ extract_from_tf() {
     echo "$value"
 }
 
-# Extract values from Terraform outputs
+# Extract values from terraform outputs
 thanos_stack_dir="../terraform/thanos-stack"
 efs_id=$(extract_from_tf "efs_id" "$thanos_stack_dir")
 rds_address=$(extract_from_tf "rds_address" "$thanos_stack_dir")
@@ -104,20 +91,9 @@ prestate_file_url=$(extract_from_tf "prestate_file_url" "$chain_config_dir")
 prestate_file=${prestate_file_url%/*}
 rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
-# Extracted values
-echo ""
-echo -e "=====================terraform output=====================\n"
-echo "efs_id: $efs_id"
-echo "rds_address: $rds_address"
-echo "rds_endpoint: $rds_endpoint"
-echo "rds_port: $rds_port"
-echo "genesis_file_url: $genesis_file_url"
-echo "prestate_file_url: $prestate_file"
-echo "rollup_file_url: $rollup_file_url"
-
 # Download chain-config files
 echo ""
-echo -e "=====================downloading....=====================\n"
+echo -e "[INFO] Downloading chain-config files ..... \n"
 curl -o genesis.json "$genesis_file_url"
 curl -o prestate.json "$prestate_file_url"
 curl -o rollup.json "$rollup_file_url"
@@ -128,7 +104,6 @@ l1_batch_start_block=$(jq '.genesis.l1.number' rollup.json)
 batch_inbox_address=$(jq '.batch_inbox_address' rollup.json)
 l1_batch_submitter=$(jq '.genesis.system_config.batcherAddr' rollup.json)
 l2_batch_genesis_block_number=$(jq '.genesis.l2.number' rollup.json)
-l1_output_oracle_contract="a"
 l1_portal_contract=$(jq '.deposit_contract_address' rollup.json)
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' rollup.json)
@@ -141,7 +116,7 @@ thanos_stack_infra:
 
 l1_rpc:
   url: $stack_l1_rpc_url
-  kind: $stack_l1_rpc_kind
+  kind: $stack_l1_rpc_provider
 
 op_geth:
   volume:
@@ -169,17 +144,17 @@ op_batcher:
 op_proposer:
   enabled: true
   env:
-    game_factory_address: "addresses.json"
+    game_factory_address: $DisputeGameFactoryProxy
     proposal_interval: 1440s
 
-op-challenger:
+op_challenger:
   enabled: true
   volume:
     csi:
       volumeHandle: "$efs_id"
   env:
     l1_beacon: $stack_l1_beacon_url
-    game_factory_address: "addresses.json"
+    game_factory_address: $DisputeGameFactoryProxy
     cannon_rollup_config_url: $rollup_file_url
     cannon_l2_genesis_url: $genesis_file_url
     cannon_prestates_url: $prestate_file
@@ -234,7 +209,7 @@ blockscout-stack:
       INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL: "https://eth.blockscout.com/api/v2/blobs"
       INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER: "$l2_batch_genesis_block_number"
       INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK: "$l1_batch_start_block"
-      INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: $l1_output_oracle_contract #deployment에서 추가해야함
+      INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: "$L2OutputOracleProxy"
       INDEXER_OPTIMISM_L1_PORTAL_CONTRACT: $l1_portal_contract
       INDEXER_OPTIMISM_L1_DEPOSITS_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK: "$l1_batch_start_block"
