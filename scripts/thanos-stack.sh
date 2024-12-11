@@ -2,7 +2,7 @@
 
 # This script generates the thanos-stack-values.yaml based on environment variables.
 
-echo -e "[INFO] Starting environment variable validation..."
+echo -e "[INFO] Starting environment variable validation....."
 
 # Check and validate required environment variables
 reqenv() {
@@ -93,7 +93,7 @@ rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
 # Download chain-config files
 echo ""
-echo -e "[INFO] Downloading chain-config files ..... \n"
+echo -e "[INFO] Downloading chain-config files..... \n"
 curl -o genesis.json "$genesis_file_url"
 curl -o prestate.json "$prestate_file_url"
 curl -o rollup.json "$rollup_file_url"
@@ -161,7 +161,7 @@ op_challenger:
 
 graph_node:
   enabled: true
-  network_name: "$stack_network_name"
+  network_name: "$stack_graph_node_network_name"
   ingress:
     hostname: "$stack_graph_node_hostname"
   env:
@@ -311,6 +311,6 @@ blockscout-stack:
 EOL
 )
 
-echo "$yaml" > ./thanos-stack-values.yaml
+echo "$yaml" > ./stack-values.yaml
 echo ""
-echo "Generated YAML configuration in scripts/stack-values.yaml"
+echo "The stack-values.yaml file has been successfully created."
