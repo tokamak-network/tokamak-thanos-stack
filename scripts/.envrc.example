@@ -1,0 +1,45 @@
+# Init variables
+
+# Write the absolute path of the deployments e.g /Users/username/tokamak-thanos/packages/tokamak/contracts-bedrock/deployments/thanos-stack
+export stack_deployments_path=
+
+# About AWS infra variables
+export stack_infra_name=
+export stack_infra_region=
+
+# About L1_RPC variables
+export stack_l1_rpc_url=
+export stack_l1_rpc_provider=
+
+# About op-geth variables
+export stack_op_geth_hostname=
+
+# About deploy chain_id
+export stack_chain_id=
+
+# About L1_beacon
+export stack_l1_beacon_url=
+
+# About Graph Node variables
+export stack_graph_node_network_name=
+export stack_graph_node_hostname=
+
+# About ipfs variables
+export stack_ipfs_hostname=
+
+# About CoinMarketCap variables
+export tack_coinmarketcap_api_key=
+export stack_coinmarketcap_coin_id=
+
+# About blockscout variables
+export stack_blockscout_hostname=
+export stack_blockscout_stats_hostname=
+export stack_wallet_connect_project_id=
+
+# About Network name
+export stack_network_name=
+
+# About NativeToken variables If not entered, use the default value.
+export stack_nativetoken_name=
+export stack_nativetoken_symbol=
+export stack_nativetoken_decimals=
