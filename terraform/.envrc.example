@@ -12,6 +12,7 @@ export TF_CLI_ARGS_init="$TF_CLI_ARGS_init -backend-config='region=${TF_VAR_aws_
 export TF_VAR_sequencer_key=
 export TF_VAR_batcher_key=
 export TF_VAR_proposer_key=
+export TF_VAR_challenger_key=
 
 # Route53 variables
 export TF_VAR_chain_domain_name=

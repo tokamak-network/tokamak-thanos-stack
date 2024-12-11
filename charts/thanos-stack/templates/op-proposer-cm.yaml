@@ -8,5 +8,10 @@ data:
   OP_PROPOSER_{{ $key | upper }}: {{ $value | quote }}
 {{- end }}
   OP_PROPOSER_ROLLUP_RPC: {{ .Values.l2_rpc.node | default (printf "http://%s-op-node:8545" (include "thanos-stack.fullname" .)) | quote }}
-  OP_PROPOSER_L1_ETH_RPC: {{ .Values.l1_rpc.url }}
+  OP_PROPOSER_L1_ETH_RPC:
+  {{- if .Values.l1_proxyd.enabled }}
+    {{ printf "http://%s-l1-proxyd:8545" (include "thanos-stack.fullname" . ) | quote }}
+  {{- else}}
+    {{ .Values.l1_rpc.url }}
+  {{- end}}
 {{- end}}

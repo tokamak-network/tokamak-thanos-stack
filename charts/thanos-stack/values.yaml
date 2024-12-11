@@ -165,3 +165,24 @@ ipfs:
     csi:
       driver: "" # option
       volumeHandle: "" # required
+
+l1_proxyd:
+  enabled: false
+  backends:
+    - name: ""
+      groups: # array [ main, heavy_request, alchemy ]
+      rpc: ""
+      ws: ""
+      consensus_receipts_target: ""
+  on_premise:
+    rpc: ""
+    ws: ""
+  alchemy:
+    rpc: ""
+    ws: ""
+
+redis:
+  enabled: false
+  resources:
+    cpu: # option
+    memory: # option
