@@ -35,6 +35,7 @@ export stack_coinmarketcap_coin_id=
 export stack_blockscout_hostname=
 export stack_blockscout_stats_hostname=
 export stack_wallet_connect_project_id=
+export stack_helm_release_name=
 
 # About Network name
 export stack_network_name=

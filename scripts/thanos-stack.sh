@@ -2,15 +2,22 @@
 
 # This script generates the thanos-stack-values.yaml based on environment variables.
 
-echo -e "[INFO] Starting environment variable validation....."
+echo -e "[INFO] Starting environment variable validation"
 
 # Check and validate required environment variables
 reqenv() {
     if [ -z "${!1}" ]; then
-        echo "Error: Required environment variable '$1' is undefined."
+        echo "Error: Required environment variable '$1' is undefined"
         exit 1
     fi
 }
+
+for i in {1..3}; do
+    echo "."
+    sleep 0.7
+done
+
+echo -e "[INFO] All required environment variables are present"
 
 # Required environment variables
 reqenv "stack_deployments_path"
@@ -28,6 +35,7 @@ reqenv "stack_coinmarketcap_api_key"
 reqenv "stack_coinmarketcap_coin_id"
 reqenv "stack_blockscout_hostname"
 reqenv "stack_blockscout_stats_hostname"
+reqenv "stack_helm_release_name"
 reqenv "stack_network_name"
 reqenv "stack_wallet_connect_project_id"
 
@@ -50,16 +58,16 @@ L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$deployments_file")
 
 # Validate parsed values
 if [ -z "$DisputeGameFactoryProxy" ]; then
-    echo "Error: DisputeGameFactoryProxy value not found in $deployments_file"
+    echo "Error: 'DisputeGameFactoryProxy' value not found in $deployments_file"
     exit 1
 fi
 
 if [ -z "$L2OutputOracleProxy" ]; then
-    echo "Error: L2OutputOracleProxy value not found in $deployments_file"
+    echo "Error: 'L2OutputOracleProxy' value not found in $deployments_file"
     exit 1
 fi
 
-# Extract values from Terraform output
+# Extract values from terraform output
 extract_from_tf() {
     local key=$1
     local dir=$2
@@ -71,7 +79,7 @@ extract_from_tf() {
     cd "$current_dir" || exit
 
     if [ -z "$value" ]; then
-        echo "Error: Failed to retrieve $key from terraform output in $dir."
+        echo "Error: Failed to retrieve $key from terraform output in $dir"
         exit 1
     fi
     
@@ -93,7 +101,7 @@ rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
 # Download chain-config files
 echo ""
-echo -e "[INFO] Downloading chain-config files..... \n"
+echo -e "[INFO] Downloading chain-config files....."
 curl -o genesis.json "$genesis_file_url"
 curl -o prestate.json "$prestate_file_url"
 curl -o rollup.json "$rollup_file_url"
@@ -187,9 +195,9 @@ blockscout-stack:
       DATABASE_URL: "postgresql://postgres:postgres@$rds_address/blockscout"
 
       ETHEREUM_JSONRPC_VARIANT: geth
-      ETHEREUM_JSONRPC_HTTP_URL: "http://sepolia-thanos-stack-op-geth:8545"
-      ETHEREUM_JSONRPC_TRACE_URL: "http://sepolia-thanos-stack-op-geth:8545"
-      ETHEREUM_JSONRPC_WS_URL: "ws://sepolia-thanos-stack-op-geth:8546"
+      ETHEREUM_JSONRPC_HTTP_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
+      ETHEREUM_JSONRPC_TRACE_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
+      ETHEREUM_JSONRPC_WS_URL: "ws://$stack_helm_release_name-thanos-stack-op-geth:8546"
       CONTRACT_DISABLE_INTERACTION: false
       CHAIN_SPEC_PATH: $genesis_file_url
       SECRET_KEY_BASE: 56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN
@@ -313,4 +321,4 @@ EOL
 
 echo "$yaml" > ./stack-values.yaml
 echo ""
-echo "The stack-values.yaml file has been successfully created."
+echo "[INFO] The stack-values.yaml file has been successfully created!"
