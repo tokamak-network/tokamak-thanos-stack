@@ -28,7 +28,7 @@ export stack_graph_node_hostname=
 export stack_ipfs_hostname=
 
 # About CoinMarketCap variables
-export tack_coinmarketcap_api_key=
+export stack_coinmarketcap_api_key=
 export stack_coinmarketcap_coin_id=
 
 # About blockscout variables
