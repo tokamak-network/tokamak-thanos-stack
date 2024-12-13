@@ -44,26 +44,24 @@ reqenv "stack_wallet_connect_project_id"
 : "${stack_nativetoken_symbol:=TON}"
 : "${stack_nativetoken_decimals:=18}"
 
-# Verify deployments JSON file existence
-deployments_file="$stack_deployments_path/address.json"
-
-if [ ! -f "$deployments_file" ]; then
-    echo "Error: Deployments file not found at $deployments_file"
+# Check if the deployments file exists
+if [ ! -f "$stack_deployments_path" ]; then
+    echo "Error: Deployments file not found at $stack_deployments_path"
     exit 1
 fi
 
 # Parse and store values
-DisputeGameFactoryProxy=$(jq -r '.DisputeGameFactoryProxy // empty' "$deployments_file")
-L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$deployments_file")
+DisputeGameFactoryProxy=$(jq -r '.DisputeGameFactoryProxy // empty' "$stack_deployments_path")
+L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$stack_deployments_path")
 
 # Validate parsed values
 if [ -z "$DisputeGameFactoryProxy" ]; then
-    echo "Error: 'DisputeGameFactoryProxy' value not found in $deployments_file"
+    echo "Error: 'DisputeGameFactoryProxy' value not found in $stack_deployments_path"
     exit 1
 fi
 
 if [ -z "$L2OutputOracleProxy" ]; then
-    echo "Error: 'L2OutputOracleProxy' value not found in $deployments_file"
+    echo "Error: 'L2OutputOracleProxy' value not found in $stack_deployments_path"
     exit 1
 fi
 
@@ -240,8 +238,8 @@ blockscout-stack:
   config:
     network:
       id: "$stack_chain_id"
-      name: $stack_infra_name
-      shortname: $stack_infra_name
+      name: $stack_network_name
+      shortname: $stack_network_name
       currency:
         name: $stack_nativetoken_name
         symbol: $stack_nativetoken_symbol

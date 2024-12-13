@@ -1,6 +1,6 @@
 # Init variables
 
-# Write the absolute path of the deployments e.g /Users/username/tokamak-thanos/packages/tokamak/contracts-bedrock/deployments/thanos-stack
+# Write the absolute path of the deployments e.g. /Users/username/tokamak-thanos/packages/tokamak/contracts-bedrock/deployments/thanos-stack/userfilename.json
 export stack_deployments_path=
 
 # About AWS infra variables
