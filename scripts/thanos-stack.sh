@@ -136,7 +136,6 @@ op_geth:
   env:
     chain_id: "$stack_chain_id"
     genesis_file_url: $genesis_file_url
-    geth_override_fjord: "1733110200"
 
 op_node:
   volume:
