@@ -97,14 +97,12 @@ prestate_file_url=$(extract_from_tf "prestate_file_url" "$chain_config_dir")
 prestate_file=${prestate_file_url%/*}
 rollup_file_url=$(extract_from_tf "rollup_file_url" "$chain_config_dir")
 
-# Download chain-config files
+# Download rollup.json file
 echo ""
-echo -e "[INFO] Downloading chain-config files....."
-curl -o genesis.json "$genesis_file_url"
-curl -o prestate.json "$prestate_file_url"
+echo -e "[INFO] Downloading rollup.json file....."
 curl -o rollup.json "$rollup_file_url"
 
-# Extract values from the chain-config file
+# Extract values from the rollup.json file
 l1_system_config_address=$(jq '.l1_system_config_address' rollup.json)
 l1_batch_start_block=$(jq '.genesis.l1.number' rollup.json)
 batch_inbox_address=$(jq '.batch_inbox_address' rollup.json)
@@ -113,6 +111,11 @@ l2_batch_genesis_block_number=$(jq '.genesis.l2.number' rollup.json)
 l1_portal_contract=$(jq '.deposit_contract_address' rollup.json)
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' rollup.json)
+
+# Delete rollup.json file
+echo ""
+rm rollup.json
+echo -e "[INFO] rollup.json file deleted successfully"
 
 # Generate the YAML file
 yaml=$(cat <<EOL
