@@ -150,13 +150,13 @@ op_batcher:
     max_channel_duration: 60
 
 op_proposer:
-  enabled: true
+  enabled: false
   env:
     game_factory_address: $DisputeGameFactoryProxy
     proposal_interval: 1440s
 
 op_challenger:
-  enabled: true
+  enabled: false
   volume:
     csi:
       volumeHandle: "$efs_id"
@@ -168,7 +168,7 @@ op_challenger:
     cannon_prestates_url: $prestate_file
 
 graph_node:
-  enabled: true
+  enabled: false
   network_name: "$stack_graph_node_network_name"
   ingress:
     hostname: "$stack_graph_node_hostname"
@@ -186,7 +186,7 @@ ipfs:
 
 blockscout-stack:
   blockscout:
-    enabled: true
+    enabled: false
     image:
       repository: blockscout/blockscout-optimism
       tag: 6.9.2
@@ -251,7 +251,7 @@ blockscout-stack:
       enabled: false
 
   frontend:
-    enabled: true
+    enabled: false
     image:
       tag: v1.36.4
     replicaCount: 1
@@ -291,7 +291,7 @@ blockscout-stack:
       hostname: $stack_blockscout_hostname
 
   stats:
-    enabled: true
+    enabled: false
     image:
       tag: v2.2.3
 
