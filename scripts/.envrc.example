@@ -1,6 +1,5 @@
 # Init variables
-
-# Write the absolute path of the deployments e.g. /Users/username/tokamak-thanos/packages/tokamak/contracts-bedrock/deployments/thanos-stack/userfilename.json
+# Write the full absolute path of the deployments e.g. /Users/username/tokamak-thanos/packages/tokamak/contracts-bedrock/deployments/thanos-stack/userfilename.json
 export stack_deployments_path=
 
 # About AWS infra variables
@@ -40,7 +39,7 @@ export stack_helm_release_name=
 # About Network name
 export stack_network_name=
 
-# About NativeToken variables If not entered, use the default value.
+# About NativeToken variables * If not entered, use the default value
 export stack_nativetoken_name=
 export stack_nativetoken_symbol=
 export stack_nativetoken_decimals=
