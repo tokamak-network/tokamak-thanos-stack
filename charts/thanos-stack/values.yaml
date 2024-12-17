@@ -107,7 +107,7 @@ op_proposer:
 
     game_factory_address: # required
     game_type: 0
-    proposal_interval: 1440s
+    proposal_interval:
     pprof_enabled: true
     allow_non_finalized: true
     rpc_enable_admin: true
