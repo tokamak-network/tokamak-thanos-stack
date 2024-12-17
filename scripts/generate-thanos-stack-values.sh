@@ -193,7 +193,7 @@ blockscout-stack:
       tag: 6.9.2
     env:
       CHAIN_TYPE: "optimism"
-      DATABASE_URL: "postgresql://postgres:postgres@$rds_address/blockscout"
+      DATABASE_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
 
       ETHEREUM_JSONRPC_VARIANT: geth
       ETHEREUM_JSONRPC_HTTP_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
@@ -297,8 +297,8 @@ blockscout-stack:
       tag: v2.2.3
 
     env:
-      STATS__DB_URL: "postgresql://postgres:postgres@$rds_address/stats"
-      STATS__BLOCKSCOUT_DB_URL: "postgresql://postgres:postgres@$rds_address/blockscout"
+      STATS__DB_URL: "postgresql://postgres:postgres@$rds_endpoint/stats"
+      STATS__BLOCKSCOUT_DB_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
       STATS__CREATE_DATABASE: true
       STATS__RUN_MIGRATIONS: true
       STATS__FORCE_UPDATE_ON_START: true
