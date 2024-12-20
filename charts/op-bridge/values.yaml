@@ -1,0 +1,48 @@
+nameOverride: ""
+
+fullnameOverride: ""
+
+op_bridge:
+  spec:
+    replicas: 1
+
+  env:
+    l1_chain_name:
+    l1_chain_id:
+    l1_rpc:
+    l1_native_currency_name:
+    l1_native_currency_symbol:
+    l1_native_currency_decimals:
+    l1_block_explorer:
+
+    l2_chain_name:
+    l2_chain_id:
+    l2_rpc:
+    l2_native_currency_name:
+    l2_native_currency_symbol:
+    l2_native_currency_decimals:
+    l2_block_explorer:
+
+    native_token_l1_address:
+    l1_usdc_address:
+    l1_usdt_address:
+    l2_usdt_address:
+
+    standard_bridge_address:
+    address_manager_address:
+    l1_cross_domain_messenger_address:
+    optimism_portal_address:
+    l2_output_oracle_address:
+    l1_usdc_bridge_address:
+    dispute_game_factory_address:
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: ""
+    tls:
+      enabled: false
+    paths:
+      - path: /
+        pathType: Prefix
