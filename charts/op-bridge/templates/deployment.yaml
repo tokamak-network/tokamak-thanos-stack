@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "op-bridge.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "op-bridge.fullname" . }}
+  replicas: {{ .Values.op_bridge.spec.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "op-bridge.fullname" . }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: bridge
+          image: "tokamaknetwork/trh-op-bridge-app:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: app-config
+              mountPath: "/app/.env.local"
+              subPath: .env.local
+              readOnly: true
+      volumes:
+        - name: app-config 
+          configMap:
+            defaultMode: 0777
+            items:
+              - key: .env
+                path: .env.local
+            name: {{ include "op-bridge.fullname" . }}
