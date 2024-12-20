@@ -1,5 +1,15 @@
 apiVersion: v1
 entries:
+  op-bridge:
+  - apiVersion: v2
+    created: "2024-12-20T01:23:07.19606847Z"
+    description: A Helm chart to deploy Optimistic bridge
+    digest: 4feb78d5dec0591e4f4072a25de7749edeb86ecd8d7de3cda286a9bca7fcc16a
+    name: op-bridge
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/op-bridge-1.0.0/op-bridge-1.0.0.tgz
+    version: 1.0.0
   thanos-stack:
   - apiVersion: v2
     created: "2024-12-17T02:15:16.092341539Z"
@@ -14,4 +24,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2024-12-17T02:15:16.092364131Z"
+generated: "2024-12-20T01:23:07.19607401Z"
