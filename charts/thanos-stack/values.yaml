@@ -87,7 +87,7 @@ op_batcher:
     metrics_addr: 0.0.0.0
     metrics_port: 7300
 
-    max_channel_duration: 30
+    max_channel_duration: 1500
 
     batch_type: 1
     data_availability_type: blobs
@@ -107,7 +107,7 @@ op_proposer:
 
     game_factory_address: # required
     game_type: 0
-    proposal_interval:
+    proposal_interval: 21600s
     pprof_enabled: true
     allow_non_finalized: true
     rpc_enable_admin: true

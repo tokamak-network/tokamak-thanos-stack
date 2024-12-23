@@ -147,14 +147,13 @@ op_node:
 
 op_batcher:
   env:
-    max_channel_duration: 60
+    max_channel_duration: 1500
 
 op_proposer:
   enabled: false
   env:
     l2oo_address: $L2OutputOracleProxy
     game_factory_address: $DisputeGameFactoryProxy
-    proposal_interval: 1440s
 
 op_challenger:
   enabled: false
