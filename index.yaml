@@ -12,6 +12,19 @@ entries:
     version: 1.0.0
   thanos-stack:
   - apiVersion: v2
+    created: "2024-12-23T06:41:06.303522098Z"
+    dependencies:
+    - name: blockscout-stack
+      repository: https://blockscout.github.io/helm-charts
+      version: '*-0'
+    description: A Helm chart to deploy Thanos stack
+    digest: f75ab9a8652ecfe8b8b68ddfebd505c3dd2191e81a6820b98f346cc25733a2cf
+    name: thanos-stack
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.1/thanos-stack-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
     created: "2024-12-17T02:15:16.092341539Z"
     dependencies:
     - name: blockscout-stack
@@ -24,4 +37,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2024-12-20T01:23:07.19607401Z"
+generated: "2024-12-23T06:41:06.303538289Z"
