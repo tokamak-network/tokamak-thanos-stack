@@ -154,6 +154,7 @@ op_proposer:
   env:
     l2oo_address: $L2OutputOracleProxy
     game_factory_address: $DisputeGameFactoryProxy
+    proposal_interval: 21600s
 
 op_challenger:
   enabled: false

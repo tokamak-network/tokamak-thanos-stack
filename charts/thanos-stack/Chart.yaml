@@ -1,7 +1,7 @@
 apiVersion: v2
 name: thanos-stack
 description: A Helm chart to deploy Thanos stack
-version: 1.0.1
+version: 1.0.2
 type: application
 dependencies:
   - name: blockscout-stack
