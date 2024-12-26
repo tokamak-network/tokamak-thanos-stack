@@ -215,7 +215,7 @@ blockscout-stack:
       INDEXER_OPTIMISM_L1_BATCH_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L1_BATCH_INBOX: $batch_inbox_address
       INDEXER_OPTIMISM_L1_BATCH_SUBMITTER: $l1_batch_submitter
-      INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL: "https://eth.blockscout.com/api/v2/blobs"
+      INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL: "https://eth-sepolia.blockscout.com/api/v2/blobs"
       INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER: "$l2_batch_genesis_block_number"
       INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK: "$l1_batch_start_block"
       INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: "$L2OutputOracleProxy"
@@ -274,7 +274,7 @@ blockscout-stack:
       FAVICON_MASTER_URL: "https://tokamak-thanos.s3.ap-northeast-2.amazonaws.com/thanos_favicon.png"
       # Optimistic rollup (L2) chain
       NEXT_PUBLIC_ROLLUP_TYPE: "optimistic"
-      NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth.blockscout.com"
+      NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth-sepolia.blockscout.com"
       NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
       NEXT_PUBLIC_FAULT_PROOF_ENABLED: true
 
