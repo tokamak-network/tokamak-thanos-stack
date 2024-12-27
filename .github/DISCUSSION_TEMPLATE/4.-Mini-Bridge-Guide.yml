@@ -1,4 +1,5 @@
 title: "[4. Mini Bridge Guide] <Title>"
+category: '4. Mini Bridge Guide'
 labels:
   - 4.-Mini-Bridge-Guide
   - feedback
@@ -29,7 +30,7 @@ body:
     attributes:
       label: Did you check the documentation?
       description: >-
-        Make sure to review the [documentation](https://) to find guidance
+        Make sure to review the [documentation](https://www.tokamak.network/) to find guidance
         and answers to common issues.
       options:
         - label: 'Yes'
