@@ -1,0 +1,85 @@
+title: '[1. Protocol Guide] <Title>'
+labels:
+  - 1.-Protocol-Guide
+  - feedback
+  - feature-request
+  - bug-report
+body:
+  - type: markdown
+    attributes:
+      value: >
+        # Thanos Stack Q&A Session
+
+        **Use Case:** This session addresses key topics, including the Thanos Stack's integration with OP Stack v1.7.7, support for ERC20-native tokens, permissionless fault proofs, and the deployment of flexible on-demand Layer 2 solutions. Should you have any inquiries or require further clarification on these subjects or the Thanos Stack, we encourage you to submit your questions here.
+
+  - type: checkboxes
+    id: support-details
+    attributes:
+      label: What type of support or issue are you experiencing?
+      options:
+        - label: General question or advice
+        - label: Technical support for troubleshooting
+        - label: Guidance on feature implementation
+        - label: Request for documentation or resources
+        - label: Reporting an error
+        - label: Submitting a feature request
+       
+  - type: checkboxes
+    id: verify-doc-check
+    attributes:
+      label: Did you check the documentation?
+      description: >-
+        Make sure to review the [documentation](https://) to find guidance
+        and answers to common issues.
+      options:
+        - label: 'Yes'
+        - label: 'No'
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: >
+        If you're encountering an error, or if you have a request or question,
+        describe it in detail here.  Include relevant information like error
+        messages, unexpected behavior, or your feature request's impact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: >
+        If this is an error or bug report, please describe the steps to
+        reproduce the issue.  Providing a step-by-step breakdown will help us
+        diagnose the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-details
+    attributes:
+      label: Environment Details
+      description: |
+        Provide the details of your development environment, including:
+          - Software versions
+          - Any relevant configuration details.
+
+  - type: textarea
+    id: troubleshooting-attempts
+    attributes:
+      label: Troubleshooting Attempts
+      description: >
+        Describe any steps you’ve taken to troubleshoot or resolve the issue on
+        your own. 
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: >
+        How can we improve your experience? Are there any missing resources or
+        documentation that would help you better?
