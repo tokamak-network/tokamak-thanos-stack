@@ -1,6 +1,6 @@
-title: '[1. Protocol Guide] <Title>'
+title: '[Protocol Guide] <Title>'
 labels:
-  - Protocol-Guide
+  - protocol-guide
   - feedback
   - feature-request
   - bug-report
@@ -17,12 +17,12 @@ body:
     attributes:
       label: What type of support or issue are you experiencing?
       options:
-        - label: General question or advice
         - label: Technical support for troubleshooting
         - label: Guidance on feature implementation
         - label: Request for documentation or resources
         - label: Reporting an error
         - label: Submitting a feature request
+        - label: General question or advice
        
   - type: checkboxes
     id: verify-doc-check
@@ -33,7 +33,7 @@ body:
         and answers to common issues.
       options:
         - label: 'Yes'
-        - lagirbel: 'No'
+        - label: 'No'
     validations:
       required: true
 
