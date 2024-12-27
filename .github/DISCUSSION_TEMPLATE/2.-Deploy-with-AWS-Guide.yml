@@ -1,5 +1,4 @@
 title: "[2. Deploy with AWS Guide] <Title>"
-category: '2. Deploy with AWS Guide'
 labels:
   - 2.-Deploy-with-AWS-Guide
   - feedback
@@ -30,7 +29,7 @@ body:
     attributes:
       label: Did you check the documentation?
       description: >-
-        Make sure to review the [documentation](https://) to find guidance
+        Make sure to review the [documentation](https://www.tokamak.network/) to find guidance
         and answers to common issues.
       options:
         - label: 'Yes'

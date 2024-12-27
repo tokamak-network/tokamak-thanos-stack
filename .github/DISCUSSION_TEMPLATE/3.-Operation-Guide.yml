@@ -1,5 +1,4 @@
 title: "[3. Operation Guide] <Title>"
-category: '3. Operation Guide'
 labels:
   - 3.-Operation-Guide
   - feedback
@@ -30,7 +29,7 @@ body:
     attributes:
       label: Did you check the documentation?
       description: >-
-        Make sure to review the [documentation](https://) to find guidance
+        Make sure to review the [documentation](https://www.tokamak.network/) to find guidance
         and answers to common issues.
       options:
         - label: 'Yes'
