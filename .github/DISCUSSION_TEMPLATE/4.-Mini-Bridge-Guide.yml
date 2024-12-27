@@ -1,0 +1,85 @@
+title: "[4. Mini Bridge Guide] <Title>"
+labels:
+  - 4.-Mini-Bridge-Guide
+  - feedback
+  - feature-request
+  - bug-report
+body:
+  - type: markdown
+    attributes:
+      value: >
+        #Mini Bridge Guide Troubleshooting & Q&A Session
+
+        **Use Case:** Utilize this template for inquiries regarding the deployment of the Mini Bridge within the Thanos Stack. This guide provides a structured approach for deploying the op bridge, enabling seamless asset transfers between the L1 and L2 chains.
+
+  - type: checkboxes
+    id: support-details
+    attributes:
+      label: What type of support or issue are you experiencing?
+      options:
+        - label: Technical support for troubleshooting
+        - label: Guidance on feature implementation
+        - label: Request for documentation or resources
+        - label: Reporting an error
+        - label: Submitting a feature request
+        - label: General question or advice
+       
+  - type: checkboxes
+    id: verify-doc-check
+    attributes:
+      label: Did you check the documentation?
+      description: >-
+        Make sure to review the [documentation](https://) to find guidance
+        and answers to common issues.
+      options:
+        - label: 'Yes'
+        - label: 'No'
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: >
+        If you're encountering an error, or if you have a request or question,
+        describe it in detail here.  Include relevant information like error
+        messages, unexpected behavior, or your feature request's impact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: >
+        If this is an error or bug report, please describe the steps to
+        reproduce the issue.  Providing a step-by-step breakdown will help us
+        diagnose the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-details
+    attributes:
+      label: Environment Details
+      description: |
+        Provide the details of your development environment, including:
+          - Software versions
+          - Any relevant configuration details.
+
+  - type: textarea
+    id: troubleshooting-attempts
+    attributes:
+      label: Troubleshooting Attempts
+      description: >
+        Describe any steps you’ve taken to troubleshoot or resolve the issue on
+        your own. 
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: >
+        How can we improve your experience? Are there any missing resources or
+        documentation that would help you better?

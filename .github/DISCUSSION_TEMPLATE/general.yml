@@ -1,0 +1,15 @@
+title: "[General] <Title>"
+labels: ["general-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # General Discussion
+        
+  - type: textarea
+    id: general-discussion
+    attributes:
+      label: Discussion Topic
+      description: Please provide context on your discussion topic and what you type of feedback you're looking for.
+    validations:
+      required: true
