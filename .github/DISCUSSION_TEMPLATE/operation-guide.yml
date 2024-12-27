@@ -1,6 +1,6 @@
-title: "[2. Deploy with AWS Guide] <Title>"
+title: "[3. Operation Guide] <Title>"
 labels:
-  - 2.-Deploy-with-AWS-Guide
+  - Operation-Guide
   - feedback
   - feature-request
   - bug-report
@@ -8,9 +8,9 @@ body:
   - type: markdown
     attributes:
       value: >
-        # Deploy with AWS Guide Troubleshooting & Q&A Session
+        #Operation Guide Troubleshooting & Q&A Session
 
-        **Use Case:** Use this template for inquiries related to deploying a Thanos Stack, including questions about prerequisites, configuring AWS infrastructure with Terraform, deploying smart contracts, and initiating the Thanos chain.
+        **Use Case:** Utilize this template for inquiries regarding the operation of the Thanos Stack, covering topics such as system architecture, chain management, configuration, fault proof systems, developer tools, and the USDCBridge.
   
   - type: checkboxes
     id: support-details

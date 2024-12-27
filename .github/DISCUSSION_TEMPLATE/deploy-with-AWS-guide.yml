@@ -1,12 +1,17 @@
-title: "[4. Mini Bridge Guide] <Title>"
+title: "[2. Deploy with AWS Guide] <Title>"
+labels:
+  - Deploy-with-AWS-Guide
+  - feedback
+  - feature-request
+  - bug-report
 body:
   - type: markdown
     attributes:
       value: >
-        #Mini Bridge Guide Troubleshooting & Q&A Session
+        # Deploy with AWS Guide Troubleshooting & Q&A Session
 
-        **Use Case:** Utilize this template for inquiries regarding the deployment of the Mini Bridge within the Thanos Stack. This guide provides a structured approach for deploying the op bridge, enabling seamless asset transfers between the L1 and L2 chains.
-
+        **Use Case:** Use this template for inquiries related to deploying a Thanos Stack, including questions about prerequisites, configuring AWS infrastructure with Terraform, deploying smart contracts, and initiating the Thanos chain.
+  
   - type: checkboxes
     id: support-details
     attributes:

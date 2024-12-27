@@ -1,6 +1,6 @@
 title: '[1. Protocol Guide] <Title>'
 labels:
-  - 1.-Protocol-Guide
+  - Protocol-Guide
   - feedback
   - feature-request
   - bug-report
@@ -33,7 +33,7 @@ body:
         and answers to common issues.
       options:
         - label: 'Yes'
-        - label: 'No'
+        - lagirbel: 'No'
     validations:
       required: true
 
