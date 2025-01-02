@@ -1,21 +1,21 @@
 thanos_stack_infra:
-  name: "" # required
-  region: "" # required
+  name: '' # required
+  region: '' # required
 
 ## L1 RPC
 l1_rpc:
-  url: "" # required
-  kind: "" # required
+  url: '' # required
+  kind: '' # required
 
 ## l2 RPC
 l2_rpc:
-  geth: "" # option
-  node: "" # option
+  geth: '' # option
+  node: '' # option
 
 ## Common values
 common:
-  l2_node_web3_url: "" # option
-  l2_rollup_web3_url: "" # option
+  l2_node_web3_url: '' # option
+  l2_rollup_web3_url: '' # option
 
 ## Geth values
 op_geth:
@@ -25,21 +25,21 @@ op_geth:
 
   volume:
     capacity: # option
-    storage_class_name: "" # option
+    storage_class_name: '' # option
     csi:
-      driver: "" # option
-      volumeHandle: "" # required
+      driver: '' # option
+      volumeHandle: '' # required
 
   ingress:
-    hostname: "" # required
+    hostname: '' # required
 
   env:
     geth_verbosity: 3
-    geth_data_dir: "/db"
+    geth_data_dir: '/db'
     chain_id: # required
     rpc_port: 8545
     ws_port: 8546
-    genesis_file_url: "" # required
+    genesis_file_url: '' # required
 
 ## Node values
 op_node:
@@ -51,20 +51,20 @@ op_node:
     capacity: # option
     storage_class_name: # option
     csi:
-      driver: "" # option
-      volumeHandle: "" # required
+      driver: '' # option
+      volumeHandle: '' # required
 
   env:
-    l2_engine_auth: "/op-geth-auth/jwt.txt"
+    l2_engine_auth: '/op-geth-auth/jwt.txt'
     sequencer_enabled: true
     sequencer_l1_confs: 5
     verifier_l1_confs: 4
     rollup_config_url: # required
-    rpc_addr: "0.0.0.0"
+    rpc_addr: '0.0.0.0'
     rpc_port: 8545
     p2p_disable: true
     metrics_enabled: true
-    metrics_addr: "0.0.0.0"
+    metrics_addr: '0.0.0.0'
     metrics_port: 7300
     pprof_enabled: true
     rpc_enable_admin: true
@@ -109,7 +109,7 @@ op_proposer:
     game_type: 0
     proposal_interval:
     pprof_enabled: true
-    allow_non_finalized: true
+    allow_non_finalized: false
     rpc_enable_admin: true
 
 ## Challenger values
@@ -119,43 +119,43 @@ op_challenger:
     capacity: # option
     storage_class_name: # option
     csi:
-      driver: "" # option
-      volumeHandle: "" # required
+      driver: '' # option
+      volumeHandle: '' # required
 
   env:
-    l1_beacon: "" # required
-    trace_type: "cannon"
-    game_factory_address: "" # required
+    l1_beacon: '' # required
+    trace_type: 'cannon'
+    game_factory_address: '' # required
     datadir: /db
-    cannon_rollup_config_url: "" # required
-    cannon_l2_genesis_url: "" # required
+    cannon_rollup_config_url: '' # required
+    cannon_l2_genesis_url: '' # required
     cannon_bin: /usr/local/bin/cannon
     cannon_server: /usr/local/bin/op-program
-    cannon_prestates_url: "" # required or option
+    cannon_prestates_url: '' # required or option
     num_confirmations: 1
 
 ## Graph-node & ipfs values
 graph_node:
   enabled: true # option
-  network_name: "" # required
-  ethereum: "" # option
+  network_name: '' # required
+  ethereum: '' # option
   resources:
     cpu: # option
     memory: # option
   ingress:
-    hostname: "" # required
+    hostname: '' # required
   env:
-    postgres_host: "" # required
-    postgres_user: "postgres" # option
-    postgres_db: "graphnode" # option
+    postgres_host: '' # required
+    postgres_user: 'postgres' # option
+    postgres_db: 'graphnode' # option
     GRAPH_LOG: info # option
   secret:
-    postgres_pass: ""
-    PGPASSWORD: ""
+    postgres_pass: ''
+    PGPASSWORD: ''
 
 ipfs:
   ingress:
-    hostname: ""
+    hostname: ''
   resources:
     cpu: # option
     memory: # option
@@ -163,23 +163,23 @@ ipfs:
     capacity: # option
     storage_class_name: # option
     csi:
-      driver: "" # option
-      volumeHandle: "" # required
+      driver: '' # option
+      volumeHandle: '' # required
 
 l1_proxyd:
   enabled: false
   backends:
-    - name: ""
+    - name: ''
       groups: # array [ main, heavy_request, alchemy ]
-      rpc: ""
-      ws: ""
-      consensus_receipts_target: ""
+      rpc: ''
+      ws: ''
+      consensus_receipts_target: ''
   on_premise:
-    rpc: ""
-    ws: ""
+    rpc: ''
+    ws: ''
   alchemy:
-    rpc: ""
-    ws: ""
+    rpc: ''
+    ws: ''
 
 redis:
   enabled: false
