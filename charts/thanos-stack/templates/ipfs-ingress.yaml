@@ -1,4 +1,4 @@
-{{- if .Values.graph_node.enabled }}
+{{- if .Values.ipfs.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,9 +6,8 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: ipfs
     alb.ingress.kubernetes.io/conditions.auth: >
       [
         {
@@ -33,11 +32,13 @@ metadata:
       }
 spec:
   ingressClassName: alb
+  {{- if .Values.graph_node.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.ipfs.ingress.hostname }}
+        - {{ .Values.ipfs.ingress.hostname | quote }}
+  {{- end }}
   rules:
-    - host: {{ .Values.ipfs.ingress.hostname }}
+    - host: {{ .Values.ipfs.ingress.hostname | quote}}
       http:
         paths:
           - path: /
