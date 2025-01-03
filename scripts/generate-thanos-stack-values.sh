@@ -132,7 +132,13 @@ op_geth:
     csi:
       volumeHandle: "$efs_id"
   ingress:
-    hostname: "$stack_op_geth_hostname"
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/group.name: op-geth
   env:
     chain_id: "$stack_chain_id"
     genesis_file_url: $genesis_file_url
@@ -172,7 +178,7 @@ graph_node:
   enabled: false
   network_name: "$stack_graph_node_network_name"
   ingress:
-    hostname: "$stack_graph_node_hostname"
+    enabled: true
   env:
     postgres_host: $rds_address
   secret:
@@ -180,7 +186,7 @@ graph_node:
     PGPASSWORD: postgres
 ipfs:
   ingress:
-    hostname: "$stack_ipfs_hostname"
+    enabled: true
   volume:
     csi:
       volumeHandle: "$efs_id"
@@ -232,12 +238,11 @@ blockscout-stack:
       annotations:
         alb.ingress.kubernetes.io/target-type: ip
         alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-        alb.ingress.kubernetes.io/ssl-redirect: "443"
-        alb.ingress.kubernetes.io/group.name: thanos-stack
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+        alb.ingress.kubernetes.io/group.name: blockscout
       tls:
-        enabled: true
-      hostname: $stack_blockscout_hostname
+        enabled: false
+      hostname: ""
   config:
     network:
       id: "$stack_chain_id"
@@ -259,7 +264,7 @@ blockscout-stack:
 
     env:
       NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: "$stack_wallet_connect_project_id"
-      NEXT_PUBLIC_NETWORK_RPC_URL: https://$stack_op_geth_hostname
+      NEXT_PUBLIC_NETWORK_RPC_URL: http://$stack_helm_release_name-thanos-stack-op-geth:8545
       NEXT_PUBLIC_HOMEPAGE_CHARTS: "['daily_txs','coin_price','market_cap']"
       NEXT_PUBLIC_API_SPEC_URL: "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml"
       NEXT_PUBLIC_WEB3_DISABLE_ADD_TOKEN_TO_WALLET: false
@@ -277,6 +282,11 @@ blockscout-stack:
       NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth.blockscout.com"
       NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
       NEXT_PUBLIC_FAULT_PROOF_ENABLED: true
+      NEXT_PUBLIC_API_PROTOCOL: http
+      NEXT_PUBLIC_APP_PROTOCOL: http
+      NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: ws
+      NEXT_PUBLIC_API_HOST: 
+      NEXT_PUBLIC_APP_HOST: 
 
     ingress:
       enabled: true
@@ -284,39 +294,11 @@ blockscout-stack:
       annotations:
         alb.ingress.kubernetes.io/target-type: ip
         alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-        alb.ingress.kubernetes.io/ssl-redirect: "443"
-        alb.ingress.kubernetes.io/group.name: thanos-stack
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+        alb.ingress.kubernetes.io/group.name: blockscout
       tls:
-        enabled: true
-      hostname: $stack_blockscout_hostname
-
-  stats:
-    enabled: false
-    image:
-      tag: v2.2.3
-
-    env:
-      STATS__DB_URL: "postgresql://postgres:postgres@$rds_endpoint/stats"
-      STATS__BLOCKSCOUT_DB_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
-      STATS__CREATE_DATABASE: true
-      STATS__RUN_MIGRATIONS: true
-      STATS__FORCE_UPDATE_ON_START: true
-      STATS__SERVER__HTTP__CORS__ENABLED: true
-      STATS__SERVER__HTTP__CORS__ALLOWED_ORIGIN: "https://$stack_blockscout_hostname"
-
-    ingress:
-      enabled: true
-      className: alb
-      annotations:
-        alb.ingress.kubernetes.io/target-type: ip
-        alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-        alb.ingress.kubernetes.io/ssl-redirect: "443"
-        alb.ingress.kubernetes.io/group.name: thanos-stack
-      tls:
-        enabled: true
-      hostname: $stack_blockscout_stats_hostname
+        enabled: false
+      hostname: ""
 EOL
 )
 
