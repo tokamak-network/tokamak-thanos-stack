@@ -37,14 +37,6 @@ module "efs" {
   private_subnet_ids = data.terraform_remote_state.vpc.outputs.private_subnet_ids
 }
 
-module "acm" {
-  source = "./modules/acm"
-
-  parent_domain = var.chain_domain_name
-  service_names = ["*"]
-}
-
-
 module "rds" {
   source = "./modules/rds"
 
@@ -80,7 +72,6 @@ module "k8s" {
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_oidc_issuer_url            = module.eks.cluster_oidc_issuer_url
   oidc_provider_arn                  = module.eks.oidc_provider_arn
-  aws_acm_certificate_validation     = module.acm.aws_acm_certificate_validation
   aws_secretsmanager_id              = data.terraform_remote_state.secretsmanager.outputs.aws_secretsmanager_id
   external_secret_namespace          = var.thanos_stack_name
 }
