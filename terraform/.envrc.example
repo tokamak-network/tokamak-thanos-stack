@@ -14,9 +14,6 @@ export TF_VAR_batcher_key=
 export TF_VAR_proposer_key=
 export TF_VAR_challenger_key=
 
-# Route53 variables
-export TF_VAR_chain_domain_name=
-
 # VPC variables
 export TF_VAR_azs='["ap-northeast-2a", "ap-northeast-2c"]'
 export TF_VAR_vpc_cidr="192.168.0.0/16"
