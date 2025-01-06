@@ -10,9 +10,6 @@ export stack_infra_region=
 export stack_l1_rpc_url=
 export stack_l1_rpc_provider=
 
-# About op-geth variables
-export stack_op_geth_hostname=
-
 # About deploy chain_id
 export stack_chain_id=
 
@@ -21,18 +18,12 @@ export stack_l1_beacon_url=
 
 # About Graph Node variables
 export stack_graph_node_network_name=
-export stack_graph_node_hostname=
-
-# About ipfs variables
-export stack_ipfs_hostname=
 
 # About CoinMarketCap variables
 export stack_coinmarketcap_api_key=
 export stack_coinmarketcap_coin_id=
 
 # About blockscout variables
-export stack_blockscout_hostname=
-export stack_blockscout_stats_hostname=
 export stack_wallet_connect_project_id=
 export stack_helm_release_name=
 
