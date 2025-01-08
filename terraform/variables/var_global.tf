@@ -21,3 +21,35 @@ variable "eks_cluster_admins" {
   description = "eks cluster administrators"
   type        = list(string)
 }
+
+variable "vpc_cidr" {
+  description = "VPC CIDR Range"
+  type        = string
+  default     = "192.168.0.0/16"
+}
+
+variable "azs" {
+  description = "A list of availability zones names or ids in the region"
+  type        = list(string)
+  default     = ["ap-northeast-2a"]
+}
+
+variable "sequencer_key" {
+  description = "Thanos sequencer private key"
+  sensitive   = true
+}
+
+variable "batcher_key" {
+  description = "Thanos batcher private key"
+  sensitive   = true
+}
+
+variable "proposer_key" {
+  description = "Thanos proposer private key"
+  sensitive   = true
+}
+
+variable "challenger_key" {
+  description = "Thanos proposer private key"
+  sensitive   = true
+}
