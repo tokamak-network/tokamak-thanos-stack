@@ -57,3 +57,48 @@ variable "external_secret_namespace" {
   description = "External_Secret_Namespace"
   type        = string
 }
+
+variable "stack_deployments_path" {
+  description = "deployments path"
+  type        = string
+}
+
+variable "stack_l1_rpc_url" {
+  description = "L1 RPC URL"
+  type        = string
+}
+
+variable "stack_l1_rpc_provider" {
+  description = "L1 RPC provider"
+  type        = string
+}
+
+variable "stack_chain_id" {
+  description = "Chain id"
+  type        = string
+}
+
+variable "stack_l1_beacon_url" {
+  description = "L1 Beacon URL"
+  type        = string
+}
+
+variable "stack_efs_id" {
+  description = "EFS id"
+  type        = string
+}
+
+variable "stack_genesis_file_url" {
+  description = "Genesis file URL"
+  type        = string
+}
+
+variable "stack_prestate_file_url" {
+  description = "Prestate file URL"
+  type        = string
+}
+
+variable "stack_rollup_file_url" {
+  description = "Rollup file URL"
+  type        = string
+}

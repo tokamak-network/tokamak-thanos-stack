@@ -16,6 +16,16 @@ module "vpc" {
   azs      = var.azs
 }
 
+module "chain_config" {
+  source = "./modules/chain-config"
+
+  thanos_stack_name  = var.thanos_stack_name
+  genesis_file_path  = var.genesis_file_path
+  rollup_file_path   = var.rollup_file_path
+  prestate_file_path = var.prestate_file_path
+  prestate_hash      = var.prestate_hash
+}
+
 module "eks" {
   source = "./modules/eks"
 
@@ -50,14 +60,13 @@ module "k8s" {
   oidc_provider_arn                  = module.eks.oidc_provider_arn
   aws_secretsmanager_id              = module.secretsmanager.aws_secretsmanager_id
   external_secret_namespace          = var.thanos_stack_name
-}
-
-module "chain_config" {
-  source = "./modules/chain-config"
-
-  thanos_stack_name  = var.thanos_stack_name
-  genesis_file_path  = var.genesis_file_path
-  rollup_file_path   = var.rollup_file_path
-  prestate_file_path = var.prestate_file_path
-  prestate_hash      = var.prestate_hash
+  stack_deployments_path             = var.stack_deployments_path
+  stack_l1_rpc_url                   = var.stack_l1_rpc_url
+  stack_l1_rpc_provider              = var.stack_l1_rpc_provider
+  stack_chain_id                     = var.stack_chain_id
+  stack_l1_beacon_url                = var.stack_l1_beacon_url
+  stack_efs_id                       = module.efs.efs_id
+  stack_genesis_file_url             = module.chain_config.genesis_file_url
+  stack_rollup_file_url              = module.chain_config.rollup_file_url
+  stack_prestate_file_url            = module.chain_config.prestate_file_url
 }

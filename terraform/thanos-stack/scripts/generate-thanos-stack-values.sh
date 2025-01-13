@@ -27,6 +27,10 @@ reqenv "stack_l1_rpc_url"
 reqenv "stack_l1_rpc_provider"
 reqenv "stack_chain_id"
 reqenv "stack_l1_beacon_url"
+reqenv "stack_efs_id"
+reqenv "stack_genesis_file_url"
+reqenv "stack_prestate_file_url"
+reqenv "stack_rollup_file_url"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -73,16 +77,10 @@ extract_from_tf() {
     echo "$value"
 }
 
-# Extract values from terraform outputs
-thanos_stack_dir="../terraform/thanos-stack"
-efs_id=$(extract_from_tf "efs_id" "$thanos_stack_dir")
-rds_address=$(extract_from_tf "rds_address" "$thanos_stack_dir")
-rds_endpoint=$(extract_from_tf "rds_endpoint" "$thanos_stack_dir")
-rds_port=$(extract_from_tf "rds_port" "$thanos_stack_dir")
-genesis_file_url=$(extract_from_tf "genesis_file_url" "$thanos_stack_dir")
-prestate_file_url=$(extract_from_tf "prestate_file_url" "$thanos_stack_dir")
-prestate_file=${prestate_file_url%/*}
-rollup_file_url=$(extract_from_tf "rollup_file_url" "$thanos_stack_dir")
+efs_id="$stack_efs_id"
+genesis_file_url="$stack_genesis_file_url"
+prestate_file_url="$stack_prestate_file_url"
+rollup_file_url="$stack_rollup_file_url"
 
 # Download rollup.json file
 echo ""

@@ -8,10 +8,6 @@ variable "aws_region" {
   default     = "ap-northeast-2"
 }
 
-variable "chain_domain_name" {
-  description = "Thanos stack chain domain name"
-}
-
 variable "backend_bucket_name" {
   description = "AWS backend bucket name"
   type        = string
@@ -70,3 +66,27 @@ variable "prestate_hash" {
   description = "Prestate hash"
 }
 
+variable "stack_deployments_path" {
+  description = "deployments path"
+  type        = string
+}
+
+variable "stack_l1_rpc_url" {
+  description = "L1 RPC URL"
+  type        = string
+}
+
+variable "stack_l1_rpc_provider" {
+  description = "L1 RPC provider"
+  type        = string
+}
+
+variable "stack_chain_id" {
+  description = "Chain id"
+  type        = string
+}
+
+variable "stack_l1_beacon_url" {
+  description = "L1 Beacon URL"
+  type        = string
+}
