@@ -51,3 +51,13 @@ module "k8s" {
   aws_secretsmanager_id              = module.secretsmanager.aws_secretsmanager_id
   external_secret_namespace          = var.thanos_stack_name
 }
+
+module "chain_config" {
+  source = "./modules/chain-config"
+
+  thanos_stack_name  = var.thanos_stack_name
+  genesis_file_path  = var.genesis_file_path
+  rollup_file_path   = var.rollup_file_path
+  prestate_file_path = var.prestate_file_path
+  prestate_hash      = var.prestate_hash
+}
