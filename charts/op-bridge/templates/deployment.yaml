@@ -23,8 +23,8 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: app-config
-              mountPath: "/app/.env.local"
-              subPath: .env.local
+              mountPath: "/app/.env"
+              subPath: .env
               readOnly: true
       volumes:
         - name: app-config 
@@ -32,5 +32,5 @@ spec:
             defaultMode: 0777
             items:
               - key: .env
-                path: .env.local
+                path: .env
             name: {{ include "op-bridge.fullname" . }}
