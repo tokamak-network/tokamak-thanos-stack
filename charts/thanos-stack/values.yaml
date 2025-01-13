@@ -31,8 +31,16 @@ op_geth:
       volumeHandle: "" # required
 
   ingress:
-    hostname: "" # required
-
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: ""
+    tls:
+      enabled: false
+    paths:
+      - path: /
+        pathType: Exact
+        port: 8545
   env:
     geth_verbosity: 3
     geth_data_dir: "/db"
@@ -114,7 +122,7 @@ op_proposer:
 
 ## Challenger values
 op_challenger:
-  enabled: true # option
+  enabled: false # option
   volume:
     capacity: # option
     storage_class_name: # option
@@ -136,14 +144,17 @@ op_challenger:
 
 ## Graph-node & ipfs values
 graph_node:
-  enabled: true # option
+  enabled: false # option
   network_name: "" # required
   ethereum: "" # option
   resources:
     cpu: # option
     memory: # option
   ingress:
-    hostname: "" # required
+    enabled: false
+    hostname: ""
+    tls:
+      enabled: false
   env:
     postgres_host: "" # required
     postgres_user: "postgres" # option
@@ -155,7 +166,10 @@ graph_node:
 
 ipfs:
   ingress:
+    enabled: false
     hostname: ""
+    tls:
+      enabled: false
   resources:
     cpu: # option
     memory: # option

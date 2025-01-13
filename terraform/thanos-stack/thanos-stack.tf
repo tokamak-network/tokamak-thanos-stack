@@ -1,21 +1,29 @@
-data "terraform_remote_state" "vpc" {
-  backend = "s3"
+module "secretsmanager" {
+  source = "./modules/secretsmanager"
 
-  config = {
-    bucket = var.backend_bucket_name
-    key    = "tokamak-thanos-stack/terraform/init/vpc/terraform.tfstate"
-    region = var.aws_region
-  }
+  secretsmanager_name = var.thanos_stack_name
+  sequencer_key       = var.sequencer_key
+  batcher_key         = var.batcher_key
+  proposer_key        = var.proposer_key
+  challenger_key      = var.challenger_key
 }
 
-data "terraform_remote_state" "secretsmanager" {
-  backend = "s3"
+module "vpc" {
+  source = "./modules/vpc/"
 
-  config = {
-    bucket = var.backend_bucket_name
-    key    = "tokamak-thanos-stack/terraform/init/secretsmanager/terraform.tfstate"
-    region = var.aws_region
-  }
+  vpc_name = var.thanos_stack_name
+  vpc_cidr = var.vpc_cidr
+  azs      = var.azs
+}
+
+module "chain_config" {
+  source = "./modules/chain-config"
+
+  thanos_stack_name  = var.thanos_stack_name
+  genesis_file_path  = var.genesis_file_path
+  rollup_file_path   = var.rollup_file_path
+  prestate_file_path = var.prestate_file_path
+  prestate_hash      = var.prestate_hash
 }
 
 module "eks" {
@@ -23,9 +31,9 @@ module "eks" {
 
   region             = var.aws_region
   cluster_name       = var.thanos_stack_name
-  vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
-  private_subnet_ids = data.terraform_remote_state.vpc.outputs.private_subnet_ids
-  public_subnet_ids  = data.terraform_remote_state.vpc.outputs.public_subnet_ids
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  public_subnet_ids  = module.vpc.public_subnet_ids
   eks_cluster_admins = var.eks_cluster_admins
 }
 
@@ -33,38 +41,8 @@ module "efs" {
   source = "./modules/efs"
 
   efs_name           = var.thanos_stack_name
-  vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
-  private_subnet_ids = data.terraform_remote_state.vpc.outputs.private_subnet_ids
-}
-
-module "acm" {
-  source = "./modules/acm"
-
-  parent_domain = var.chain_domain_name
-  service_names = ["*"]
-}
-
-
-module "rds" {
-  source = "./modules/rds"
-
-  vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
-  private_subnet_ids = data.terraform_remote_state.vpc.outputs.private_subnet_ids
-
-  rds_name = "${var.thanos_stack_name}-rds"
-
-  rds_allocated_storage = 500
-
-  from_port = 5432
-  to_port   = 5432
-
-  db_parameters = [
-    {
-      name         = "log_connections"
-      value        = "1"
-      apply_method = "pending-reboot"
-    }
-  ]
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
 }
 
 module "k8s" {
@@ -73,14 +51,21 @@ module "k8s" {
   network_name                       = var.thanos_stack_name
   profile                            = "default"
   region                             = var.aws_region
-  vpc_id                             = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_id                             = module.vpc.vpc_id
   cluster_name                       = module.eks.cluster_name
   fargate_profiles                   = module.eks.fargate_profiles
   cluster_endpoint                   = module.eks.cluster_endpoint
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_oidc_issuer_url            = module.eks.cluster_oidc_issuer_url
   oidc_provider_arn                  = module.eks.oidc_provider_arn
-  aws_acm_certificate_validation     = module.acm.aws_acm_certificate_validation
-  aws_secretsmanager_id              = data.terraform_remote_state.secretsmanager.outputs.aws_secretsmanager_id
+  aws_secretsmanager_id              = module.secretsmanager.aws_secretsmanager_id
   external_secret_namespace          = var.thanos_stack_name
+  stack_deployments_path             = var.stack_deployments_path
+  stack_l1_rpc_url                   = var.stack_l1_rpc_url
+  stack_l1_rpc_provider              = var.stack_l1_rpc_provider
+  stack_l1_beacon_url                = var.stack_l1_beacon_url
+  stack_efs_id                       = module.efs.efs_id
+  stack_genesis_file_url             = module.chain_config.genesis_file_url
+  stack_rollup_file_url              = module.chain_config.rollup_file_url
+  stack_prestate_file_url            = module.chain_config.prestate_file_url
 }

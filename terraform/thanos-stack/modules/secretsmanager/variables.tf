@@ -17,3 +17,8 @@ variable "challenger_key" {
   description = "Thanos proposer private key"
   sensitive   = true
 }
+
+variable "secretsmanager_name" {
+  description = "Secret manager Name"
+  type        = string
+}

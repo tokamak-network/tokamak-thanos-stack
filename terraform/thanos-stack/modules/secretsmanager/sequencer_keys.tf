@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "sequencer_keys" {
-  name                    = "${var.thanos_stack_name}/secrets"
+  name                    = "${var.secretsmanager_name}/secrets"
   recovery_window_in_days = 0
 }
 

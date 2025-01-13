@@ -1,12 +1,26 @@
+{{- if .Values.op_geth.ingress.enabled }}
+{{- $fullName := include "thanos-stack.fullname" . -}}
+{{- if and .Values.op_geth.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
-  name: {{ include "thanos-stack.fullname" . }}-op-geth-alb
+  name: {{ $fullName }}-op-geth-ingress
+  labels:
+    app: {{ $fullName }}
+  {{- with .Values.op_geth.ingress.annotations }}
   annotations:
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/group.name: op-geth
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
     alb.ingress.kubernetes.io/conditions.ws-rule: >
       [
         {
@@ -35,12 +49,16 @@ metadata:
         }
       }
 spec:
-  ingressClassName: alb
+  {{- if and .Values.op_geth.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.op_geth.ingress.className }}
+  {{- end }}
+  {{- if .Values.op_geth.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.op_geth.ingress.hostname }}
+        - {{ .Values.op_geth.ingress.hostname | quote }}
+  {{- end }}
   rules:
-    - host: {{ .Values.op_geth.ingress.hostname }}
+    - host: {{ .Values.op_geth.ingress.hostname | quote }}
       http:
         paths:
           - path: /
@@ -50,42 +68,20 @@ spec:
                 name: ws-rule
                 port:
                   name: use-annotation
-          - path: /
-            pathType: Exact
+          {{- range .Values.op_geth.ingress.paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
-              service: 
-                name: {{ include "thanos-stack.fullname" . }}-op-geth 
-                port:
-                  number: 8545
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ include "thanos-stack.fullname" . }}-op-geth-alb-bad-request
-  annotations:
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
-    alb.ingress.kubernetes.io/group.name: op-geth
-    alb.ingress.kubernetes.io/actions.http-badrequest: >
-      {
-        "type": "fixed-response",
-        "fixedResponseConfig": {
-          "contentType": "application/json",
-          "statusCode": "400",
-          "messageBody": "{\"jsonrpc\": \"2.0\",\"error\": {\"code\": -32600,\"message\": \"HTTPS is required\"}}"
-        }
-      }
-spec:
-  ingressClassName: alb
-  rules:
-    - host: {{ .Values.op_geth.ingress.hostname }}
-      http:
-        paths:
-          - path: /
-            pathType: Exact
-            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: http-badrequest
+                name: {{ $fullName }}-op-geth
                 port:
-                  name: use-annotation
+                  number: {{ .port }}
+              {{- else }}
+              serviceName: {{ $fullName }}-op-geth
+              servicePort: {{ .port }}
+              {{- end }}
+          {{- end }}
+{{- end}}

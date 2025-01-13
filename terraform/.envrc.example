@@ -14,9 +14,6 @@ export TF_VAR_batcher_key=
 export TF_VAR_proposer_key=
 export TF_VAR_challenger_key=
 
-# Route53 variables
-export TF_VAR_chain_domain_name=
-
 # VPC variables
 export TF_VAR_azs='["ap-northeast-2a", "ap-northeast-2c"]'
 export TF_VAR_vpc_cidr="192.168.0.0/16"
@@ -30,3 +27,9 @@ export TF_VAR_genesis_file_path="config-files/genesis.json"
 export TF_VAR_rollup_file_path="config-files/rollup.json"
 export TF_VAR_prestate_file_path="config-files/prestate.json"
 export TF_VAR_prestate_hash="0x03ab262ce124af0d5d328e09bf886a2b272fe960138115ad8b94fdc3034e3155"
+
+# Thanos config
+export TF_VAR_stack_deployments_path=
+export TF_VAR_stack_l1_rpc_url=
+export TF_VAR_stack_l1_rpc_provider=
+export TF_VAR_stack_l1_beacon_url=

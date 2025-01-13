@@ -1,3 +1,8 @@
+variable "thanos_stack_name" {
+  description = "Thanos stack name"
+  type        = string
+}
+
 variable "genesis_file_path" {
   description = "Local path to the Genesis file for uploading"
 }

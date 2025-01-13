@@ -150,19 +150,6 @@ resource "helm_release" "aws-load-balancer-controller" {
   depends_on = [terraform_data.kubectl, module.lb_controller_role, aws_iam_role_policy.controller]
 }
 
-module "external_dns" {
-  source  = "DNXLabs/eks-external-dns/aws"
-  version = "0.2.0"
-
-  cluster_name                     = var.cluster_name
-  cluster_identity_oidc_issuer     = var.cluster_oidc_issuer_url
-  cluster_identity_oidc_issuer_arn = var.oidc_provider_arn
-  helm_repo_url                    = "https://kubernetes-sigs.github.io/external-dns"
-  helm_chart_version               = ""
-
-  depends_on = [terraform_data.kubectl, helm_release.aws-load-balancer-controller, var.aws_acm_certificate_validation]
-}
-
 resource "kubernetes_storage_class" "efs-sc" {
   metadata {
     name = "efs-sc"
@@ -190,4 +177,36 @@ module "eks-external-secrets" {
   }
 
   depends_on = [var.aws_secretsmanager_id, terraform_data.kubectl, helm_release.aws-load-balancer-controller]
+}
+
+resource "terraform_data" "thanos_stack_values" {
+  provisioner "local-exec" {
+    command = "scripts/generate-thanos-stack-values.sh"
+
+    environment = {
+      stack_deployments_path  = var.stack_deployments_path
+      stack_infra_name        = var.network_name
+      stack_infra_region      = var.region
+      stack_l1_rpc_url        = var.stack_l1_rpc_url
+      stack_l1_rpc_provider   = var.stack_l1_rpc_provider
+      stack_l1_beacon_url     = var.stack_l1_beacon_url
+      stack_efs_id            = var.stack_efs_id
+      stack_genesis_file_url  = var.stack_genesis_file_url
+      stack_prestate_file_url = var.stack_prestate_file_url
+      stack_rollup_file_url   = var.stack_rollup_file_url
+    }
+  }
+
+  depends_on = [kubernetes_storage_class.efs-sc, module.eks-external-secrets, helm_release.aws-load-balancer-controller]
+}
+
+resource "helm_release" "thanos" {
+  name       = var.network_name
+  repository = "https://tokamak-network.github.io/tokamak-thanos-stack"
+  chart      = "thanos-stack"
+  namespace  = var.network_name
+
+  values = [
+    "${file("thanos-stack-values.yaml")}"
+  ]
 }
