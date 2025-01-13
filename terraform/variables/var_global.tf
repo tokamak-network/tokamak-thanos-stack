@@ -46,7 +46,7 @@ variable "proposer_key" {
 }
 
 variable "challenger_key" {
-  description = "Thanos proposer private key"
+  description = "Thanos challenger private key"
   sensitive   = true
 }
 
