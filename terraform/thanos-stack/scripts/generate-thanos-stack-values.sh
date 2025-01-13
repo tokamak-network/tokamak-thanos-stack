@@ -25,7 +25,6 @@ reqenv "stack_infra_name"
 reqenv "stack_infra_region"
 reqenv "stack_l1_rpc_url"
 reqenv "stack_l1_rpc_provider"
-reqenv "stack_chain_id"
 reqenv "stack_l1_beacon_url"
 reqenv "stack_efs_id"
 reqenv "stack_genesis_file_url"
@@ -96,6 +95,7 @@ l2_batch_genesis_block_number=$(jq '.genesis.l2.number' rollup.json)
 l1_portal_contract=$(jq '.deposit_contract_address' rollup.json)
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' rollup.json)
+l2_chain_id=$(jq '.l2_chain_id' rollup.json)
 
 # Delete rollup.json file
 echo ""
@@ -125,7 +125,7 @@ op_geth:
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
       alb.ingress.kubernetes.io/group.name: op-geth
   env:
-    chain_id: "$stack_chain_id"
+    chain_id: "$l2_chain_id"
     genesis_file_url: $genesis_file_url
 
 op_node:

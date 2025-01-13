@@ -32,5 +32,4 @@ export TF_VAR_prestate_hash="0x03ab262ce124af0d5d328e09bf886a2b272fe960138115ad8
 export TF_VAR_stack_deployments_path=
 export TF_VAR_stack_l1_rpc_url=
 export TF_VAR_stack_l1_rpc_provider=
-export TF_VAR_stack_chain_id=
 export TF_VAR_stack_l1_beacon_url=

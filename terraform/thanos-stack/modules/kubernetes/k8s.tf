@@ -189,7 +189,6 @@ resource "terraform_data" "thanos_stack_values" {
       stack_infra_region      = var.region
       stack_l1_rpc_url        = var.stack_l1_rpc_url
       stack_l1_rpc_provider   = var.stack_l1_rpc_provider
-      stack_chain_id          = var.stack_chain_id
       stack_l1_beacon_url     = var.stack_l1_beacon_url
       stack_efs_id            = var.stack_efs_id
       stack_genesis_file_url  = var.stack_genesis_file_url

@@ -73,11 +73,6 @@ variable "stack_l1_rpc_provider" {
   type        = string
 }
 
-variable "stack_chain_id" {
-  description = "Chain id"
-  type        = string
-}
-
 variable "stack_l1_beacon_url" {
   description = "L1 Beacon URL"
   type        = string
