@@ -104,21 +104,14 @@ op_batcher:
 op_proposer:
   enabled: true # option
   env:
-    poll_interval: 6s # option
+    poll_interval: 12s # option
     rpc_port: 8560
 
     metrics_enabled: true
     metrics_addr: 0.0.0.0
     metrics_port: 7300
 
-    # l2oo_address:
-
-    game_factory_address: # required
-    game_type: 0
-    proposal_interval:
-    pprof_enabled: true
-    allow_non_finalized: true
-    rpc_enable_admin: true
+    l2oo_address:
 
 ## Challenger values
 op_challenger:
