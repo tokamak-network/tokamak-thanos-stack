@@ -199,14 +199,3 @@ resource "terraform_data" "thanos_stack_values" {
 
   depends_on = [kubernetes_storage_class.efs-sc, module.eks-external-secrets, helm_release.aws-load-balancer-controller]
 }
-
-resource "helm_release" "thanos" {
-  name       = var.network_name
-  repository = "https://tokamak-network.github.io/tokamak-thanos-stack"
-  chart      = "thanos-stack"
-  namespace  = var.network_name
-
-  values = [
-    "${file("thanos-stack-values.yaml")}"
-  ]
-}
