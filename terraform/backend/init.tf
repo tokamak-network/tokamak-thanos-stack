@@ -36,3 +36,14 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
     type = "S"
   }
 }
+
+
+resource "terraform_data" "env_bucket_name" {
+  provisioner "local-exec" {
+    command = "./bucket_name.sh"
+
+    environment = {
+      NEW_BUCKET_NAME = "${var.thanos_stack_name}-thanos-stack-tfstate-${random_string.randomname.result}"
+    }
+  }
+}
