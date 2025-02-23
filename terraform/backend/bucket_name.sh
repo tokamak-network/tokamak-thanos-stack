@@ -9,6 +9,13 @@ reqenv() {
 
 reqenv "NEW_BUCKET_NAME"
 
-sed -i '' "s/^export TF_VAR_backend_bucket_name=.*/export TF_VAR_backend_bucket_name=${NEW_BUCKET_NAME}/" "../.envrc"
+# Detect OS and set sed options accordingly
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_CMD="sed -i ''"
+else
+    SED_CMD="sed -i"
+fi
+
+$SED_CMD "s/^export TF_VAR_backend_bucket_name=.*/export TF_VAR_backend_bucket_name=${NEW_BUCKET_NAME}/" "../.envrc"
 
 echo "Updated export TF_VAR_backend_bucket_name to ${NEW_BUCKET_NAME} in ${FILE_PATH}"
