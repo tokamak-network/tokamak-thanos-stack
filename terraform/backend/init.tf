@@ -23,6 +23,12 @@ resource "aws_s3_bucket" "tfstate" {
   versioning {
     enabled = true # Prevent from deleting tfstate file
   }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+
+  force_destroy = true
 }
 
 # DynamoDB for terraform state lock

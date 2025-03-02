@@ -6,6 +6,8 @@ resource "random_string" "randomname" {
 
 resource "aws_s3_bucket" "config_files" {
   bucket = "${var.thanos_stack_name}-config-${random_string.randomname.result}"
+
+  force_destroy = true 
 }
 
 resource "aws_s3_bucket_public_access_block" "public_access" {
