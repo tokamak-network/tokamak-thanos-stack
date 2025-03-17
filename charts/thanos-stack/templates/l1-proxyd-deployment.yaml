@@ -26,7 +26,7 @@ spec:
             ]
       containers:
         - name: proxyd
-          image: "tokamaknetwork/thanos-proxyd:release-2.0.0a7"
+          image: "tokamaknetwork/thanos-proxyd:nightly-56ed30e3"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
