@@ -85,3 +85,13 @@ variable "stack_l1_beacon_url" {
   description = "L1 Beacon URL"
   type        = string
 }
+
+variable "stack_op_geth_image_tag" {
+  description = "OP Geth image tag"
+  type        = string
+}
+
+variable "stack_thanos_stack_image_tag" {
+  description = "Thanos Stack image tag"
+  type        = string
+}
