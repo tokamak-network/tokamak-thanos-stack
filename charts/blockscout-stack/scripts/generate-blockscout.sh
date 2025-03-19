@@ -29,6 +29,7 @@ reqenv "stack_coinmarketcap_coin_id"
 reqenv "stack_helm_release_name"
 reqenv "stack_network_name"
 reqenv "stack_wallet_connect_project_id"
+reqenv "rds_connection_url"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -81,7 +82,7 @@ blockscout:
     tag: 6.9.2
   env:
     CHAIN_TYPE: "optimism"
-    DATABASE_URL: "postgresql://postgres:postgres@$rds_endpoint/blockscout"
+    DATABASE_URL: "$rds_connection_url/blockscout"
 
     ETHEREUM_JSONRPC_VARIANT: geth
     ETHEREUM_JSONRPC_HTTP_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
