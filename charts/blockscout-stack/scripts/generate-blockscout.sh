@@ -30,6 +30,7 @@ reqenv "stack_helm_release_name"
 reqenv "stack_network_name"
 reqenv "stack_wallet_connect_project_id"
 reqenv "rds_connection_url"
+reqenv "l1_beacon_rpc_url"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -113,7 +114,8 @@ blockscout:
     INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK: "$l1_batch_start_block"
     INDEXER_OPTIMISM_L2_WITHDRAWALS_START_BLOCK: "$l2_withdrawals_start_block"
     INDEXER_OPTIMISM_L2_MESSAGE_PASSER_CONTRACT: "0x4200000000000000000000000000000000000016"
-    INDEXER_OPTIMISM_BLOCK_DURATION: $block_duration
+    INDEXER_OPTIMISM_BLOCK_DURATION: $block_duration    
+    INDEXER_BEACON_RPC_URL: $l1_beacon_rpc_url
 
   ingress:
     enabled: true
