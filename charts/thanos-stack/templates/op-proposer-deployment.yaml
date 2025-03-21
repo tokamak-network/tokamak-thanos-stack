@@ -27,7 +27,7 @@ spec:
                 name: {{ include "thanos-stack.fullname" . }}-common
       containers:
         - name: proposer
-          image: "tokamaknetwork/thanos-op-proposer:nightly-56ed30e3"
+          image: {{ .Values.op_proposer.image }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8560
