@@ -103,18 +103,18 @@ op_proposer:
     metrics_addr: 0.0.0.0
     metrics_port: 7300
 
-    # l2oo_address:
+    l2oo_address: "0xC0885eEc313e31a917DFd5d6Bf33565826B93A3F"
 
-    game_factory_address: # required
-    game_type: 0
-    proposal_interval: 1440s
+    game_factory_address: null
+    game_type: null
+    proposal_interval: null
     pprof_enabled: true
     allow_non_finalized: true
     rpc_enable_admin: true
 
 ## Challenger values
 op_challenger:
-  enabled: true # option
+  enabled: false # option
   volume:
     capacity: # option
     storage_class_name: # option
