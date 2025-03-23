@@ -140,6 +140,8 @@ config:
 
   prometheus:
     enabled: false
+    ingressWhitelist:
+      enabled: false
 
 frontend:
   enabled: false
