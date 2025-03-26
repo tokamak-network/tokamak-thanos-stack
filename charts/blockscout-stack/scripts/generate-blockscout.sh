@@ -31,6 +31,8 @@ reqenv "stack_network_name"
 reqenv "stack_wallet_connect_project_id"
 reqenv "rds_connection_url"
 reqenv "l1_beacon_rpc_url"
+reqenv "op_geth_svc"
+reqenv "op_geth_public_url"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -86,9 +88,9 @@ blockscout:
     DATABASE_URL: "$rds_connection_url/blockscout"
 
     ETHEREUM_JSONRPC_VARIANT: geth
-    ETHEREUM_JSONRPC_HTTP_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
-    ETHEREUM_JSONRPC_TRACE_URL: "http://$stack_helm_release_name-thanos-stack-op-geth:8545"
-    ETHEREUM_JSONRPC_WS_URL: "ws://$stack_helm_release_name-thanos-stack-op-geth:8546"
+    ETHEREUM_JSONRPC_HTTP_URL: "http://$op_geth_svc:8545"
+    ETHEREUM_JSONRPC_TRACE_URL: "http://$op_geth_svc:8545"
+    ETHEREUM_JSONRPC_WS_URL: "ws://$op_geth_svc:8546"
     CONTRACT_DISABLE_INTERACTION: false
     CHAIN_SPEC_PATH: $genesis_file_url
     SECRET_KEY_BASE: 56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN
@@ -151,7 +153,7 @@ frontend:
 
   env:
     NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: "$stack_wallet_connect_project_id"
-    NEXT_PUBLIC_NETWORK_RPC_URL: http://$stack_helm_release_name-thanos-stack-op-geth:8545
+    NEXT_PUBLIC_NETWORK_RPC_URL: "http://$op_geth_public_url"
     NEXT_PUBLIC_HOMEPAGE_CHARTS: "['daily_txs','coin_price','market_cap']"
     NEXT_PUBLIC_API_SPEC_URL: "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml"
     NEXT_PUBLIC_WEB3_DISABLE_ADD_TOKEN_TO_WALLET: false
