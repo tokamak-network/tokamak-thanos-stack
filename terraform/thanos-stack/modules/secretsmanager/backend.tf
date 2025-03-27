@@ -5,5 +5,8 @@ terraform {
     key            = "tokamak-thanos-stack/terraform/init/secretsmanager/terraform.tfstate"
     encrypt        = true
     dynamodb_table = "terraform-lock"
+    timeouts {
+      delete = "30m"
+    } 
   }
 }
