@@ -1,5 +1,16 @@
 apiVersion: v1
 entries:
+  blockscout-stack:
+  - apiVersion: v2
+    appVersion: 6.9.0
+    created: "2025-03-27T15:56:04.191027487Z"
+    description: A Helm chart to deploy Blockscout stack
+    digest: 8beeb62bc1696ba5cc596fe3b25d449850eb79d69fdbefca29f4ae6e9677a42e
+    name: blockscout-stack
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/blockscout-stack-1.8.0/blockscout-stack-1.8.0.tgz
+    version: 1.8.0
   op-bridge:
   - apiVersion: v2
     created: "2025-01-13T09:47:53.123525517Z"
@@ -77,4 +88,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2025-01-14T03:41:33.380270741Z"
+generated: "2025-03-27T15:56:04.191048908Z"
