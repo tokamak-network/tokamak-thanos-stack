@@ -6,8 +6,9 @@ echo -e "[INFO] Starting environment variable validation"
 
 # Check and validate required environment variables
 reqenv() {
-    if [ -z "${!1}" ]; then
-        echo "Error: Required environment variable '$1' is undefined"
+    local varname="$1"
+    if [ -z "${!varname:-}" ]; then
+        echo "Error: Required environment variable '$varname' is undefined"
         exit 1
     fi
 }
