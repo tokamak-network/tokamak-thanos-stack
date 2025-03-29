@@ -184,16 +184,18 @@ resource "terraform_data" "thanos_stack_values" {
     command = "scripts/generate-thanos-stack-values.sh"
 
     environment = {
-      stack_deployments_path  = var.stack_deployments_path
-      stack_infra_name        = var.network_name
-      stack_infra_region      = var.region
-      stack_l1_rpc_url        = var.stack_l1_rpc_url
-      stack_l1_rpc_provider   = var.stack_l1_rpc_provider
-      stack_l1_beacon_url     = var.stack_l1_beacon_url
-      stack_efs_id            = var.stack_efs_id
-      stack_genesis_file_url  = var.stack_genesis_file_url
-      stack_prestate_file_url = var.stack_prestate_file_url
-      stack_rollup_file_url   = var.stack_rollup_file_url
+      stack_deployments_path       = var.stack_deployments_path
+      stack_infra_name             = var.network_name
+      stack_infra_region           = var.region
+      stack_l1_rpc_url             = var.stack_l1_rpc_url
+      stack_l1_rpc_provider        = var.stack_l1_rpc_provider
+      stack_l1_beacon_url          = var.stack_l1_beacon_url
+      stack_efs_id                 = var.stack_efs_id
+      stack_genesis_file_url       = var.stack_genesis_file_url
+      stack_prestate_file_url      = var.stack_prestate_file_url
+      stack_rollup_file_url        = var.stack_rollup_file_url
+      stack_op_geth_image_tag      = var.stack_op_geth_image_tag
+      stack_thanos_stack_image_tag = var.stack_thanos_stack_image_tag
     }
   }
 

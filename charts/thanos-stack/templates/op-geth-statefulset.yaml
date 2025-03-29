@@ -19,7 +19,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: {{ include "thanos-stack.fullname" . }}-op-geth
-          image: "tokamaknetwork/thanos-op-geth:nightly-c61a056f"
+          image: {{ .Values.op_geth.image }}          
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "/op-geth-scripts/entrypoint-op-geth.sh"]
           envFrom:

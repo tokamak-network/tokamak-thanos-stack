@@ -68,4 +68,6 @@ module "k8s" {
   stack_genesis_file_url             = module.chain_config.genesis_file_url
   stack_rollup_file_url              = module.chain_config.rollup_file_url
   stack_prestate_file_url            = module.chain_config.prestate_file_url
+  stack_op_geth_image_tag            = var.stack_op_geth_image_tag
+  stack_thanos_stack_image_tag       = var.stack_thanos_stack_image_tag
 }
