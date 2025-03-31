@@ -182,6 +182,7 @@ ipfs:
       volumeHandle: "" # required
 
 l1_proxyd:
+  image: ""
   enabled: false
   backends:
   - name: ""
