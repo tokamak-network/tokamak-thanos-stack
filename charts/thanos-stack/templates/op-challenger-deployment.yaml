@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: {{ include "thanos-stack.fullname" . }}-op-challenger
-  replicas: 1
+  replicas: 0
   template:
     metadata:
       labels:
