@@ -1,0 +1,2283 @@
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sepolia-blockscout-stack
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/stats-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sepolia-blockscout-stack-stats-env
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+---
+# Source: thanos-stack/templates/graph-node-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sepolia-thanos-stack-graph-node
+data:
+  PGPASSWORD: cG9zdGdyZXM=
+  postgres_pass: cG9zdGdyZXM=
+---
+# Source: thanos-stack/templates/common-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-common
+  labels:
+    helm.sh/chart: thanos-stack-1.0.0
+    app.kubernetes.io/name: thanos-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/managed-by: Helm
+data:
+  L2_NODE_WEB3_URL: "http://sepolia-thanos-stack-op-geth:8545"
+  L2_ROLLUP_WEB3_URL: "http://sepolia-thanos-stack-op-node:8545"
+---
+# Source: thanos-stack/templates/graph-node-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-graph-node
+data:
+  ETHEREUM_REORG_THRESHOLD: "1000"
+  GRAPH_LOG: "trace"
+  postgres_db: "graphnode"
+  postgres_host: "thanos-sepolia-rds.cdask0s0a99e.ap-northeast-2.rds.amazonaws.com"
+  postgres_user: "postgres"
+  ethereum: "thanos-stack:http://sepolia-thanos-stack-op-geth:8545"
+  ipfs: "sepolia-thanos-stack-ipfs:5001"
+---
+# Source: thanos-stack/templates/l1-proxyd-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-l1-proxyd
+data:
+  proxyd-config.toml: |
+    ws_method_whitelist = [
+      "debug_getBadBlocks",
+      "debug_getRawBlock",
+      "debug_getRawHeader",
+      "debug_getRawReceipts",
+      "debug_getRawTransaction",
+
+      "eth_accounts",
+      "eth_blockNumber",
+      "eth_call",
+      "eth_chainId",
+      "eth_coinbase",
+      "eth_createAccessList",
+      "eth_estimateGas",
+      "eth_feeHistory",
+      "eth_gasPrice",
+      "eth_getBalance",
+      "eth_getBlockByHash",
+      "eth_getBlockByNumber",
+      "eth_getBlockReceipts",
+      "eth_getBlockTransactionCountByHash",
+      "eth_getBlockTransactionCountByNumber",
+      "eth_getCode",
+      "eth_getFilterChanges",
+      "eth_getFilterLogs",
+      "eth_getLogs",
+      "eth_getProof",
+      "eth_getStorageAt",
+      "eth_getTransactionByBlockHashAndIndex",
+      "eth_getTransactionByBlockNumberAndIndex",
+      "eth_getTransactionByHash",
+      "eth_getTransactionCount",
+      "eth_getTransactionReceipt",
+      "eth_getUncleCountByBlockHash",
+      "eth_getUncleCountByBlockNumber",
+      "eth_maxPriorityFeePerGas",
+      "eth_newBlockFilter",
+      "eth_newFilter",
+      "eth_newPendingTransactionFilter",
+      "eth_sendRawTransaction",
+      "eth_sendTransaction",
+      "eth_sign",
+      "eth_signTransaction",
+      "eth_subscribe",
+      "eth_syncing",
+      "eth_uninstallFilter",
+      "eth_unsubscribe",
+    ]
+    ws_backend_group = "main"
+
+    [server]
+    rpc_host = "0.0.0.0"
+    rpc_port = 8080
+    ws_host = "0.0.0.0"
+    ws_port = 8085
+    max_body_size_bytes = 10485760
+    max_concurrent_rpcs = 10000
+    log_level = "info"
+    enable_pprof = true
+
+    [redis]
+    url = "redis://sepolia-thanos-stack-redis:6379/0"
+
+    [cache]
+    enabled = true
+
+    [metrics]
+    enabled = true
+    host = "0.0.0.0"
+    port = 9761
+
+    [backend]
+    response_timeout_seconds = 5
+    max_response_size_bytes = 104857600
+    max_retries = 3
+    out_of_service_seconds = 20
+
+    [backends]
+    [backends.onpremise]
+    rpc_url = "https://sepolia.rpc.tokamak.network"
+    ws_url = "ws://sepolia.rpc.tokamak.network:8546"
+    max_rps = 1000
+    max_ws_conns = 0
+    strip_trailing_xff = true
+
+    [backends.infura_theo1]
+    rpc_url = "https://sepolia.infura.io/v3/adbdb3ac93674147934afa48bdccacef"
+    ws_url = "wss://sepolia.infura.io/ws/v3/adbdb3ac93674147934afa48bdccacef"
+    max_rps = 1000
+    max_ws_conns = 0
+    strip_trailing_xff = true
+    consensus_receipts_target = "eth_getBlockReceipts"
+
+    [backends.infura_theo2]
+    rpc_url = "https://sepolia.infura.io/v3/18625b530926442a9c9ee8f8db5eb7a7"
+    ws_url = "wss://sepolia.infura.io/ws/v3/18625b530926442a9c9ee8f8db5eb7a7"
+    max_rps = 1000
+    max_ws_conns = 0
+    strip_trailing_xff = true
+    consensus_receipts_target = "eth_getBlockReceipts"
+
+    [backends.infura_austin1]
+    rpc_url = "https://sepolia.infura.io/v3/ff2600bc713b4c0fa23d5e97e35d515c"
+    ws_url = "wss://sepolia.infura.io/ws/v3/ff2600bc713b4c0fa23d5e97e35d515c"
+    max_rps = 1000
+    max_ws_conns = 0
+    strip_trailing_xff = true
+    consensus_receipts_target = "eth_getBlockReceipts"
+
+    [backends.alchemy]
+    rpc_url = "https://eth-sepolia.g.alchemy.com/v2/-VPWgaGf0nGIAN7hFsrcCYxMEEgjr457"
+    ws_url = "wss://eth-sepolia.g.alchemy.com/v2/-VPWgaGf0nGIAN7hFsrcCYxMEEgjr457"
+    max_rps = 1000
+    max_ws_conns = 0
+    strip_trailing_xff = true
+    consensus_receipts_target = "alchemy_getTransactionReceipts"
+
+    [backend_groups]
+    [backend_groups.main]
+    backends = [
+      "onpremise",
+      "infura_theo1",
+      "infura_theo2",
+      "infura_austin1",
+      "alchemy",
+    ]
+
+    [backend_groups.heavy_request]
+    backends = [
+      "infura_theo1",
+      "infura_theo2",
+      "infura_austin1",
+      "alchemy",
+    ]
+
+    [backend_groups.alchemy]
+    backends = [
+      "alchemy",
+    ]
+
+    [rpc_method_mappings]
+    debug_getBadBlocks = "main"
+    debug_getRawBlock = "main"
+    debug_getRawHeader = "main"
+    debug_getRawReceipts = "main"
+    debug_getRawTransaction = "main"
+    eth_accounts = "main"
+    eth_blockNumber = "main"
+    eth_call = "main"
+    eth_chainId = "main"
+    eth_coinbase = "main"
+    eth_createAccessList = "main"
+    eth_estimateGas = "heavy_request"
+    eth_feeHistory = "main"
+    eth_gasPrice = "main"
+    eth_getBalance = "main"
+    eth_getBlockByHash = "main"
+    eth_getBlockByNumber = "main"
+    eth_getBlockReceipts = "heavy_request"
+    eth_getBlockTransactionCountByHash = "main"
+    eth_getBlockTransactionCountByNumber = "main"
+    eth_getCode = "main"
+    eth_getFilterChanges = "main"
+    eth_getFilterLogs = "heavy_request"
+    eth_getLogs = "heavy_request"
+    eth_getProof = "main"
+    eth_getStorageAt = "main"
+    eth_getTransactionByBlockHashAndIndex = "main"
+    eth_getTransactionByBlockNumberAndIndex = "main"
+    eth_getTransactionByHash = "main"
+    eth_getTransactionCount = "main"
+    eth_getTransactionReceipt = "main"
+    eth_getUncleCountByBlockHash = "main"
+    eth_getUncleCountByBlockNumber = "main"
+    eth_maxPriorityFeePerGas = "main"
+    eth_newBlockFilter = "main"
+    eth_newFilter = "main"
+    eth_newPendingTransactionFilter = "main"
+    eth_sendRawTransaction = "heavy_request"
+    eth_sendTransaction = "main"
+    eth_sign = "main"
+    eth_signTransaction = "main"
+    eth_subscribe = "main"
+    eth_syncing = "main"
+    eth_uninstallFilter = "main"
+    eth_unsubscribe = "main"
+
+    alchemy_getTransactionReceipts = "alchemy"
+---
+# Source: thanos-stack/templates/op-batcher-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-batcher
+data:
+  OP_BATCHER_BATCH_TYPE: "1"
+  OP_BATCHER_DATA_AVAILABILITY_TYPE: "calldata"
+  OP_BATCHER_MAX_CHANNEL_DURATION: "60"
+  OP_BATCHER_METRICS_ADDR: "0.0.0.0"
+  OP_BATCHER_METRICS_ENABLED: "true"
+  OP_BATCHER_METRICS_PORT: "7300"
+  OP_BATCHER_NUM_CONFIRMATIONS: "1"
+  OP_BATCHER_POLL_INTERVAL: "1s"
+  OP_BATCHER_RESUBMISSION_TIMEOUT: "30s"
+  OP_BATCHER_RPC_ADDR: "0.0.0.0"
+  OP_BATCHER_RPC_ENABLE_ADMIN: "true"
+  OP_BATCHER_RPC_PORT: "8548"
+  OP_BATCHER_SAFE_ABORT_NONCE_TOO_LOW_COUNT: "3"
+  OP_BATCHER_SUB_SAFETY_MARGIN: "6"
+  OP_BATCHER_L2_ETH_RPC: "http://sepolia-thanos-stack-op-geth:8545"
+  OP_BATCHER_ROLLUP_RPC: "http://sepolia-thanos-stack-op-node:8545"
+  OP_BATCHER_L1_ETH_RPC:
+    "http://sepolia-thanos-stack-l1-proxyd:8545"
+---
+# Source: thanos-stack/templates/op-challenger-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-challenger
+data:
+  OP_CHALLENGER_CANNON_BIN: "/usr/local/bin/cannon"
+  OP_CHALLENGER_CANNON_L2_GENESIS_URL: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/genesis.json"
+  OP_CHALLENGER_CANNON_PRESTATES_URL: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack"
+  OP_CHALLENGER_CANNON_ROLLUP_CONFIG_URL: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/rollup.json"
+  OP_CHALLENGER_CANNON_SERVER: "/usr/local/bin/op-program"
+  OP_CHALLENGER_DATADIR: "/db"
+  OP_CHALLENGER_GAME_FACTORY_ADDRESS: "0x524c885A976c13497900A04257605cd231Ab0026"
+  OP_CHALLENGER_L1_BEACON: "https://snowy-practical-market.ethereum-sepolia.quiknode.pro/bbd1315ea545238689f05a02e7c8f8b58e620697"
+  OP_CHALLENGER_NUM_CONFIRMATIONS: "1"
+  OP_CHALLENGER_TRACE_TYPE: "cannon"
+  OP_CHALLENGER_L2_ETH_RPC: "http://sepolia-thanos-stack-op-geth:8545"
+  OP_CHALLENGER_ROLLUP_RPC: "http://sepolia-thanos-stack-op-node:8545"
+  OP_CHALLENGER_L1_ETH_RPC:
+    "http://sepolia-thanos-stack-l1-proxyd:8545"
+---
+# Source: thanos-stack/templates/op-challenger-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-challenger-scripts
+data:
+  entrypoint-op-challenger.sh: |
+    #!/bin/sh
+    set -exu
+  
+    wget \
+        "${OP_CHALLENGER_CANNON_ROLLUP_CONFIG_URL}" \
+        -q \
+        -O rollup.json
+  
+    wget \
+        "${OP_CHALLENGER_CANNON_L2_GENESIS_URL}" \
+        -q \
+        -O l2-genesis.json
+  
+    exec op-challenger \
+        --cannon-rollup-config=./rollup.json \
+        --cannon-l2-genesis=./l2-genesis.json \
+        "$@"
+---
+# Source: thanos-stack/templates/op-geth-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-geth
+data:
+  CHAIN_ID: "111551119090"
+  GENESIS_FILE_URL: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/genesis.json"
+  GETH_DATA_DIR: "/db"
+  GETH_OVERRIDE_FJORD: "1733110200"
+  GETH_VERBOSITY: "3"
+  RPC_PORT: "8545"
+  WS_PORT: "8546"
+---
+# Source: thanos-stack/templates/op-geth-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-geth-scripts
+data:
+  entrypoint-op-geth.sh: "#!/bin/sh\nset -exu\n\nwget \\\n\t\"${GENESIS_FILE_URL}\"
+    \\\n\t-q \\\n\t-O genesis.json\n\nVERBOSITY=${GETH_VERBOSITY:-3}\nGETH_DATA_DIR=\"${GETH_DATA_DIR:-/db}\"\nGETH_CHAINDATA_DIR=\"$GETH_DATA_DIR/geth/chaindata\"\nGENESIS_FILE_PATH=\"genesis.json\"\nCHAIN_ID=\"${CHAIN_ID:-42069}\"\nRPC_PORT=\"${RPC_PORT:-8545}\"\nWS_PORT=\"${WS_PORT:-8546}\"\n\nif
+    [ ! -d \"$GETH_CHAINDATA_DIR\" ]; then\n\techo \"$GETH_CHAINDATA_DIR missing, running
+    init\"\n\techo \"Initializing genesis.\"\n\tgeth --verbosity=\"$VERBOSITY\" init
+    \\\n\t\t--datadir=\"$GETH_DATA_DIR\" \\\n\t\t\"$GENESIS_FILE_PATH\"\nelse\n\techo
+    \"$GETH_CHAINDATA_DIR exists.\"\nfi\n\n# Warning: Archive mode is required, otherwise
+    old trie nodes will be\n# pruned within minutes of starting the devnet.\n\nexec
+    geth \\\n\t--datadir=\"$GETH_DATA_DIR\" \\\n\t--verbosity=\"$VERBOSITY\" \\\n\t--http
+    \\\n\t--http.corsdomain=\"*\" \\\n\t--http.vhosts=\"*\" \\\n\t--http.addr=0.0.0.0
+    \\\n\t--http.port=\"$RPC_PORT\" \\\n\t--http.api=web3,debug,eth,txpool,net,engine
+    \\\n\t--ws \\\n\t--ws.addr=0.0.0.0 \\\n\t--ws.port=\"$WS_PORT\" \\\n\t--ws.origins=\"*\"
+    \\\n\t--ws.api=debug,eth,txpool,net,engine \\\n\t--syncmode=full \\\n\t--nodiscover
+    \\\n\t--maxpeers=0 \\\n\t--networkid=$CHAIN_ID \\\n\t--authrpc.addr=\"0.0.0.0\"
+    \\\n\t--authrpc.port=\"8551\" \\\n\t--authrpc.vhosts=\"*\" \\\n\t--authrpc.jwtsecret=/op-geth-auth/jwt.txt
+    \\\n\t--gcmode=archive \\\n\t--metrics \\\n\t--metrics.addr=0.0.0.0 \\\n\t--metrics.port=6060
+    \\\n\t--rollup.disabletxpoolgossip=true \\\n\t--rpc.batch-request-limit=1000000
+    \\\n\t--rpc.batch-response-max-size=25000000000 \\\n\t\"$@\"\n"
+---
+# Source: thanos-stack/templates/op-geth-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-geth-auth
+data:
+  jwt.txt: |
+    7454d11bf5775c4d676284b577e82600e8885f6b45936cc4ed3e14ea30cb42c9
+---
+# Source: thanos-stack/templates/op-node-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-node
+data:
+  OP_NODE_L1_BEACON: "https://snowy-practical-market.ethereum-sepolia.quiknode.pro/bbd1315ea545238689f05a02e7c8f8b58e620697"
+  OP_NODE_L2_ENGINE_AUTH: "/op-geth-auth/jwt.txt"
+  OP_NODE_METRICS_ADDR: "0.0.0.0"
+  OP_NODE_METRICS_ENABLED: "true"
+  OP_NODE_METRICS_PORT: "7300"
+  OP_NODE_P2P_DISABLE: "true"
+  OP_NODE_PPROF_ENABLED: "true"
+  OP_NODE_ROLLUP_CONFIG_URL: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/rollup.json"
+  OP_NODE_RPC_ADDR: "0.0.0.0"
+  OP_NODE_RPC_ENABLE_ADMIN: "true"
+  OP_NODE_RPC_PORT: "8545"
+  OP_NODE_SEQUENCER_ENABLED: "true"
+  OP_NODE_SEQUENCER_L1_CONFS: "5"
+  OP_NODE_VERIFIER_L1_CONFS: "4"
+  OP_NODE_L2_ENGINE_RPC: "http://sepolia-thanos-stack-op-geth:8551"
+  OP_NODE_L1_ETH_RPC:
+    "http://sepolia-thanos-stack-l1-proxyd:8545"
+  OP_NODE_L1_RPC_KIND: alchemy
+---
+# Source: thanos-stack/templates/op-node-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-node-scripts
+data:
+  entrypoint-op-node.sh: |
+    #!/bin/sh
+    set -exu
+  
+    wget \
+        "${OP_NODE_ROLLUP_CONFIG_URL}" \
+        -q \
+        -O rollup.json
+  
+    exec op-node \
+        --rollup.config=./rollup.json \
+        --safedb.path=/safedb \
+        "$@"
+---
+# Source: thanos-stack/templates/op-proposer-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-op-proposer
+data:
+  OP_PROPOSER_ALLOW_NON_FINALIZED: "true"
+  OP_PROPOSER_GAME_FACTORY_ADDRESS: 
+  OP_PROPOSER_GAME_TYPE: 
+  OP_PROPOSER_L2OO_ADDRESS: "0xC0885eEc313e31a917DFd5d6Bf33565826B93A3F"
+  OP_PROPOSER_METRICS_ADDR: "0.0.0.0"
+  OP_PROPOSER_METRICS_ENABLED: "true"
+  OP_PROPOSER_METRICS_PORT: "7300"
+  OP_PROPOSER_POLL_INTERVAL: "6s"
+  OP_PROPOSER_PPROF_ENABLED: "true"
+  OP_PROPOSER_PROPOSAL_INTERVAL: 
+  OP_PROPOSER_RPC_ENABLE_ADMIN: "true"
+  OP_PROPOSER_RPC_PORT: "8560"
+  OP_PROPOSER_ROLLUP_RPC: "http://sepolia-thanos-stack-op-node:8545"
+  OP_PROPOSER_L1_ETH_RPC:
+    "http://sepolia-thanos-stack-l1-proxyd:8545"
+---
+# Source: thanos-stack/templates/redis-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-redis
+data:
+  redis.conf: |
+    maxmemory 300mb
+    maxmemory-policy allkeys-lru
+---
+# Source: thanos-stack/templates/wait-scripts-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sepolia-thanos-stack-wait-scripts
+data:
+  wait-for-l2.sh: |
+    #!/bin/bash
+    set -eou
+    if [[ -z $L2_NODE_WEB3_URL ]]; then
+        echo "Must pass L2_NODE_WEB3_URL"
+        exit 1
+    fi
+    JSON='{"jsonrpc":"2.0","id":0,"method":"eth_chainId","params":[]}'
+    echo "Waiting for L2"
+    curl \
+        -X POST \
+        --header 'Content-Type: application/json' \
+        --silent \
+        --output /dev/null \
+        --retry-connrefused \
+        --retry 1000 \
+        --retry-delay 1 \
+        -d "$JSON" \
+        $L2_NODE_WEB3_URL
+    echo "Connected to L2"
+  wait-for-rollup.sh: |
+    #!/bin/bash
+    set -eou
+    if [[ -z $L2_ROLLUP_WEB3_URL ]]; then
+        echo "Must pass L2_ROLLUP_WEB3_URL"
+        exit 1
+    fi
+    JSON='{"jsonrpc":"2.0","method":"optimism_rollupConfig","params":[],"id":1}'
+    echo "Waiting for Rollup"
+    curl \
+        -X POST \
+        --header 'Content-Type: application/json' \
+        --silent \
+        --output /dev/null \
+        --retry-connrefused \
+        --retry 1000 \
+        --retry-delay 1 \
+        -d "$JSON" \
+        $L2_ROLLUP_WEB3_URL
+    echo "Connected to Rollup"
+---
+# Source: thanos-stack/templates/ipfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sepolia-thanos-stack-ipfs
+  labels:
+    app: sepolia-thanos-stack-ipfs
+spec:
+  capacity:
+    storage: 500Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com 
+    volumeHandle: fs-0ed33ae9f24c0954b
+---
+# Source: thanos-stack/templates/op-challenger-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sepolia-thanos-stack-op-challenger
+  labels:
+    app: sepolia-thanos-stack-op-challenger
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com 
+    volumeHandle: fs-0ed33ae9f24c0954b
+---
+# Source: thanos-stack/templates/op-geth-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sepolia-thanos-stack-op-geth
+  labels:
+    app: sepolia-thanos-stack-op-geth
+spec:
+  capacity:
+    storage: 500Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com 
+    volumeHandle: fs-0ed33ae9f24c0954b
+---
+# Source: thanos-stack/templates/op-node-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sepolia-thanos-stack-op-node
+  labels:
+    app: sepolia-thanos-stack-op-node
+spec:
+  capacity:
+    storage: 500Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com 
+    volumeHandle: fs-0ed33ae9f24c0954b
+---
+# Source: thanos-stack/templates/ipfs-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sepolia-thanos-stack-ipfs
+spec:
+  storageClassName: efs-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-ipfs
+---
+# Source: thanos-stack/templates/op-challenger-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sepolia-thanos-stack-op-challenger
+spec:
+  storageClassName: efs-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-challenger
+---
+# Source: thanos-stack/templates/op-geth-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sepolia-thanos-stack-op-geth
+spec:
+  storageClassName: efs-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-geth
+---
+# Source: thanos-stack/templates/op-node-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sepolia-thanos-stack-op-node
+spec:
+  storageClassName: efs-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-node
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/blockscout-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-blockscout-stack-blockscout-svc
+  labels:
+    app: sepolia-blockscout-stack-blockscout-svc
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: sepolia-blockscout-stack-blockscout
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-blockscout-stack-frontend-svc
+  labels:
+    app: sepolia-blockscout-stack-frontend-svc
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: sepolia-blockscout-stack-frontend
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/stats-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-blockscout-stack-stats-svc
+  labels:
+    app: sepolia-blockscout-stack-stats-svc
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 6060
+      targetPort: http-metrics
+      protocol: TCP
+      name: http-metrics
+  selector:
+    app: sepolia-blockscout-stack-stats
+---
+# Source: thanos-stack/templates/graph-node-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-graph-node
+spec:
+  selector:
+    app: sepolia-thanos-stack-graph-node
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: ws
+      port: 8001
+      targetPort: 8001
+    - name: rpc
+      port: 8020
+      targetPort: 8020
+    - name: index
+      port: 8030
+      targetPort: 8030
+    - name: metric
+      port: 8040
+      targetPort: 8040
+---
+# Source: thanos-stack/templates/ipfs-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-ipfs
+spec:
+  selector:
+    app: sepolia-thanos-stack-ipfs
+  ports:
+    - name: http
+      port: 5001
+      targetPort: 5001
+---
+# Source: thanos-stack/templates/l1-proxyd-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-l1-proxyd
+spec:
+  selector:
+    app: sepolia-thanos-stack-l1-proxyd
+  ports:
+    - name: http
+      port: 8545
+      protocol: TCP
+      targetPort: 8080
+    - name: ws
+      port: 8546
+      protocol: TCP
+      targetPort: 8085
+    - name: metric
+      port: 9761
+      protocol: TCP
+      targetPort: 9761
+    - name: pprof
+      port: 6060
+      targetPort: 6060
+---
+# Source: thanos-stack/templates/op-batcher-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-op-batcher
+spec:
+  selector:
+    app: sepolia-thanos-stack-op-batcher
+  ports:
+    - name: http
+      port: 8548
+      protocol: TCP
+      targetPort: 8548
+    - name: metric
+      port: 7300
+      targetPort: 7300
+---
+# Source: thanos-stack/templates/op-geth-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-op-geth
+spec:
+  selector:
+    app: sepolia-thanos-stack-op-geth
+  ports:
+    - name: http
+      port: 8545
+      targetPort: 8545
+    - name: ws
+      port: 8546
+      targetPort: 8546
+    - name: auth
+      port: 8551
+      targetPort: 8551
+    - name: p2p
+      port: 30303
+      targetPort: 30303
+    - name: metric
+      port: 6060
+      targetPort: 6060
+---
+# Source: thanos-stack/templates/op-node-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-op-node
+spec:
+  selector:
+    app: sepolia-thanos-stack-op-node
+  ports:
+    - name: http
+      port: 8545
+      targetPort: 8545
+    - name: metric
+      port: 7300
+      targetPort: 7300
+    - name: pprof
+      port: 6060
+      targetPort: 6060
+---
+# Source: thanos-stack/templates/op-proposer-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-op-proposer
+spec:
+  selector:
+    app: sepolia-thanos-stack-op-proposer
+  ports:
+    - name: http
+      port: 8560
+      protocol: TCP
+      targetPort: 8560
+    - name: metric
+      port: 7300
+      targetPort: 7300
+---
+# Source: thanos-stack/templates/redis-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sepolia-thanos-stack-redis
+spec:
+  selector:
+    app: sepolia-thanos-stack-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/blockscout-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-blockscout-stack-blockscout
+  labels:
+    app: sepolia-blockscout-stack-blockscout
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sepolia-blockscout-stack-blockscout
+  template:
+    metadata:
+      annotations:
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        app: sepolia-blockscout-stack-blockscout
+        app.kubernetes.io/name: blockscout-stack
+        app.kubernetes.io/instance: sepolia
+    spec:
+      serviceAccountName: sepolia-blockscout-stack
+      securityContext:
+        {}
+      initContainers:
+        - name: init-migrations
+          image: "blockscout/blockscout-optimism:6.9.2"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          command:  
+            - /bin/sh
+          args: 
+            - -c
+            - bin/blockscout eval "Elixir.Explorer.ReleaseTasks.create_and_migrate()"
+          env:
+          - name: PORT
+            value: "4000"
+          - name: CHAIN_ID
+            value: "111551119090"
+          - name: COIN
+            value: "TON"
+          - name: COIN_NAME
+            value: "TON"
+          - name: SHOW_TESTNET_LABEL
+            value: "true"
+          - name: API_V2_ENABLED
+            value: "true"
+          - name: BLOCKSCOUT_HOST
+            value: "explorer.thanos-sepolia.tokamak.network"
+          - name: CHAIN_SPEC_PATH
+            value: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/genesis.json"
+          - name: CHAIN_TYPE
+            value: "optimism"
+          - name: CONTRACT_DISABLE_INTERACTION
+            value: "false"
+          - name: DATABASE_URL
+            value: "postgresql://postgres:postgres@thanos-sepolia-rds.cdask0s0a99e.ap-northeast-2.rds.amazonaws.com:5432/blockscout"
+          - name: ETHEREUM_JSONRPC_HTTP_URL
+            value: "http://sepolia-thanos-stack-op-geth:8545"
+          - name: ETHEREUM_JSONRPC_TRACE_URL
+            value: "http://sepolia-thanos-stack-op-geth:8545"
+          - name: ETHEREUM_JSONRPC_VARIANT
+            value: "geth"
+          - name: ETHEREUM_JSONRPC_WS_URL
+            value: "ws://sepolia-thanos-stack-op-geth:8546"
+          - name: EXCHANGE_RATES_COINMARKETCAP_API_KEY
+            value: "74d06af9-057f-4642-8f05-8f101b3c9844"
+          - name: EXCHANGE_RATES_COINMARKETCAP_COIN_ID
+            value: "6731"
+          - name: EXCHANGE_RATES_MARKET_CAP_SOURCE
+            value: "coin_market_cap"
+          - name: INDEXER_OPTIMISM_BLOCK_DURATION
+            value: "6"
+          - name: INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL
+            value: "https://eth-sepolia.blockscout.com/api/v2/blobs"
+          - name: INDEXER_OPTIMISM_L1_BATCH_INBOX
+            value: "0xff00000000000000000000000033111551119090"
+          - name: INDEXER_OPTIMISM_L1_BATCH_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_BATCH_SUBMITTER
+            value: "0x61dc95E5f27266b94805ED23D95B4C9553A3D049"
+          - name: INDEXER_OPTIMISM_L1_DEPOSITS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT
+            value: "0xC0885eEc313e31a917DFd5d6Bf33565826B93A3F"
+          - name: INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_PORTAL_CONTRACT
+            value: "0x2fbD30Fcd1c4573b0288E706Be56B5c0d2DfcAF6"
+          - name: INDEXER_OPTIMISM_L1_RPC
+            value: "http://sepolia-thanos-stack-l1-proxyd:8545"
+          - name: INDEXER_OPTIMISM_L1_SYSTEM_CONFIG_CONTRACT
+            value: "0x6eF61974A3CDa7BbD0a4DD0A613f56d211c8AfDC"
+          - name: INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER
+            value: "0"
+          - name: INDEXER_OPTIMISM_L2_MESSAGE_PASSER_CONTRACT
+            value: "0x4200000000000000000000000000000000000016"
+          - name: INDEXER_OPTIMISM_L2_WITHDRAWALS_START_BLOCK
+            value: "1"
+          - name: MICROSERVICE_SC_VERIFIER_ENABLED
+            value: "true"
+          - name: MICROSERVICE_SC_VERIFIER_TYPE
+            value: "eth_bytecode_db"
+          - name: MICROSERVICE_SC_VERIFIER_URL
+            value: "https://eth-bytecode-db.services.blockscout.com"
+          - name: SECRET_KEY_BASE
+            value: "56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN"
+      containers:
+        - name: blockscout-stack-blockscout
+          securityContext:
+            {}
+          image: "blockscout/blockscout-optimism:6.9.2"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          imagePullPolicy: IfNotPresent
+          command:  
+            - /bin/sh
+          args: 
+            - -c
+            - bin/blockscout start
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          env:
+          - name: APPLICATION_MODE
+            value: "all"
+          - name: PORT
+            value: "4000"
+          - name: CHAIN_ID
+            value: "111551119090"
+          - name: COIN
+            value: "TON"
+          - name: COIN_NAME
+            value: "TON"
+          - name: SHOW_TESTNET_LABEL
+            value: "true"
+          - name: API_V2_ENABLED
+            value: "true"
+          - name: BLOCKSCOUT_HOST
+            value: "explorer.thanos-sepolia.tokamak.network"
+          - name: CHAIN_SPEC_PATH
+            value: "https://thanos-sepolia-config-kgcx5tdt.s3.ap-northeast-2.amazonaws.com/thanos-stack/genesis.json"
+          - name: CHAIN_TYPE
+            value: "optimism"
+          - name: CONTRACT_DISABLE_INTERACTION
+            value: "false"
+          - name: DATABASE_URL
+            value: "postgresql://postgres:postgres@thanos-sepolia-rds.cdask0s0a99e.ap-northeast-2.rds.amazonaws.com:5432/blockscout"
+          - name: ETHEREUM_JSONRPC_HTTP_URL
+            value: "http://sepolia-thanos-stack-op-geth:8545"
+          - name: ETHEREUM_JSONRPC_TRACE_URL
+            value: "http://sepolia-thanos-stack-op-geth:8545"
+          - name: ETHEREUM_JSONRPC_VARIANT
+            value: "geth"
+          - name: ETHEREUM_JSONRPC_WS_URL
+            value: "ws://sepolia-thanos-stack-op-geth:8546"
+          - name: EXCHANGE_RATES_COINMARKETCAP_API_KEY
+            value: "74d06af9-057f-4642-8f05-8f101b3c9844"
+          - name: EXCHANGE_RATES_COINMARKETCAP_COIN_ID
+            value: "6731"
+          - name: EXCHANGE_RATES_MARKET_CAP_SOURCE
+            value: "coin_market_cap"
+          - name: INDEXER_OPTIMISM_BLOCK_DURATION
+            value: "6"
+          - name: INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL
+            value: "https://eth-sepolia.blockscout.com/api/v2/blobs"
+          - name: INDEXER_OPTIMISM_L1_BATCH_INBOX
+            value: "0xff00000000000000000000000033111551119090"
+          - name: INDEXER_OPTIMISM_L1_BATCH_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_BATCH_SUBMITTER
+            value: "0x61dc95E5f27266b94805ED23D95B4C9553A3D049"
+          - name: INDEXER_OPTIMISM_L1_DEPOSITS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT
+            value: "0xC0885eEc313e31a917DFd5d6Bf33565826B93A3F"
+          - name: INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L1_PORTAL_CONTRACT
+            value: "0x2fbD30Fcd1c4573b0288E706Be56B5c0d2DfcAF6"
+          - name: INDEXER_OPTIMISM_L1_RPC
+            value: "http://sepolia-thanos-stack-l1-proxyd:8545"
+          - name: INDEXER_OPTIMISM_L1_SYSTEM_CONFIG_CONTRACT
+            value: "0x6eF61974A3CDa7BbD0a4DD0A613f56d211c8AfDC"
+          - name: INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK
+            value: "7173633"
+          - name: INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER
+            value: "0"
+          - name: INDEXER_OPTIMISM_L2_MESSAGE_PASSER_CONTRACT
+            value: "0x4200000000000000000000000000000000000016"
+          - name: INDEXER_OPTIMISM_L2_WITHDRAWALS_START_BLOCK
+            value: "1"
+          - name: MICROSERVICE_SC_VERIFIER_ENABLED
+            value: "true"
+          - name: MICROSERVICE_SC_VERIFIER_TYPE
+            value: "eth_bytecode_db"
+          - name: MICROSERVICE_SC_VERIFIER_URL
+            value: "https://eth-bytecode-db.services.blockscout.com"
+          - name: SECRET_KEY_BASE
+            value: "56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN"
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/readiness
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 60
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/liveness
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 100
+            periodSeconds: 100
+            timeoutSeconds: 30
+      terminationGracePeriodSeconds: 
+        300
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-blockscout-stack-frontend
+  labels:
+    app: sepolia-blockscout-stack-frontend
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sepolia-blockscout-stack-frontend
+  template:
+    metadata:
+      annotations:
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        app: sepolia-blockscout-stack-frontend
+        app.kubernetes.io/name: blockscout-stack
+        app.kubernetes.io/instance: sepolia
+    spec:
+      serviceAccountName: sepolia-blockscout-stack
+      securityContext:
+        {}
+      containers:
+        - name: blockscout-stack-frontend
+          securityContext:
+            {}
+          image: "ghcr.io/blockscout/frontend:v1.36.4"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+          - name: NEXT_PUBLIC_NETWORK_ID
+            value: "111551119090"
+          - name: NEXT_PUBLIC_NETWORK_NAME
+            value: "Thanos Sepolia"
+          - name: NEXT_PUBLIC_NETWORK_SHORT_NAME
+            value: "Thanos Sepolia"
+          - name: NEXT_PUBLIC_NETWORK_CURRENCY_NAME
+            value: "Tokamak Network Token"
+          - name: NEXT_PUBLIC_NETWORK_CURRENCY_SYMBOL
+            value: "TON"
+          - name: NEXT_PUBLIC_NETWORK_CURRENCY_DECIMALS
+            value: "18"
+          - name: NEXT_PUBLIC_IS_TESTNET
+            value: "true"
+          - name: NEXT_PUBLIC_API_HOST
+            value: "explorer.thanos-sepolia.tokamak.network"
+          - name: NEXT_PUBLIC_APP_HOST
+            value: "explorer.thanos-sepolia.tokamak.network"
+          - name: NEXT_PUBLIC_STATS_API_HOST
+            value: "https://stats.thanos-sepolia.tokamak.network"
+          - name: FAVICON_GENERATOR_API_KEY
+            value: "9cbebba57891c43c345be98d6e22a3efc1b9ca79"
+          - name: FAVICON_MASTER_URL
+            value: "https://tokamak-thanos.s3.ap-northeast-2.amazonaws.com/thanos_favicon.png"
+          - name: NEXT_PUBLIC_AD_BANNER_PROVIDER
+            value: "none"
+          - name: NEXT_PUBLIC_AD_TEXT_PROVIDER
+            value: "none"
+          - name: NEXT_PUBLIC_API_SPEC_URL
+            value: "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml"
+          - name: NEXT_PUBLIC_FAULT_PROOF_ENABLED
+            value: "true"
+          - name: NEXT_PUBLIC_GOOGLE_ANALYTICS_PROPERTY_ID
+            value: "G-WX3MMTVHV3"
+          - name: NEXT_PUBLIC_HOMEPAGE_CHARTS
+            value: "['daily_txs','coin_price','market_cap']"
+          - name: NEXT_PUBLIC_NETWORK_ICON
+            value: "https://thanos-assets.s3.ap-northeast-2.amazonaws.com/thanos_network-icon.png"
+          - name: NEXT_PUBLIC_NETWORK_ICON_DARK
+            value: "https://thanos-assets.s3.ap-northeast-2.amazonaws.com/thanos_network-icon.png"
+          - name: NEXT_PUBLIC_NETWORK_LOGO
+            value: "https://thanos-assets.s3.ap-northeast-2.amazonaws.com/thanos_B.png"
+          - name: NEXT_PUBLIC_NETWORK_LOGO_DARK
+            value: "https://thanos-assets.s3.ap-northeast-2.amazonaws.com/thanos_W.png"
+          - name: NEXT_PUBLIC_NETWORK_RPC_URL
+            value: "https://rpc.thanos-sepolia.tokamak.network"
+          - name: NEXT_PUBLIC_ROLLUP_L1_BASE_URL
+            value: "https://eth-sepolia.blockscout.com"
+          - name: NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL
+            value: "https://app.optimism.io/bridge/withdraw"
+          - name: NEXT_PUBLIC_ROLLUP_TYPE
+            value: "optimistic"
+          - name: NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+            value: "89ff902562340030ca1245aa3eea2840"
+          - name: NEXT_PUBLIC_WEB3_DISABLE_ADD_TOKEN_TO_WALLET
+            value: "false"
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 100
+            periodSeconds: 100
+            timeoutSeconds: 30
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/stats-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-blockscout-stack-stats
+  labels:
+    app: sepolia-blockscout-stack-stats
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sepolia-blockscout-stack-stats
+  template:
+    metadata:
+      annotations:
+        checksum/config: c8c8b46db3252bab6c6214597849d597d46923cae6c44f64720f763639a739e2
+      labels:
+        app: sepolia-blockscout-stack-stats
+        app.kubernetes.io/name: blockscout-stack
+        app.kubernetes.io/instance: sepolia
+    spec:
+      serviceAccountName: sepolia-blockscout-stack
+      securityContext:
+        {}
+      containers:
+        - name: blockscout-stack-stats
+          securityContext:
+            {}
+          image: "ghcr.io/blockscout/stats:v2.2.3"
+          resources:
+            limits:
+              cpu: 250m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8050
+              protocol: TCP
+            - name: http-metrics
+              containerPort: 6060
+              protocol: TCP
+          env:
+          - name: STATS__BLOCKSCOUT_API_URL
+            value: "https://explorer.thanos-sepolia.tokamak.network"
+          - name: STATS_CHARTS__TEMPLATE_VALUES__NATIVE_COIN_SYMBOL
+            value: "TON"
+          - name: STATS__BLOCKSCOUT_DB_URL
+            value: "postgresql://postgres:postgres@thanos-sepolia-rds.cdask0s0a99e.ap-northeast-2.rds.amazonaws.com:5432/blockscout"
+          - name: STATS__CREATE_DATABASE
+            value: "true"
+          - name: STATS__DB_URL
+            value: "postgresql://postgres:postgres@thanos-sepolia-rds.cdask0s0a99e.ap-northeast-2.rds.amazonaws.com:5432/stats"
+          - name: STATS__FORCE_UPDATE_ON_START
+            value: "true"
+          - name: STATS__RUN_MIGRATIONS
+            value: "true"
+          - name: STATS__SERVER__HTTP__CORS__ALLOWED_ORIGIN
+            value: "https://explorer.thanos-sepolia.tokamak.network"
+          - name: STATS__SERVER__HTTP__CORS__ENABLED
+            value: "true"
+          envFrom:
+            - secretRef:
+                name: sepolia-blockscout-stack-stats-env
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 60
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 100
+            periodSeconds: 100
+            timeoutSeconds: 30
+---
+# Source: thanos-stack/templates/graph-node-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-graph-node
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-graph-node
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-graph-node
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: initial-postgres-database
+          image: "postgres:15-alpine"
+          command:
+            - /bin/sh
+            - -c
+            - >-
+              echo "SELECT 'CREATE DATABASE ${postgres_db} TEMPLATE template0 ENCODING UTF8 LC_COLLATE \"C\" LC_CTYPE \"C\"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${postgres_db}')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
+              echo "SELECT 'CREATE EXTENSION pg_trgm' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'pg_trgm')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
+              echo "SELECT 'CREATE EXTENSION pg_stat_statements' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'pg_stat_statements')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
+              echo "SELECT 'CREATE EXTENSION btree_gist' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'btree_gist')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
+              echo "SELECT 'CREATE EXTENSION postgres_fdw' WHERE NOT EXISTS (SELECT FROM pg_extension WHERE extname = 'postgres_fdw')\gexec" | psql -h ${postgres_host} -U ${postgres_user} &&
+              echo "grant usage on foreign data wrapper postgres_fdw to ${postgres_user}" | psql -h ${postgres_host} -U ${postgres_user}
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-graph-node
+            - secretRef:
+                name: sepolia-thanos-stack-graph-node
+      containers:
+        - name: graph-node
+          image: graphprotocol/graph-node
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+            - containerPort: 8001
+              protocol: TCP
+            - containerPort: 8020
+              protocol: TCP
+            - containerPort: 8030
+              protocol: TCP
+            - containerPort: 8040
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-graph-node
+            - secretRef:
+                name: sepolia-thanos-stack-graph-node
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 0.75Gi
+---
+# Source: thanos-stack/templates/l1-proxyd-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-l1-proxyd
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-l1-proxyd
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-l1-proxyd
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:latest
+          command:
+            [
+              'sh',
+              '-c',
+              'until nc -vz sepolia-thanos-stack-redis 6379; do echo "Waiting for redis..."; sleep 1; done;',
+            ]
+      containers:
+        - name: proxyd
+          image: "tokamaknetwork/thanos-proxyd:release-2.0.0a7"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8085
+              protocol: TCP
+            - containerPort: 9761
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          command: ['bin/proxyd', '/config/proxyd-config.toml']
+          resources: {}
+          volumeMounts:
+            - name: proxyd-config
+              mountPath: /config
+
+      volumes:
+        - name: proxyd-config
+          configMap:
+            name: sepolia-thanos-stack-l1-proxyd
+            defaultMode: 0777
+---
+# Source: thanos-stack/templates/op-batcher-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-op-batcher
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-batcher
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-op-batcher
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-rollup
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-rollup.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-common
+      containers:
+        - name: batcher
+          image: "tokamaknetwork/thanos-op-batcher:nightly-011bec4a"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8548
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-op-batcher
+            - secretRef:
+                name: sepolia-thanos-stack-secret
+      volumes:
+        - name: wait-scripts
+          configMap:
+            name: sepolia-thanos-stack-wait-scripts
+            defaultMode: 0777
+---
+# Source: thanos-stack/templates/op-challenger-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-op-challenger
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-challenger
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-op-challenger
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-l2
+          image: nicolaka/netshoot
+          command: ["bash", "-c", "/wait-scripts/wait-for-l2.sh"]
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-common
+        - name: wait-for-rollup
+          image: nicolaka/netshoot
+          command: ["bash", "-c", "/wait-scripts/wait-for-rollup.sh"]
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-common
+      containers:
+        - name: challenger
+          image: "tokamaknetwork/thanos-op-challenger:nightly-011bec4a"
+          imagePullPolicy: IfNotPresent
+          command:
+            ["/bin/sh", "/op-challenger-scripts/entrypoint-op-challenger.sh"]
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-op-challenger
+            - secretRef:
+                name: sepolia-thanos-stack-secret
+          volumeMounts:
+            - name: challenger-data
+              mountPath: /db
+            - name: op-challenger-scripts
+              mountPath: /op-challenger-scripts
+      volumes:
+        - name: wait-scripts
+          configMap:
+            name: sepolia-thanos-stack-wait-scripts
+            defaultMode: 0777
+        - name: op-challenger-scripts
+          configMap:
+            name: sepolia-thanos-stack-op-challenger-scripts
+        - name: challenger-data
+          persistentVolumeClaim:
+            claimName: sepolia-thanos-stack-op-challenger
+---
+# Source: thanos-stack/templates/op-proposer-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-op-proposer
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-proposer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-op-proposer
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-rollup
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-rollup.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-common
+      containers:
+        - name: proposer
+          image: "tokamaknetwork/thanos-op-proposer:nightly-011bec4a"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8560
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-op-proposer
+            - secretRef:
+                name: sepolia-thanos-stack-secret
+      volumes:
+        - name: wait-scripts
+          configMap:
+            name: sepolia-thanos-stack-wait-scripts
+            defaultMode: 0777
+---
+# Source: thanos-stack/templates/redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sepolia-thanos-stack-redis
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-redis
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: redis
+          image: redis:alpine
+          command: ['redis-server', '/redis-conf/redis.conf']
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 0.75Gi
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - mountPath: /redis-conf
+              name: redis-volume-config
+      volumes:
+        - name: redis-volume-config
+          configMap:
+            name: sepolia-thanos-stack-redis
+---
+# Source: thanos-stack/templates/ipfs-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sepolia-thanos-stack-ipfs
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-ipfs
+  replicas: 1
+  serviceName: sepolia-thanos-stack-ipfs
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-ipfs
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: ipfs
+          image: ipfs/kubo
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          volumeMounts:
+            - name: ipfs-volume
+              mountPath: /data/ipfs
+              subPath: ipfs
+          resources:
+            requests:
+              cpu: 1
+              memory: 1.75Gi
+      volumes:
+        - name: ipfs-volume
+          persistentVolumeClaim:
+            claimName: sepolia-thanos-stack-ipfs
+---
+# Source: thanos-stack/templates/op-geth-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sepolia-thanos-stack-op-geth
+  labels:
+    helm.sh/chart: thanos-stack-1.0.0
+    app.kubernetes.io/name: thanos-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-geth
+  replicas: 1
+  serviceName: sepolia-thanos-stack-op-geth
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-op-geth
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: sepolia-thanos-stack-op-geth
+          image: "tokamaknetwork/thanos-op-geth:nightly-193382ee"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/op-geth-scripts/entrypoint-op-geth.sh"]
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-op-geth
+          ports:
+            - containerPort: 8545
+              protocol: TCP
+            - containerPort: 8546
+              protocol: TCP
+            - containerPort: 8551
+              protocol: TCP
+            - containerPort: 30303
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          volumeMounts:
+            - name: op-geth-scripts
+              mountPath: /op-geth-scripts
+            - name: op-geth-auth
+              mountPath: /op-geth-auth
+            - name: op-geth-volume
+              mountPath: /db
+              subPath: sepolia-thanos-stack-op-geth
+          resources:
+            requests:
+              cpu: 1
+              memory: 1.75Gi
+      volumes:
+        - name: op-geth-volume
+          persistentVolumeClaim:
+            claimName: sepolia-thanos-stack-op-geth
+        - name: op-geth-scripts
+          configMap:
+            name: sepolia-thanos-stack-op-geth-scripts
+            defaultMode: 0777
+        - name: op-geth-auth
+          configMap:
+            name: sepolia-thanos-stack-op-geth-auth
+            defaultMode: 0777
+---
+# Source: thanos-stack/templates/op-node-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sepolia-thanos-stack-op-node
+spec:
+  selector:
+    matchLabels:
+      app: sepolia-thanos-stack-op-node
+  replicas: 1
+  serviceName: sepolia-thanos-stack-op-node
+  template:
+    metadata:
+      labels:
+        app: sepolia-thanos-stack-op-node
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-l2
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-l2.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-common
+      containers:
+        - name: op-node
+          image: "tokamaknetwork/thanos-op-node:nightly-012b61f2"
+          imagePullPolicy: IfNotPresent
+          command: ['/bin/sh', '/op-node-scripts/entrypoint-op-node.sh']
+          envFrom:
+            - configMapRef:
+                name: sepolia-thanos-stack-op-node
+            - secretRef:
+                name: sepolia-thanos-stack-secret
+          ports:
+            - containerPort: 8545
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          volumeMounts:
+            - name: op-node-safedb
+              mountPath: /safedb
+              subPath: op-node
+            - name: op-node-scripts
+              mountPath: /op-node-scripts
+            - name: op-geth-auth
+              mountPath: /op-geth-auth
+          resources:
+            requests:
+              cpu: 1
+              memory: 1.75Gi
+
+      volumes:
+        - name: op-node-safedb
+          persistentVolumeClaim:
+            claimName: sepolia-thanos-stack-op-node
+        - name: wait-scripts
+          configMap:
+            name: sepolia-thanos-stack-wait-scripts
+            defaultMode: 0777
+        - name: op-node-scripts
+          configMap:
+            name: sepolia-thanos-stack-op-node-scripts
+            defaultMode: 0777
+        - name: op-geth-auth
+          configMap:
+            name: sepolia-thanos-stack-op-geth-auth
+            defaultMode: 0777
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/blockscout-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-blockscout-stack-blockscout-ingress
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - "explorer.thanos-sepolia.tokamak.network"
+      secretName: sepolia-blockscout-stack-blockscout-tls
+  rules:
+    - host: "explorer.thanos-sepolia.tokamak.network"
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /socket
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /sitemap.xml
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /public-metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /auth/auth0
+            pathType: Exact
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /auth/auth0/callback
+            pathType: Exact
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+          - path: /auth/logout
+            pathType: Exact
+            backend:
+              service:
+                name: sepolia-blockscout-stack-blockscout-svc
+                port:
+                  number: 80
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/frontend-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-blockscout-stack-frontend-ingress
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - "explorer.thanos-sepolia.tokamak.network"
+      secretName: sepolia-blockscout-stack-frontend-tls
+  rules:
+    - host: "explorer.thanos-sepolia.tokamak.network"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-frontend-svc
+                port:
+                  number: 80
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/frontend-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-blockscout-stack-frontend-metrics-ingress
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - "explorer.thanos-sepolia.tokamak.network"
+      secretName: sepolia-blockscout-stack-frontend-tls
+  rules:
+    - host: "explorer.thanos-sepolia.tokamak.network"
+      http:
+        paths:
+          - path: /node-api/metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-frontend-svc
+                port:
+                  number: 80
+---
+# Source: thanos-stack/charts/blockscout-stack/templates/stats-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-blockscout-stack-stats-ingress
+  labels:
+    helm.sh/chart: blockscout-stack-1.8.0
+    app.kubernetes.io/name: blockscout-stack
+    app.kubernetes.io/instance: sepolia
+    app.kubernetes.io/version: "6.9.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - "stats.thanos-sepolia.tokamak.network"
+      secretName: sepolia-blockscout-stack-stats-tls
+  rules:
+    - host: "stats.thanos-sepolia.tokamak.network"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-blockscout-stack-stats-svc
+                port:
+                  number: 80
+---
+# Source: thanos-stack/templates/graph-node-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-thanos-stack-graph-node-ingress-alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/conditions.auth: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Authorization",
+            "values": ["Bearer dGl0YW4gaXMgdGhlIGJlc3QgbWFpbm5ldA=="]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.auth: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [
+            {
+              "serviceName": "sepolia-thanos-stack-graph-node",
+              "servicePort": "8020"
+            }
+          ]
+        }
+      }
+    alb.ingress.kubernetes.io/conditions.ws-rule: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+              "httpHeaderName": "Upgrade",
+              "values": ["websocket"]
+          }
+        },
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Connection",
+            "values": ["Upgrade"]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.ws-rule: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [{
+            "serviceName": "sepolia-thanos-stack-graph-node",
+            "servicePort": "8001"
+          }]
+        }
+      }
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - graph-node.thanos-sepolia.tokamak.network
+  rules:
+    - host: graph-node.thanos-sepolia.tokamak.network
+      http:
+        paths:
+          - path: /deploy
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  name: use-annotation
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-thanos-stack-graph-node
+                port:
+                  number: 8040
+          - path: /subgraphs
+            pathType: Prefix
+            backend:
+              service:
+                name: ws-rule
+                port:
+                  name: use-annotation
+          - path: /subgraphs
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-thanos-stack-graph-node
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sepolia-thanos-stack-graph-node
+                port:
+                  number: 8030
+---
+# Source: thanos-stack/templates/ipfs-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-thanos-stack-ipfs-ingress-alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/group.name: thanos-stack
+    alb.ingress.kubernetes.io/conditions.auth: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Authorization",
+            "values": ["Bearer dGl0YW4gaXMgdGhlIGJlc3QgbWFpbm5ldA=="]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.auth: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [
+            {
+              "serviceName": "sepolia-thanos-stack-ipfs",
+              "servicePort": "5001"
+            }
+          ]
+        }
+      }
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - ipfs.thanos-sepolia.tokamak.network
+  rules:
+    - host: ipfs.thanos-sepolia.tokamak.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  name: use-annotation
+---
+# Source: thanos-stack/templates/op-geth-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-thanos-stack-op-geth-alb
+  annotations:
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/group.name: op-geth
+    alb.ingress.kubernetes.io/conditions.ws-rule: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+              "httpHeaderName": "Upgrade",
+              "values": ["websocket"]
+          }
+        },
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Connection",
+            "values": ["Upgrade"]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.ws-rule: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [{
+            "serviceName": "sepolia-thanos-stack-op-geth",
+            "servicePort": "8546"
+          }]
+        }
+      }
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - rpc.thanos-sepolia.tokamak.network
+  rules:
+    - host: rpc.thanos-sepolia.tokamak.network
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: ws-rule
+                port:
+                  name: use-annotation
+          - path: /
+            pathType: Exact
+            backend:
+              service: 
+                name: sepolia-thanos-stack-op-geth 
+                port:
+                  number: 8545
+---
+# Source: thanos-stack/templates/op-geth-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sepolia-thanos-stack-op-geth-alb-bad-request
+  annotations:
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: op-geth
+    alb.ingress.kubernetes.io/actions.http-badrequest: >
+      {
+        "type": "fixed-response",
+        "fixedResponseConfig": {
+          "contentType": "application/json",
+          "statusCode": "400",
+          "messageBody": "{\"jsonrpc\": \"2.0\",\"error\": {\"code\": -32600,\"message\": \"HTTPS is required\"}}"
+        }
+      }
+spec:
+  ingressClassName: alb
+  rules:
+    - host: rpc.thanos-sepolia.tokamak.network
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: http-badrequest
+                port:
+                  name: use-annotation
+---
+# Source: thanos-stack/templates/external-secret.yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: thanos-ext-secret
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: sepolia-thanos-stack-secretstore
+    kind: SecretStore
+  target:
+    name: sepolia-thanos-stack-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: OP_NODE_P2P_SEQUENCER_KEY
+      remoteRef:
+        key: thanos-sepolia/secrets
+        property: OP_NODE_P2P_SEQUENCER_KEY
+    - secretKey: OP_BATCHER_PRIVATE_KEY
+      remoteRef:
+        key: thanos-sepolia/secrets
+        property: OP_BATCHER_PRIVATE_KEY
+    - secretKey: OP_PROPOSER_PRIVATE_KEY
+      remoteRef:
+        key: thanos-sepolia/secrets
+        property: OP_PROPOSER_PRIVATE_KEY
+    - secretKey: OP_CHALLENGER_PRIVATE_KEY
+      remoteRef:
+        key: thanos-sepolia/secrets
+        property: OP_CHALLENGER_PRIVATE_KEY
+---
+# Source: thanos-stack/templates/secretstore.yaml
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: sepolia-thanos-stack-secretstore
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: ap-northeast-2
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: external-secrets
+            namespace: thanos-sepolia
+
