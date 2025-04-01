@@ -95,6 +95,7 @@ blockscout:
     CHAIN_SPEC_PATH: $genesis_file_url
     SECRET_KEY_BASE: 56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN
     EXCHANGE_RATES_MARKET_CAP_SOURCE: coin_market_cap
+    EXCHANGE_RATES_SOURCE: coin_market_cap
     EXCHANGE_RATES_COINMARKETCAP_API_KEY: $stack_coinmarketcap_api_key
     EXCHANGE_RATES_COINMARKETCAP_COIN_ID: "$stack_coinmarketcap_coin_id"
     # MICROSERVICES
