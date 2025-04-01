@@ -30,6 +30,8 @@ reqenv "stack_efs_id"
 reqenv "stack_genesis_file_url"
 reqenv "stack_prestate_file_url"
 reqenv "stack_rollup_file_url"
+reqenv "stack_op_geth_image_tag"
+reqenv "stack_thanos_stack_image_tag"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -80,6 +82,8 @@ efs_id="$stack_efs_id"
 genesis_file_url="$stack_genesis_file_url"
 prestate_file_url="$stack_prestate_file_url"
 rollup_file_url="$stack_rollup_file_url"
+op_geth_image_tag="$stack_op_geth_image_tag"
+thanos_stack_image_tag="$stack_thanos_stack_image_tag"
 
 # Download rollup.json file
 echo ""
@@ -113,6 +117,7 @@ l1_rpc:
   kind: $stack_l1_rpc_provider
 
 op_geth:
+  image: "tokamaknetwork/thanos-op-geth:nightly-$op_geth_image_tag"
   volume:
     csi:
       volumeHandle: "$efs_id"
@@ -129,6 +134,7 @@ op_geth:
     genesis_file_url: $genesis_file_url
 
 op_node:
+  image: "tokamaknetwork/thanos-op-node:nightly-$thanos_stack_image_tag"
   volume:
     csi:
       volumeHandle: "$efs_id"
@@ -137,10 +143,12 @@ op_node:
     l1_beacon: $stack_l1_beacon_url
 
 op_batcher:
+  image: "tokamaknetwork/thanos-op-batcher:nightly-$thanos_stack_image_tag"
   env:
     max_channel_duration: 1500
 
 op_proposer:
+  image: "tokamaknetwork/thanos-op-proposer:nightly-$thanos_stack_image_tag"
   enabled: true
   env:
     l2oo_address: $L2OutputOracleProxy

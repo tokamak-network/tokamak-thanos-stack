@@ -26,7 +26,7 @@ spec:
                 name: {{ include "thanos-stack.fullname" . }}-common
       containers:
         - name: batcher
-          image: "tokamaknetwork/thanos-op-batcher:nightly-011bec4a"
+          image: {{ .Values.op_batcher.image }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8548

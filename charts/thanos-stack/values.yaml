@@ -19,9 +19,11 @@ common:
 
 ## Geth values
 op_geth:
+  image: ""
   resources:
     cpu: # option
-    memory: # option
+    memory:
+      # option
 
   volume:
     capacity: # option
@@ -38,9 +40,9 @@ op_geth:
     tls:
       enabled: false
     paths:
-      - path: /
-        pathType: Exact
-        port: 8545
+    - path: /
+      pathType: Exact
+      port: 8545
   env:
     geth_verbosity: 3
     geth_data_dir: "/db"
@@ -51,9 +53,11 @@ op_geth:
 
 ## Node values
 op_node:
+  image: ""
   resources:
     cpu: # option
-    memory: # option
+    memory:
+      # option
 
   volume:
     capacity: # option
@@ -76,10 +80,12 @@ op_node:
     metrics_port: 7300
     pprof_enabled: true
     rpc_enable_admin: true
-    l1_beacon: # required
+    l1_beacon:
+      # required
 
-## Batcher values
+      ## Batcher values
 op_batcher:
+  image: ""
   env:
     poll_interval: 1s
     sub_safety_margin: 6
@@ -102,6 +108,7 @@ op_batcher:
 
 ## Proposer values
 op_proposer:
+  image: ""
   enabled: true # option
   env:
     poll_interval: 12s # option
@@ -113,8 +120,9 @@ op_proposer:
 
     l2oo_address:
 
-## Challenger values
+      ## Challenger values
 op_challenger:
+  image: ""
   enabled: false # option
   volume:
     capacity: # option
@@ -174,13 +182,14 @@ ipfs:
       volumeHandle: "" # required
 
 l1_proxyd:
+  image: ""
   enabled: false
   backends:
-    - name: ""
-      groups: # array [ main, heavy_request, alchemy ]
-      rpc: ""
-      ws: ""
-      consensus_receipts_target: ""
+  - name: ""
+    groups: # array [ main, heavy_request, alchemy ]
+    rpc: ""
+    ws: ""
+    consensus_receipts_target: ""
   on_premise:
     rpc: ""
     ws: ""
