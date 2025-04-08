@@ -196,6 +196,7 @@ resource "terraform_data" "thanos_stack_values" {
       stack_rollup_file_url        = var.stack_rollup_file_url
       stack_op_geth_image_tag      = var.stack_op_geth_image_tag
       stack_thanos_stack_image_tag = var.stack_thanos_stack_image_tag
+      stack_max_channel_duration   = var.stack_max_channel_duration
     }
   }
 
