@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: {{ include "thanos-stack.fullname" . }}-l1-proxyd
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/l1-proxyd-cm.yaml") . | sha256sum }}
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always

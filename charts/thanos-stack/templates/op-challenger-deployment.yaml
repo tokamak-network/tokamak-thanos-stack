@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: {{ include "thanos-stack.fullname" . }}-op-challenger
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/op-challenger-cm.yaml") . | sha256sum }}
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always

@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: {{ include "thanos-stack.fullname" . }}-redis
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/redis-cm.yaml") . | sha256sum }}
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
