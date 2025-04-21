@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: {{ include "thanos-stack.fullname" . }}-graph-node
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/graph-node-cm.yaml") . | sha256sum }}
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
