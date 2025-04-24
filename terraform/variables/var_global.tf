@@ -95,3 +95,8 @@ variable "stack_thanos_stack_image_tag" {
   description = "Thanos Stack image tag"
   type        = string
 }
+
+variable "stack_max_channel_duration" {
+  description = "Max channel duration in seconds"
+  type        = string
+}

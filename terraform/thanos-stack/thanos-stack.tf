@@ -70,4 +70,5 @@ module "k8s" {
   stack_prestate_file_url            = module.chain_config.prestate_file_url
   stack_op_geth_image_tag            = var.stack_op_geth_image_tag
   stack_thanos_stack_image_tag       = var.stack_thanos_stack_image_tag
+  stack_max_channel_duration         = var.stack_max_channel_duration
 }
