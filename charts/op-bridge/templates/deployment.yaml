@@ -12,7 +12,8 @@ spec:
       labels:
         app: {{ include "op-bridge.fullname" . }}
       annotations:
-        checksum/config: { ? { include (print $.Template.BasePath "/configmap.yaml") . | sha256sum } }
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
