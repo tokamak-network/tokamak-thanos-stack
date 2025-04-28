@@ -155,6 +155,7 @@ resource "kubernetes_storage_class" "efs-sc" {
     name = "efs-sc"
   }
   storage_provisioner = "efs.csi.aws.com"
+  depends_on = [ terraform_data.kubectl ]
 }
 
 module "eks-external-secrets" {
