@@ -35,6 +35,11 @@ op_bridge:
     l2_output_oracle_address:
     l1_usdc_bridge_address:
     dispute_game_factory_address:
+    block_submission_frequency:
+    l1_block_time:
+    l2_block_time:
+    output_root_frequency:
+    challenge_period:
 
   ingress:
     enabled: false
