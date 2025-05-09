@@ -1,4 +1,4 @@
-{{- if .Values.graph_node.enabled }}
+{{- if and .Values.graph_node.enabled .Values.createPvc }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
