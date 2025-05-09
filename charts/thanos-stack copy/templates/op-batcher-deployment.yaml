@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-batcher
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-op-batcher
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-op-batcher
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/op-batcher-cm.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-rollup
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-rollup.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-common
+      containers:
+        - name: batcher
+          image: {{ .Values.op_batcher.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8548
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-op-batcher
+            - secretRef:
+                name: {{ include "thanos-stack.fullname" . }}-secret
+      volumes:
+        - name: wait-scripts
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-wait-scripts
+            defaultMode: 0777

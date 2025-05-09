@@ -1,0 +1,10 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-redis
+data:
+  redis.conf: |
+    maxmemory 300mb
+    maxmemory-policy allkeys-lru
+{{- end}}

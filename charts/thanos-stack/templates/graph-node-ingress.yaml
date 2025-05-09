@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.graph_node.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -103,4 +104,5 @@ spec:
                 name: {{ include "thanos-stack.fullname" . }}-graph-node
                 port:
                   number: 8030
+{{- end}}
 {{- end}}

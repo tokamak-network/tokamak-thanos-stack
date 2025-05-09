@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.op_proposer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -47,4 +48,5 @@ spec:
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-wait-scripts
             defaultMode: 0777
+{{- end}}
 {{- end}}

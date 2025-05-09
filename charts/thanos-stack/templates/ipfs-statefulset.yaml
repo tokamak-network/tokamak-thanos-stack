@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.graph_node.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -37,4 +38,5 @@ spec:
         - name: ipfs-volume
           persistentVolumeClaim:
             claimName: {{ include "thanos-stack.fullname" . }}-ipfs
+{{- end}}
 {{- end}}

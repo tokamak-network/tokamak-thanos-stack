@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.op_challenger.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -63,4 +64,5 @@ spec:
         - name: challenger-data
           persistentVolumeClaim:
             claimName: {{ include "thanos-stack.fullname" . }}-op-challenger
+{{- end}}
 {{- end}}

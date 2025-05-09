@@ -1,0 +1,53 @@
+{{- if .Values.graph_node.enabled }}
+{{- if .Values.ipfs.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-ipfs-ingress-alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: ipfs
+    alb.ingress.kubernetes.io/conditions.auth: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Authorization",
+            "values": ["Bearer dGl0YW4gaXMgdGhlIGJlc3QgbWFpbm5ldA=="]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.auth: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [
+            {
+              "serviceName": "{{ include "thanos-stack.fullname" . }}-ipfs",
+              "servicePort": "5001"
+            }
+          ]
+        }
+      }
+spec:
+  ingressClassName: alb
+  {{- if .Values.graph_node.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ipfs.ingress.hostname | quote }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ipfs.ingress.hostname | quote}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  name: use-annotation
+{{- end}}
+{{- end}}

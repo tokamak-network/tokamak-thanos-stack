@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,3 +8,4 @@ metadata:
 data:
   L2_NODE_WEB3_URL: {{ .Values.common.l2_node_web3_url | default (printf "http://%s-op-geth:8545" (include "thanos-stack.fullname" .)) | quote }}
   L2_ROLLUP_WEB3_URL: {{ .Values.common.l2_rollup_web3_url | default (printf "http://%s-op-node:8545" (include "thanos-stack.fullname" .)) | quote }}
+{{- end}}

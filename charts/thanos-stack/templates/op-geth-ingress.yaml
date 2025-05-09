@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.op_geth.ingress.enabled }}
 {{- $fullName := include "thanos-stack.fullname" . -}}
 {{- if and .Values.op_geth.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
@@ -84,4 +85,5 @@ spec:
               servicePort: {{ .port }}
               {{- end }}
           {{- end }}
+{{- end}}
 {{- end}}

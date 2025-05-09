@@ -1,0 +1,54 @@
+{{- if .Values.l1_proxyd.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-l1-proxyd
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-l1-proxyd
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-l1-proxyd
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/l1-proxyd-cm.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:latest
+          command:
+            [
+              'sh',
+              '-c',
+              'until nc -vz {{ include "thanos-stack.fullname" . }}-redis 6379; do echo "Waiting for redis..."; sleep 1; done;',
+            ]
+      containers:
+        - name: proxyd
+          image: "tokamaknetwork/thanos-proxyd:nightly-56ed30e3"
+          image: {{ .Values.l1_proxyd.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8085
+              protocol: TCP
+            - containerPort: 9761
+              protocol: TCP
+            - containerPort: 6060
+              protocol: TCP
+          command: ['bin/proxyd', '/config/proxyd-config.toml']
+          resources: {}
+          volumeMounts:
+            - name: proxyd-config
+              mountPath: /config
+
+      volumes:
+        - name: proxyd-config
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-l1-proxyd
+            defaultMode: 0777
+  {{- end}}

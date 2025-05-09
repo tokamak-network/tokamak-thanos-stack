@@ -1,0 +1,40 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-ipfs
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-ipfs
+  replicas: 1
+  serviceName: {{ include "thanos-stack.fullname" . }}-ipfs
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-ipfs
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/ipfs-cm.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: ipfs
+          image: ipfs/kubo
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          volumeMounts:
+            - name: ipfs-volume
+              mountPath: /data/ipfs
+              subPath: ipfs
+          resources:
+            requests:
+              cpu: {{ default 1 .Values.ipfs.resources.cpu }}
+              memory: {{ default "1.75Gi" .Values.ipfs.resources.memory }}
+      volumes:
+        - name: ipfs-volume
+          persistentVolumeClaim:
+            claimName: {{ include "thanos-stack.fullname" . }}-ipfs
+{{- end}}

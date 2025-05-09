@@ -1,0 +1,12 @@
+{{- if .Values.graph_node.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-graph-node
+data:
+{{- range $key, $value := .Values.graph_node.env }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+  ethereum: {{ .Values.graph_node.ethereum | default (printf "%s:http://%s-op-geth:8545" .Values.graph_node.network_name (include "thanos-stack.fullname" .)) | quote }}
+  ipfs: {{ printf "%s-ipfs:5001" (include "thanos-stack.fullname" .) | quote }}
+{{- end}}

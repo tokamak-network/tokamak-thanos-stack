@@ -1,4 +1,5 @@
-{{- if and .Values.graph_node.enabled .Values.createPvc }}
+{{- if .Values.createPvc }}
+{{- if .Values.graph_node.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -13,4 +14,5 @@ spec:
   selector:
     matchLabels:
       app: {{ include "thanos-stack.fullname" . }}-ipfs
+{{- end}}
 {{- end}}

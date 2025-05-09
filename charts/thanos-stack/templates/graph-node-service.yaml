@@ -1,4 +1,5 @@
-{{- if .Values.graph_node.enabled }}
+{{- if not .Values.createPvc }}
+{{- if and .Values.graph_node.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -22,4 +23,5 @@ spec:
     - name: metric
       port: 8040
       targetPort: 8040
+{{- end}}
 {{- end}}

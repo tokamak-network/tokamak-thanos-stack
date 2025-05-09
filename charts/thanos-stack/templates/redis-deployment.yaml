@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.redis.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -41,4 +42,5 @@ spec:
         - name: redis-volume-config
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-redis
+{{- end}}
 {{- end}}

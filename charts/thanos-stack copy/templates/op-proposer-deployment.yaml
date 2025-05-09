@@ -1,0 +1,50 @@
+{{- if .Values.op_proposer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-proposer
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "thanos-stack.fullname" . }}-op-proposer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ include "thanos-stack.fullname" . }}-op-proposer
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/op-proposer-cm.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-rollup
+          image: nicolaka/netshoot
+          command: ['bash', '-c', '/wait-scripts/wait-for-rollup.sh']
+          volumeMounts:
+            - name: wait-scripts
+              mountPath: /wait-scripts
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-common
+      containers:
+        - name: proposer
+          image: {{ .Values.op_proposer.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8560
+              protocol: TCP
+            - containerPort: 7300
+              protocol: TCP
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: {{ include "thanos-stack.fullname" . }}-op-proposer
+            - secretRef:
+                name: {{ include "thanos-stack.fullname" . }}-secret
+      volumes:
+        - name: wait-scripts
+          configMap:
+            name: {{ include "thanos-stack.fullname" . }}-wait-scripts
+            defaultMode: 0777
+{{- end}}

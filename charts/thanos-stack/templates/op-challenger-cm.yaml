@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.op_challenger.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -23,4 +24,5 @@ metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-challenger-scripts
 data:
 {{- (.Files.Glob "files/op-challenger/entrypoint-op-challenger.sh").AsConfig | nindent 2}}
+{{- end}}
 {{- end}}

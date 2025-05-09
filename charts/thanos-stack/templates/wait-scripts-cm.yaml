@@ -1,6 +1,8 @@
+{{- if not .Values.createPvc }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "thanos-stack.fullname" . }}-wait-scripts
 data:
 {{- (.Files.Glob "files/wait-scripts/*").AsConfig | nindent 2 }}
+{{- end}}

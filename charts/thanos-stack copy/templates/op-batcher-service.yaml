@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-batcher
+spec:
+  selector:
+    app: {{ include "thanos-stack.fullname" . }}-op-batcher
+  ports:
+    - name: http
+      port: 8548
+      protocol: TCP
+      targetPort: 8548
+    - name: metric
+      port: 7300
+      targetPort: 7300

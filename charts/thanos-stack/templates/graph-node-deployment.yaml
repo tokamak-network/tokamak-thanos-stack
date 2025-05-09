@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.graph_node.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -59,4 +60,5 @@ spec:
             requests:
               cpu: {{ default 0.5 .Values.graph_node.resources.cpu }}
               memory: {{ default "0.75Gi" .Values.graph_node.resources.memory }}
+{{- end}}
 {{- end}}

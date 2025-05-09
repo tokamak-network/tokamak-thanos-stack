@@ -1,0 +1,26 @@
+{{- if .Values.op_challenger.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-challenger
+data:
+{{- range $key, $value := .Values.op_challenger.env }}
+  OP_CHALLENGER_{{ $key | upper }}: {{ $value | quote }}
+{{- end }}
+  OP_CHALLENGER_L2_ETH_RPC: {{ .Values.l2_rpc.geth | default (printf "http://%s-op-geth:8545" (include "thanos-stack.fullname" .)) | quote }}
+  OP_CHALLENGER_ROLLUP_RPC: {{ .Values.l2_rpc.node | default (printf "http://%s-op-node:8545" (include "thanos-stack.fullname" .)) | quote }}
+  OP_CHALLENGER_L1_ETH_RPC:
+  {{- if .Values.l1_proxyd.enabled }}
+    {{ printf "http://%s-l1-proxyd:8545" (include "thanos-stack.fullname" . ) | quote }}
+  {{- else}}
+    {{ .Values.l1_rpc.url }}
+  {{- end}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-challenger-scripts
+data:
+{{- (.Files.Glob "files/op-challenger/entrypoint-op-challenger.sh").AsConfig | nindent 2}}
+{{- end}}

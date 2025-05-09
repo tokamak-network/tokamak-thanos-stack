@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 {{- if .Values.l1_proxyd.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -51,4 +52,5 @@ spec:
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-l1-proxyd
             defaultMode: 0777
-  {{- end}}
+{{- end}}
+{{- end}}

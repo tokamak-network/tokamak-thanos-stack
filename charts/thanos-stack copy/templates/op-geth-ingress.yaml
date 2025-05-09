@@ -1,0 +1,87 @@
+{{- if .Values.op_geth.ingress.enabled }}
+{{- $fullName := include "thanos-stack.fullname" . -}}
+{{- if and .Values.op_geth.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-op-geth-ingress
+  labels:
+    app: {{ $fullName }}
+  {{- with .Values.op_geth.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+    alb.ingress.kubernetes.io/conditions.ws-rule: >
+      [
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+              "httpHeaderName": "Upgrade",
+              "values": ["websocket"]
+          }
+        },
+        {
+          "field": "http-header",
+          "httpHeaderConfig": {
+            "httpHeaderName": "Connection",
+            "values": ["Upgrade"]
+          }
+        }
+      ]
+    alb.ingress.kubernetes.io/actions.ws-rule: >
+      {
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [{
+            "serviceName": "{{ include "thanos-stack.fullname" . }}-op-geth",
+            "servicePort": "8546"
+          }]
+        }
+      }
+spec:
+  {{- if and .Values.op_geth.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.op_geth.ingress.className }}
+  {{- end }}
+  {{- if .Values.op_geth.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.op_geth.ingress.hostname | quote }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.op_geth.ingress.hostname | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: ws-rule
+                port:
+                  name: use-annotation
+          {{- range .Values.op_geth.ingress.paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}-op-geth
+                port:
+                  number: {{ .port }}
+              {{- else }}
+              serviceName: {{ $fullName }}-op-geth
+              servicePort: {{ .port }}
+              {{- end }}
+          {{- end }}
+{{- end}}

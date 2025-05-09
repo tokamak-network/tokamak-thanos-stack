@@ -1,3 +1,4 @@
+{{- if not .Values.createPvc }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,3 +23,4 @@ metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-geth-auth
 data:
 {{- (.Files.Glob "files/op-geth/jwt.txt").AsConfig | nindent 2}}
+{{- end}}
