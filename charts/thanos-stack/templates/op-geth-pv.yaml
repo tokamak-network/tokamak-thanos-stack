@@ -16,3 +16,4 @@ spec:
   csi:
     driver: {{ default "efs.csi.aws.com" .Values.op_geth.volume.csi.driver }} 
     volumeHandle: {{ .Values.op_geth.volume.csi.volumeHandle }}
+{{- end}}

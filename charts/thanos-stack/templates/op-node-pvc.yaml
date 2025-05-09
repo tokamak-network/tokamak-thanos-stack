@@ -13,3 +13,4 @@ spec:
   selector:
     matchLabels:
       app: {{ include "thanos-stack.fullname" . }}-op-node
+{{- end }}
