@@ -60,7 +60,7 @@ spec:
       volumes:
         - name: op-node-safedb
           persistentVolumeClaim:
-            claimName: {{ include "thanos-stack.fullname" . }}-op-node
+            claimName: {{ include "thanos-stack.fullname" . }}-pvc-op-node
         - name: wait-scripts
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-wait-scripts

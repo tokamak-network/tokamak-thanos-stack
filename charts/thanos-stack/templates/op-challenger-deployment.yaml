@@ -62,5 +62,5 @@ spec:
             name: {{ include "thanos-stack.fullname" . }}-op-challenger-scripts
         - name: challenger-data
           persistentVolumeClaim:
-            claimName: {{ include "thanos-stack.fullname" . }}-op-challenger
+            claimName: {{ include "thanos-stack.fullname" . }}-pvc-op-challenger
 {{- end}}

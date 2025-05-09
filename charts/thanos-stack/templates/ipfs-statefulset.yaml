@@ -36,5 +36,5 @@ spec:
       volumes:
         - name: ipfs-volume
           persistentVolumeClaim:
-            claimName: {{ include "thanos-stack.fullname" . }}-ipfs
+            claimName: {{ include "thanos-stack.fullname" . }}-pvc-ipfs
 {{- end}}

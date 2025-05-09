@@ -53,7 +53,7 @@ spec:
       volumes:
         - name: op-geth-volume
           persistentVolumeClaim:
-            claimName: {{ include "thanos-stack.fullname" . }}-op-geth
+            claimName: {{ include "thanos-stack.fullname" . }}-pvc-op-geth
         - name: op-geth-scripts
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-op-geth-scripts
