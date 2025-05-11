@@ -18,6 +18,13 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
+      initContainers:
+        - name: wait-for-volume
+          image: busybox
+          command: ['sh', '-c', 'while [ ! -d /data ]; do echo "Waiting for /data to be ready..."; sleep 2; done']
+          volumeMounts:
+            - name: ipfs-volume
+              mountPath: /data
       containers:
         - name: ipfs
           image: ipfs/kubo

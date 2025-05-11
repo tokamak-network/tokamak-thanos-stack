@@ -27,6 +27,14 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "thanos-stack.fullname" . }}-common
+                
+        - name: wait-for-volume
+          image: busybox
+          command: ['sh', '-c', 'while [ ! -d /data ]; do echo "Waiting for /data to be ready..."; sleep 2; done']
+          volumeMounts:
+            - name: op-node-safedb
+              mountPath: /data
+
       containers:
         - name: op-node
           image: {{ .Values.op_node.image }}
