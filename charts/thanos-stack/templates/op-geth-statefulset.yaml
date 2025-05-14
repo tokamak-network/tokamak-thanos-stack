@@ -1,3 +1,4 @@
+{{- if .Values.enable_deployment }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -62,3 +63,4 @@ spec:
           configMap:
             name: {{ include "thanos-stack.fullname" . }}-op-geth-auth
             defaultMode: 0777
+{{- end }}

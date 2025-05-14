@@ -114,6 +114,9 @@ thanos_stack_infra:
   name: "$stack_infra_name"
   region: "$stack_infra_region"
 
+enable_vpc: false
+enable_deployment: false
+
 l1_rpc:
   url: $stack_l1_rpc_url
   kind: $stack_l1_rpc_provider
