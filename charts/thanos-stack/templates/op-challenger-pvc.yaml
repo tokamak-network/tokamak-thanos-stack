@@ -1,3 +1,4 @@
+{{- if .Values.enable_vpc}}
 {{- if .Values.op_challenger.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -13,4 +14,5 @@ spec:
   selector:
     matchLabels:
       app: {{ include "thanos-stack.fullname" . }}-op-challenger
+{{- end}}
 {{- end}}

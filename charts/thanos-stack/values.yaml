@@ -1,3 +1,6 @@
+enable_vpc: false
+enable_deployment: false
+
 thanos_stack_infra:
   name: "" # required
   region: "" # required
