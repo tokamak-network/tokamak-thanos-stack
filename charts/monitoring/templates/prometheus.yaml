@@ -105,18 +105,19 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
-            {{- if .Values.prometheus.persistence.enabled }}
             - name: storage
               mountPath: /prometheus
-            {{- end }}
       volumes:
         - name: config
           configMap:
             name: {{ .Release.Name }}-prometheus-config
-        {{- if .Values.prometheus.persistence.enabled }}
+        {{- if and .Values.enablePersistence .Values.prometheus.persistence.enabled }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-prometheus-storage
+        {{- else }}
+        - name: storage
+          emptyDir: {}  # Fargate 호환: 임시 스토리지 사용
         {{- end }}
 
 ---

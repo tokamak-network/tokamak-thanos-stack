@@ -22,7 +22,7 @@ data:
 {{- end }}
 
 ---
-{{- if .Values.grafana.persistence.enabled }}
+{{- if and .Values.enablePersistence .Values.grafana.persistence.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -87,10 +87,8 @@ spec:
           volumeMounts:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources
-            {{- if .Values.grafana.persistence.enabled }}
             - name: storage
               mountPath: /var/lib/grafana
-            {{- end }}
             {{- if .Values.grafana.dashboards.enabled }}
             - name: dashboards
               mountPath: /var/lib/grafana/dashboards
@@ -99,10 +97,13 @@ spec:
         - name: datasources
           configMap:
             name: {{ .Release.Name }}-grafana-datasources
-        {{- if .Values.grafana.persistence.enabled }}
+        {{- if and .Values.enablePersistence .Values.grafana.persistence.enabled }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-grafana-storage
+        {{- else }}
+        - name: storage
+          emptyDir: {}  # Fargate 호환: 임시 스토리지 사용
         {{- end }}
         {{- if .Values.grafana.dashboards.enabled }}
         - name: dashboards

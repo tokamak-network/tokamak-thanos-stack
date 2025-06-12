@@ -7,6 +7,9 @@ global:
   dashboards:
     autoImport: true
 
+# 영속성 활성화 설정 (EFS 사용)
+enablePersistence: true  # true로 설정하면 EFS 영속성 활성화
+
 # Prometheus 설정
 prometheus:
   enabled: true
@@ -25,11 +28,19 @@ prometheus:
   scrapeInterval: 1m
   evaluationInterval: 1m
   
-  # 저장소 설정
+  # 저장소 설정 (EFS 영속성 지원)
   persistence:
-    enabled: true
-    storageClass: "gp2"
+    enabled: false  # Fargate에서는 PVC 지원 안함 (EFS 사용 시 true)
+    storageClass: "efs-sc"  # EFS 스토리지 클래스
     size: "50Gi"
+  
+  # EFS 볼륨 설정 (enablePersistence: true일 때 사용)
+  volume:
+    capacity: "50Gi"
+    storageClassName: "efs-sc"
+    csi:
+      driver: "efs.csi.aws.com"
+      volumeHandle: ""  # EFS 파일시스템 ID (예: fs-0123456789abcdef0)
   
   # 스크랩 설정 (trh-sdk에서 동적으로 override)
   scrapeConfigs:
@@ -121,11 +132,19 @@ grafana:
       cpu: 1000m
       memory: 4Gi
   
-  # 영속성 설정
+  # 영속성 설정 (EFS 영속성 지원)
   persistence:
-    enabled: true
+    enabled: false  # Fargate에서는 PVC 지원 안함 (EFS 사용 시 true)
     size: "10Gi"
-    storageClass: "gp2"
+    storageClass: "efs-sc"  # EFS 스토리지 클래스
+  
+  # EFS 볼륨 설정 (enablePersistence: true일 때 사용)
+  volume:
+    capacity: "10Gi"
+    storageClassName: "efs-sc"
+    csi:
+      driver: "efs.csi.aws.com"
+      volumeHandle: ""  # EFS 파일시스템 ID (예: fs-0123456789abcdef0)
   
   # 서비스 설정
   service:
