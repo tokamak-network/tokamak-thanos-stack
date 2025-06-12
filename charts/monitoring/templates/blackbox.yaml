@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
-  blackbox.yml: |
+  config.yml: |
     modules:
       http_post_eth_node_synced_2xx:
         prober: http
