@@ -1,4 +1,4 @@
-{{- if .Values.config.dashboards.autoImport }}
+{{- if .Values.global.dashboards.autoImport }}
 {{- $files := .Files }}
 {{- range $path, $fileContents := .Files.Glob "dashboards/*.json" }}
 ---
