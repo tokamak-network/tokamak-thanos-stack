@@ -1,0 +1,24 @@
+{{- if .Values.enablePersistence }}
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-grafana-storage
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  capacity:
+    storage: {{ .Values.grafana.volume.capacity }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.grafana.volume.storageClassName }}
+  csi:
+    driver: {{ .Values.grafana.volume.csi.driver }}
+    volumeHandle: {{ .Values.grafana.volume.csi.volumeHandle }}
+{{- end }}
+{{- end }} 
