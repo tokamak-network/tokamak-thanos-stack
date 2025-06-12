@@ -1,0 +1,21 @@
+{{- if and .Values.kube-prometheus-stack.grafana.enabled .Values.kube-prometheus-stack.grafana.dashboards }}
+{{- range $folder, $dashboards := .Values.kube-prometheus-stack.grafana.dashboards }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" $ }}-grafana-dashboard-{{ $folder }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: grafana
+    grafana_dashboard: "1"
+data:
+  {{- range $name, $dashboard := $dashboards }}
+  {{- if $dashboard.json }}
+  {{ $name }}.json: |
+{{ $dashboard.json | indent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }} 

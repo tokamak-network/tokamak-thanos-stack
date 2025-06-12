@@ -1,0 +1,19 @@
+{{- if .Values.kube-prometheus-stack.grafana.sidecar.dashboards.enabled }}
+{{- $files := .Files }}
+{{- range $path, $fileContents := .Files.Glob "dashboards/*.json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-dashboard-{{ base $path | replace ".json" "" }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    grafana_dashboard: "1"  # 사이드카가 감지할 라벨
+data:
+  {{ base $path }}: |
+{{ $fileContents | indent 4 }}
+{{- end }}
+{{- end }} 
