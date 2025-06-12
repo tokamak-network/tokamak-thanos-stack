@@ -43,25 +43,7 @@ data:
         {{- end }}
 {{- end }}
 
----
-{{- if .Values.prometheus.persistence.enabled }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Release.Name }}-prometheus-storage
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: prometheus
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: "{{ .Values.prometheus.persistence.storageClass }}"
-  resources:
-    requests:
-      storage: "{{ .Values.prometheus.persistence.size }}"
-{{- end }}
+
 
 ---
 apiVersion: apps/v1

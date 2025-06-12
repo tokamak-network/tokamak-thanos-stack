@@ -21,25 +21,7 @@ data:
         isDefault: {{ .isDefault }}
 {{- end }}
 
----
-{{- if and .Values.enablePersistence .Values.grafana.persistence.enabled }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Release.Name }}-grafana-storage
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: "{{ .Values.grafana.persistence.storageClass }}"
-  resources:
-    requests:
-      storage: "{{ .Values.grafana.persistence.size }}"
-{{- end }}
+
 
 ---
 apiVersion: apps/v1
