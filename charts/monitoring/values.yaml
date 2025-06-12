@@ -91,10 +91,8 @@ kube-prometheus-stack:
               requests:
                 storage: "{{ .Values.config.persistence.prometheus.size }}"
       
-      # 서비스 모니터 셀렉터 (모든 ServiceMonitor, Rule 허용)
-      serviceMonitorSelectorNilUsesHelmValues: false
-      podMonitorSelectorNilUsesHelmValues: false
-      ruleSelectorNilUsesHelmValues: false
+      # ServiceMonitor/PrometheusRule 미사용 (additionalScrapeConfigs 사용)
+      # serviceMonitor와 rule 관련 셀렉터 설정 불필요
       
       # 추가 스크랩 설정 (1. 동적 스크래핑 설정)
       additionalScrapeConfigs:
@@ -134,17 +132,6 @@ kube-prometheus-stack:
                 - "{{ .Values.config.scrapeTargets.blockscout.serviceName }}:{{ .Values.config.scrapeTargets.blockscout.port }}"
           scrape_interval: "{{ .Values.config.scrapeTargets.blockscout.scrapeInterval }}"
           metrics_path: "{{ .Values.config.scrapeTargets.blockscout.metricsPath }}"
-        
-        # 커스텀 서비스들 (CLI에서 동적 추가)
-        {{- range .Values.config.scrapeTargets.customServices }}
-        - job_name: "{{ .name }}"
-          static_configs:
-            - targets:
-                - "{{ .serviceName }}:{{ .port }}"
-          scrape_interval: "{{ .scrapeInterval }}"
-          metrics_path: "{{ .metricsPath }}"
-        {{- end }}
-          
         # Blackbox Exporter 기반 헬스체크 (2. L1 RPC 사용)
         - job_name: blackbox-eth-node-synced
           metrics_path: /probe

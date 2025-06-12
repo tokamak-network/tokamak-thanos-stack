@@ -1,10 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "monitoring.fullname" . }}-blackbox-config
+  name: {{ .Release.Name }}-monitoring-blackbox-config
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: blackbox-exporter
 data:
   blackbox.yml: |
