@@ -137,7 +137,7 @@ kube-prometheus-stack:
         
         # 커스텀 서비스들 (CLI에서 동적 추가)
         {{- range .Values.config.scrapeTargets.customServices }}
-        - job_name: {{ .name }}
+        - job_name: "{{ .name }}"
           static_configs:
             - targets:
                 - "{{ .serviceName }}:{{ .port }}"
