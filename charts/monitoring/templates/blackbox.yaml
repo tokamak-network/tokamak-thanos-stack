@@ -1,13 +1,14 @@
+{{- if .Values.blackboxExporter.enabled }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-monitoring-blackbox-config
+  name: {{ .Release.Name }}-blackbox-config
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/name: blackbox-exporter
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: blackbox-exporter
 data:
   blackbox.yml: |
     modules:
@@ -54,3 +55,63 @@ data:
         timeout: 5s
         icmp:
           preferred_ip_protocol: 'ip4'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-blackbox-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: blackbox-exporter
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: blackbox-exporter
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: blackbox-exporter
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: blackbox-exporter
+          image: prom/blackbox-exporter:v0.24.0
+          args:
+            - '--config.file=/etc/blackbox_exporter/config.yml'
+          ports:
+            - containerPort: 9115
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/blackbox_exporter
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-blackbox-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-blackbox-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: blackbox-exporter
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.blackboxExporter.service.type }}
+  ports:
+    - port: {{ .Values.blackboxExporter.service.port }}
+      targetPort: 9115
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: blackbox-exporter
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

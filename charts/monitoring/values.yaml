@@ -1,324 +1,171 @@
-# trh-sdk CLI에서 동적으로 override할 설정값들
-config:
-  # 1. 스크래핑할 서비스 설정 (trh-sdk에서 동적 설정)
-  scrapeTargets:
-    # OP Stack 컴포넌트들 (기본값 - trh-sdk에서 override)
-    opNode:
-      serviceName: "op-node-svc"          # trh-sdk에서 실제 서비스명으로 override
-      port: 7300
-      metricsPath: "/metrics"
-      scrapeInterval: "30s"
-    
-    opBatcher:
-      serviceName: "op-batcher-svc"       # trh-sdk에서 실제 서비스명으로 override
-      port: 7300
-      metricsPath: "/metrics"
-      scrapeInterval: "30s"
-    
-    opProposer:
-      serviceName: "op-proposer-svc"      # trh-sdk에서 실제 서비스명으로 override
-      port: 7300
-      metricsPath: "/metrics"
-      scrapeInterval: "30s"
-    
-    opGeth:
-      serviceName: "op-geth-svc"          # trh-sdk에서 실제 서비스명으로 override
-      port: 6060
-      metricsPath: "/debug/metrics/prometheus"
-      scrapeInterval: "30s"
-    
-    blockscout:
-      serviceName: "blockscout-svc"       # trh-sdk에서 실제 서비스명으로 override
-      port: 3000
-      metricsPath: "/metrics"
-      scrapeInterval: "1m"
-    
-    # 추가 커스텀 서비스들 (trh-sdk에서 동적 추가)
-    customServices: []
+# Global settings (trh-sdk에서 동적으로 override할 설정값들)
+global:
+  # L1 RPC 설정 (trh-sdk에서 입력받을 값)
+  l1RpcUrl: "https://your-l1-rpc-endpoint"
   
-  # 2. L1 RPC 설정 (trh-sdk에서 입력받을 값)
-  l1Rpc:
-    url: "https://your-l1-rpc-endpoint"   # trh-sdk에서 실제 RPC URL로 override
-  
-  # 3. Grafana 관리자 설정 (trh-sdk에서 입력받을 값)
-  grafanaAdmin:
-    password: "change-me-password"        # trh-sdk에서 실제 패스워드로 override
-  
-  # 4. 대시보드 자동 임포트 설정
+  # 대시보드 자동 임포트 설정
   dashboards:
     autoImport: true
-    importFromPath: true
+
+# Prometheus 설정
+prometheus:
+  enabled: true
   
-  # 5. 데이터 영속성 설정 
+  # 리소스 할당
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+  
+  # 데이터 보관 설정
+  retention: 1y
+  retentionSize: 10GB
+  
+  # 스크랩 간격
+  scrapeInterval: 1m
+  evaluationInterval: 1m
+  
+  # 저장소 설정
   persistence:
     enabled: true
-    prometheus:
-      storageClass: "gp2"
-      size: "50Gi"
-    grafana:
-      storageClass: "gp2"
-      size: "10Gi"
-
-kube-prometheus-stack:
-  # 전역 설정
-  fullnameOverride: monitoring
+    storageClass: "gp2"
+    size: "50Gi"
   
-  # Prometheus 설정
-  prometheus:
-    enabled: true
-    prometheusSpec:
-      # 리소스 할당
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 4Gi
+  # 스크랩 설정 (trh-sdk에서 동적으로 override)
+  scrapeConfigs:
+    # OP Stack 핵심 컴포넌트들
+    - job_name: op-node
+      static_configs:
+        - targets:
+            - "op-node-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+      scrape_interval: "30s"
+      metrics_path: "/metrics"
       
-      # 데이터 보관 설정
-      retention: 1y
-      retentionSize: 10GB
+    - job_name: op-batcher
+      static_configs:
+        - targets:
+            - "op-batcher-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+      scrape_interval: "30s"
+      metrics_path: "/metrics"
       
-      # 스크랩 간격
-      scrapeInterval: 1m
-      evaluationInterval: 1m
+    - job_name: op-proposer
+      static_configs:
+        - targets:
+            - "op-proposer-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+      scrape_interval: "30s"
+      metrics_path: "/metrics"
       
-      # 저장소 설정 (5. 데이터 영속성)
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: "{{ .Values.config.persistence.prometheus.storageClass }}"
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: "{{ .Values.config.persistence.prometheus.size }}"
+    - job_name: op-geth
+      static_configs:
+        - targets:
+            - "op-geth-svc:6060"  # trh-sdk에서 실제 서비스명으로 override
+      scrape_interval: "30s"
+      metrics_path: "/debug/metrics/prometheus"
       
-      # ServiceMonitor/PrometheusRule 미사용 (additionalScrapeConfigs 사용)
-      # serviceMonitor와 rule 관련 셀렉터 설정 불필요
+    # Blockscout 모니터링
+    - job_name: blockscout
+      static_configs:
+        - targets:
+            - "blockscout-svc:3000"  # trh-sdk에서 실제 서비스명으로 override
+      scrape_interval: "1m"
+      metrics_path: "/metrics"
       
-      # 추가 스크랩 설정 (1. 동적 스크래핑 설정)
-      additionalScrapeConfigs:
-        # OP Stack 핵심 컴포넌트들
-        - job_name: op-node
-          static_configs:
-            - targets:
-                - "{{ .Values.config.scrapeTargets.opNode.serviceName }}:{{ .Values.config.scrapeTargets.opNode.port }}"
-          scrape_interval: "{{ .Values.config.scrapeTargets.opNode.scrapeInterval }}"
-          metrics_path: "{{ .Values.config.scrapeTargets.opNode.metricsPath }}"
-          
-        - job_name: op-batcher
-          static_configs:
-            - targets:
-                - "{{ .Values.config.scrapeTargets.opBatcher.serviceName }}:{{ .Values.config.scrapeTargets.opBatcher.port }}"
-          scrape_interval: "{{ .Values.config.scrapeTargets.opBatcher.scrapeInterval }}"
-          metrics_path: "{{ .Values.config.scrapeTargets.opBatcher.metricsPath }}"
-          
-        - job_name: op-proposer
-          static_configs:
-            - targets:
-                - "{{ .Values.config.scrapeTargets.opProposer.serviceName }}:{{ .Values.config.scrapeTargets.opProposer.port }}"
-          scrape_interval: "{{ .Values.config.scrapeTargets.opProposer.scrapeInterval }}"
-          metrics_path: "{{ .Values.config.scrapeTargets.opProposer.metricsPath }}"
-          
-        - job_name: op-geth
-          static_configs:
-            - targets:
-                - "{{ .Values.config.scrapeTargets.opGeth.serviceName }}:{{ .Values.config.scrapeTargets.opGeth.port }}"
-          scrape_interval: "{{ .Values.config.scrapeTargets.opGeth.scrapeInterval }}"
-          metrics_path: "{{ .Values.config.scrapeTargets.opGeth.metricsPath }}"
-          
-        # Blockscout 모니터링
-        - job_name: blockscout
-          static_configs:
-            - targets:
-                - "{{ .Values.config.scrapeTargets.blockscout.serviceName }}:{{ .Values.config.scrapeTargets.blockscout.port }}"
-          scrape_interval: "{{ .Values.config.scrapeTargets.blockscout.scrapeInterval }}"
-          metrics_path: "{{ .Values.config.scrapeTargets.blockscout.metricsPath }}"
-        # Blackbox Exporter 기반 헬스체크 (2. L1 RPC 사용)
-        - job_name: blackbox-eth-node-synced
-          metrics_path: /probe
-          params:
-            module: [http_post_eth_node_synced_2xx]
-          static_configs:
-            - targets:
-                - "{{ .Values.config.l1Rpc.url }}"
-          relabel_configs:
-            - source_labels: [module]
-              target_label: __param_module
-            - source_labels: [__address__]
-              target_label: __param_target
-            - source_labels: [__param_target]
-              target_label: target
-            - target_label: __address__
-              replacement: monitoring-prometheus-blackbox-exporter:9115
-          scrape_interval: 1m
-          
-        - job_name: blackbox-eth-block-number
-          metrics_path: /probe
-          params:
-            module: [http_post_eth_block_number_2xx]
-          static_configs:
-            - targets:
-                - "{{ .Values.config.l1Rpc.url }}"
-          relabel_configs:
-            - source_labels: [module]
-              target_label: __param_module
-            - source_labels: [__address__]
-              target_label: __param_target
-            - source_labels: [__param_target]
-              target_label: target
-            - target_label: __address__
-              replacement: monitoring-prometheus-blackbox-exporter:9115
-          scrape_interval: 1m
-          
-  # Alertmanager 설정 (일단 비활성화)
-  alertmanager:
-    enabled: false
+    # Blackbox Exporter 기반 헬스체크
+    - job_name: blackbox-eth-node-synced
+      metrics_path: /probe
+      params:
+        module: [http_post_eth_node_synced_2xx]
+      static_configs:
+        - targets:
+            - "{{ .Values.global.l1RpcUrl }}"
+      relabel_configs:
+        - source_labels: [module]
+          target_label: __param_module
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: target
+        - target_label: __address__
+          replacement: "{{ .Release.Name }}-blackbox-exporter:9115"
+      scrape_interval: 1m
+      
+    - job_name: blackbox-eth-block-number
+      metrics_path: /probe
+      params:
+        module: [http_post_eth_block_number_2xx]
+      static_configs:
+        - targets:
+            - "{{ .Values.global.l1RpcUrl }}"
+      relabel_configs:
+        - source_labels: [module]
+          target_label: __param_module
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: target
+        - target_label: __address__
+          replacement: "{{ .Release.Name }}-blackbox-exporter:9115"
+      scrape_interval: 1m
 
-  # Grafana 설정
-  grafana:
+# Grafana 설정
+grafana:
+  enabled: true
+  
+  # 관리자 설정 (trh-sdk에서 동적으로 override)
+  adminUser: admin
+  adminPassword: "change-me-password"  # trh-sdk에서 실제 패스워드로 override
+  
+  # 리소스 할당
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+  
+  # 영속성 설정
+  persistence:
     enabled: true
-    
-    # 관리자 설정 (3. CLI에서 입력받은 패스워드 사용)
-    adminUser: admin
-    adminPassword: "{{ .Values.config.grafanaAdmin.password }}"
-    
-    # 리소스 할당
-    resources:
-      requests:
-        cpu: 1000m
-        memory: 4Gi
-    
-    # 영속성 설정 (5. 대시보드 수정 상태 유지)
-    persistence:
-      enabled: "{{ .Values.config.persistence.enabled }}"
-      size: "{{ .Values.config.persistence.grafana.size }}"
-      storageClassName: "{{ .Values.config.persistence.grafana.storageClass }}"
-      accessModes:
-        - ReadWriteOnce
-    
-    # 서비스 설정
-    service:
-      type: ClusterIP
-      port: 80
-      targetPort: 3000
-    
-    # Ingress 설정 (ALB)
-    ingress:
-      enabled: true
-      ingressClassName: alb
-      annotations:
-        alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/target-type: ip
-        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-        alb.ingress.kubernetes.io/group.name: thanos-monitoring
-        alb.ingress.kubernetes.io/healthcheck-path: /api/health
-      hosts:
-        - host: grafana-thanos.yourdomain.com
-          paths:
-            - path: /
-              pathType: Prefix
-    
-    # Grafana 설정
-    grafana.ini:
-      server:
-        root_url: "https://grafana-thanos.yourdomain.com"
-        serve_from_sub_path: false
-      
-      security:
-        admin_user: admin
-        admin_password: $__env{GF_SECURITY_ADMIN_PASSWORD}
-        # secret key는 admin password 기반으로 자동 생성
-        secret_key: $__env{GF_SECURITY_SECRET_KEY}
-        
-      auth:
-        disable_login_form: false
-        disable_signout_menu: false
-      
-      alerting:
-        enabled: true
-        execute_alerts: true
-      
-      log:
-        mode: console
-        level: info
-      
-      plugins:
-        enable_alpha: false
-    
-    # 환경 변수 (3. 패스워드 기반 secret key 자동 생성)
-    env:
-      GF_SECURITY_ADMIN_PASSWORD: "{{ .Values.config.grafanaAdmin.password }}"
-      GF_SECURITY_SECRET_KEY: "{{ .Values.config.grafanaAdmin.password | sha256sum | trunc 32 }}"
-    
-    # 사이드카 설정 (4. 대시보드 자동 로딩)
-    sidecar:
-      datasources:
-        enabled: true
-        label: grafana_datasource
-        labelValue: "1"
-        folder: /etc/grafana/provisioning/datasources
-        searchNamespace: ALL
-      
-      dashboards:
-        enabled: "{{ .Values.config.dashboards.autoImport }}"
-        label: grafana_dashboard
-        labelValue: "1"
-        folder: /var/lib/grafana/dashboards
-        searchNamespace: ALL
-        provider:
-          allowUiUpdates: true
-          disableDelete: false
-          foldersFromFilesStructure: true
-    
-    # 기본 데이터소스 설정
-    datasources:
-      datasources.yaml:
-        apiVersion: 1
-        datasources:
-          - name: Prometheus
-            type: prometheus
-            url: http://monitoring-prometheus-server:9090
-            access: proxy
-            isDefault: true
-            basicAuth: false
-            timeInterval: 30s
-            httpMethod: POST
-    
-    # 대시보드 프로바이더
-    dashboardProviders:
-      dashboardproviders.yaml:
-        apiVersion: 1
-        providers:
-          - name: 'default'
-            orgId: 1
-            folder: ''
-            type: file
-            disableDeletion: false
-            updateIntervalSeconds: 10
-            allowUiUpdates: true
-            options:
-              path: /var/lib/grafana/dashboards/default
-          
-          - name: 'thanos-l2'
-            orgId: 1
-            folder: 'Thanos L2'
-            type: file
-            disableDeletion: false
-            updateIntervalSeconds: 10
-            allowUiUpdates: true
-            options:
-              path: /var/lib/grafana/dashboards/thanos-l2
-          
-          - name: 'infrastructure'
-            orgId: 1
-            folder: 'Infrastructure'
-            type: file
-            disableDeletion: false
-            updateIntervalSeconds: 10
-            allowUiUpdates: true
-            options:
-              path: /var/lib/grafana/dashboards/infrastructure
-    
-    # 대시보드 자동 임포트 (GitHub URL 기반)
-    # 외부 대시보드 자동 임포트 비활성화
-    # (로컬 dashboards/ 경로의 대시보드만 자동 임포트)
-    dashboards: {}
+    size: "10Gi"
+    storageClass: "gp2"
+  
+  # 서비스 설정
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  
+  # Ingress 설정 (ALB)
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/group.name: thanos-monitoring
+      alb.ingress.kubernetes.io/healthcheck-path: /api/health
+    hosts:
+      - host: grafana-thanos.yourdomain.com
+        paths:
+          - path: /
+            pathType: Prefix
+  
+  # 데이터소스 설정
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      url: "http://{{ .Release.Name }}-prometheus:9090"
+      access: proxy
+      isDefault: true
+  
+  # 대시보드 자동 로딩 설정
+  dashboards:
+    enabled: "{{ .Values.global.dashboards.autoImport }}"
+
+# Blackbox Exporter 설정
+blackboxExporter:
+  enabled: true
+  
+  # 서비스 설정
+  service:
+    type: ClusterIP
+    port: 9115
