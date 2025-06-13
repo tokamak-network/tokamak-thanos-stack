@@ -1,0 +1,197 @@
+{{- if .Values.kubeStateMetrics.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-state-metrics
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: exporter
+    spec:
+      serviceAccountName: {{ .Release.Name }}-kube-state-metrics
+      containers:
+      - name: kube-state-metrics
+        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.10.1
+        ports:
+        - name: http-metrics
+          containerPort: 8080
+          protocol: TCP
+        - name: telemetry
+          containerPort: 8081
+          protocol: TCP
+        args:
+        - --port=8080
+        - --telemetry-port=8081
+        {{- range .Values.kubeStateMetrics.collectors }}
+        - --resources={{ . }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        resources:
+          {{- toYaml .Values.kubeStateMetrics.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          seccompProfile:
+            type: RuntimeDefault
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: exporter
+spec:
+  type: {{ .Values.kubeStateMetrics.service.type }}
+  ports:
+  - name: http-metrics
+    port: {{ .Values.kubeStateMetrics.service.port }}
+    targetPort: {{ .Values.kubeStateMetrics.service.targetPort }}
+    protocol: TCP
+  - name: telemetry
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: exporter
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-kube-state-metrics
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: exporter
+rules:
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - secrets
+  - nodes
+  - pods
+  - services
+  - resourcequotas
+  - replicationcontrollers
+  - limitranges
+  - persistentvolumeclaims
+  - persistentvolumes
+  - namespaces
+  - endpoints
+  verbs: ["list", "watch"]
+- apiGroups: ["apps"]
+  resources:
+  - statefulsets
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs: ["list", "watch"]
+- apiGroups: ["batch"]
+  resources:
+  - cronjobs
+  - jobs
+  verbs: ["list", "watch"]
+- apiGroups: ["autoscaling"]
+  resources:
+  - horizontalpodautoscalers
+  verbs: ["list", "watch"]
+- apiGroups: ["authentication.k8s.io"]
+  resources:
+  - tokenreviews
+  verbs: ["create"]
+- apiGroups: ["authorization.k8s.io"]
+  resources:
+  - subjectaccessreviews
+  verbs: ["create"]
+- apiGroups: ["policy"]
+  resources:
+  - poddisruptionbudgets
+  verbs: ["list", "watch"]
+- apiGroups: ["certificates.k8s.io"]
+  resources:
+  - certificatesigningrequests
+  verbs: ["list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources:
+  - storageclasses
+  - volumeattachments
+  verbs: ["list", "watch"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs: ["list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - networkpolicies
+  - ingresses
+  verbs: ["list", "watch"]
+- apiGroups: ["coordination.k8s.io"]
+  resources:
+  - leases
+  verbs: ["list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-kube-state-metrics
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: exporter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-kube-state-metrics
+subjects:
+- kind: ServiceAccount
+  name: {{ .Release.Name }}-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+{{- end }} 

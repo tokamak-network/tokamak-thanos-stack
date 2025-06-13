@@ -119,7 +119,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum(kube_node_info{cluster=~\"$cluster\"})",
+            "expr": "sum(kube_node_info{job=~\"$cluster\"})",
             "format": "time_series",
             "instant": true,
             "interval": "",
@@ -2637,9 +2637,10 @@
         "pluginVersion": "9.2.4",
         "targets": [
           {
-            "datasource": {
-              "uid": "$datasource"
-            },
+                      "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
             "editorMode": "code",
             "expr": "kube_pod_status_reason{cluster=~\"$cluster\",namespace=~\"$namespace\", reason=\"Evicted\"}==1",
             "format": "time_series",
@@ -2671,15 +2672,15 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "definition": "label_values(kube_node_info, cluster)",
-          "hide": 0,
+          "definition": "label_values(kube_node_info, job)",
+          "hide": 2,
           "includeAll": false,
           "multi": false,
-          "name": "cluster",
+          "name": "job",
           "options": [],
           "query": {
-            "query": "label_values(kube_node_info, cluster)",
-            "refId": "Prometheus-cluster-Variable-Query"
+            "query": "label_values(kube_node_info, job)",
+            "refId": "Prometheus-job-Variable-Query"
           },
           "refresh": 1,
           "regex": "",
@@ -2700,14 +2701,14 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "definition": "label_values(kube_node_info{cluster=~\"$cluster\"}, node)",
+          "definition": "label_values(kube_node_info{job=~\"$cluster\"}, node)",
           "hide": 0,
           "includeAll": true,
           "multi": false,
           "name": "node",
           "options": [],
           "query": {
-            "query": "label_values(kube_node_info{cluster=~\"$cluster\"}, node)",
+            "query": "label_values(kube_node_info{job=~\"$cluster\"}, node)",
             "refId": "Prometheus-node-Variable-Query"
           },
           "refresh": 1,
@@ -2738,7 +2739,7 @@
           "name": "namespace",
           "options": [],
           "query": {
-            "query": "label_values(kube_namespace_created{cluster=~\"$cluster\"}, namespace)",
+            "query": "label_values(kube_namespace_created{job=~\"$cluster\"}, namespace)",
             "refId": "Prometheus-namespace-Variable-Query"
           },
           "refresh": 1,
@@ -2753,7 +2754,7 @@
         {
           "hide": 2,
           "name": "datasource",
-          "query": "Prometheus",
+          "query": "prometheus",
           "skipUrlSync": false,
           "type": "constant"
         }
@@ -2778,7 +2779,7 @@
       "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
     },
     "timezone": "browser",
-    "title": "System Dashboard",
+    "title": "Kubernetes System Dashboard",
     "uid": "garysdevil-kube-state-metrics-v2",
     "version": 1,
     "weekStart": ""
