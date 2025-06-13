@@ -8,7 +8,7 @@ global:
     autoImport: true
 
 # 영속성 활성화 설정 (EFS 사용)
-enablePersistence: true  # false로 설정하면 EFS 영속성 활성화
+enablePersistence: false  # false로 설정하면 EmptyDir 사용 (Fargate 호환)
 
 # Prometheus 설정
 prometheus:
@@ -30,7 +30,7 @@ prometheus:
   
   # 저장소 설정 (EFS 영속성 지원)
   persistence:
-    enabled: true  # EFS 사용 시 true (Fargate 호환)
+    enabled: false  # EFS 사용 시 true, EmptyDir 사용 시 false (Fargate 호환)
     storageClass: "efs-sc"  # EFS 스토리지 클래스
     size: "50Gi"
   
@@ -48,38 +48,30 @@ prometheus:
     - job_name: op-node
       static_configs:
         - targets:
-            - "op-node-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+            - "{{ .Release.Name }}-thanos-stack-op-node:7300"  # 동적 릴리즈 이름 사용
       scrape_interval: "30s"
       metrics_path: "/metrics"
       
     - job_name: op-batcher
       static_configs:
         - targets:
-            - "op-batcher-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+            - "{{ .Release.Name }}-thanos-stack-op-batcher:7300"  # 동적 릴리즈 이름 사용
       scrape_interval: "30s"
       metrics_path: "/metrics"
       
     - job_name: op-proposer
       static_configs:
         - targets:
-            - "op-proposer-svc:7300"  # trh-sdk에서 실제 서비스명으로 override
+            - "{{ .Release.Name }}-thanos-stack-op-proposer:7300"  # 동적 릴리즈 이름 사용
       scrape_interval: "30s"
       metrics_path: "/metrics"
       
     - job_name: op-geth
       static_configs:
         - targets:
-            - "op-geth-svc:6060"  # trh-sdk에서 실제 서비스명으로 override
+            - "{{ .Release.Name }}-thanos-stack-op-geth:6060"  # 동적 릴리즈 이름 사용
       scrape_interval: "30s"
       metrics_path: "/debug/metrics/prometheus"
-      
-    # Blockscout 모니터링
-    - job_name: blockscout
-      static_configs:
-        - targets:
-            - "blockscout-svc:3000"  # trh-sdk에서 실제 서비스명으로 override
-      scrape_interval: "1m"
-      metrics_path: "/metrics"
       
     # Blackbox Exporter 기반 헬스체크
     - job_name: blackbox-eth-node-synced
@@ -134,7 +126,7 @@ grafana:
   
   # 영속성 설정 (EFS 영속성 지원)
   persistence:
-    enabled: true  # EFS 사용 시 true (Fargate 호환)
+    enabled: false  # EFS 사용 시 true, EmptyDir 사용 시 false (Fargate 호환)
     size: "10Gi"
     storageClass: "efs-sc"  # EFS 스토리지 클래스
   
@@ -176,10 +168,11 @@ grafana:
       url: "http://{{ .Release.Name }}-prometheus:9090"
       access: proxy
       isDefault: true
+      uid: prometheus  # 고정된 UID 설정
   
   # 대시보드 자동 로딩 설정
   dashboards:
-    enabled: "{{ .Values.global.dashboards.autoImport }}"
+    enabled: true  # boolean 값으로 직접 설정
 
 # Blackbox Exporter 설정
 blackboxExporter:
