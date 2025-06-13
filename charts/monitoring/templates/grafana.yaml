@@ -26,6 +26,30 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: {{ .Release.Name }}-grafana-dashboard-provider
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: {{ .Release.Name }}-grafana-dashboards
   namespace: {{ .Release.Namespace }}
   labels:
@@ -89,6 +113,8 @@ spec:
             - name: storage
               mountPath: /var/lib/grafana
             {{- if .Values.grafana.dashboards.enabled }}
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
             - name: dashboards
               mountPath: /var/lib/grafana/dashboards
             {{- end }}
@@ -105,6 +131,9 @@ spec:
           emptyDir: {}  # Fargate 호환: 임시 스토리지 사용
         {{- end }}
         {{- if .Values.grafana.dashboards.enabled }}
+        - name: dashboard-provider
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboard-provider
         - name: dashboards
           configMap:
             name: {{ .Release.Name }}-grafana-dashboards
