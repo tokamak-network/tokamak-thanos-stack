@@ -151,6 +151,7 @@ spec:
   ingressClassName: {{ .Values.grafana.ingress.className }}
   {{- end }}
   rules:
+{{- if .Values.grafana.ingress.hosts }}
 {{- range .Values.grafana.ingress.hosts }}
     - host: {{ .host }}
       http:
@@ -164,6 +165,17 @@ spec:
                 port:
                   number: {{ $.Values.grafana.service.port }}
 {{- end }}
+{{- end }}
+{{- else }}
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-grafana
+                port:
+                  number: {{ .Values.grafana.service.port }}
 {{- end }}
 {{- end }}
 {{- end }} 

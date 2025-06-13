@@ -162,11 +162,12 @@ grafana:
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
       alb.ingress.kubernetes.io/group.name: thanos-monitoring
       alb.ingress.kubernetes.io/healthcheck-path: /api/health
-    hosts:
-      - host: grafana-thanos.yourdomain.com
-        paths:
-          - path: /
-            pathType: Prefix
+    # hosts 설정을 제거하여 ALB가 기본 엔드포인트를 생성하도록 함
+    # hosts:
+    #   - host: grafana-thanos.yourdomain.com
+    #     paths:
+    #       - path: /
+    #         pathType: Prefix
   
   # 데이터소스 설정
   datasources:
