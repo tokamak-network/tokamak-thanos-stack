@@ -1,7 +1,7 @@
 # Global settings (trh-sdk에서 동적으로 override할 설정값들)
 global:
   # L1 RPC 설정 (trh-sdk에서 입력받을 값)
-  l1RpcUrl: "https://your-l1-rpc-endpoint"
+  l1RpcUrl: ""
   
   # 대시보드 자동 임포트 설정
   dashboards:
@@ -72,6 +72,16 @@ prometheus:
             - "{{ .Release.Name }}-thanos-stack-op-geth:6060"  # 동적 릴리즈 이름 사용
       scrape_interval: "30s"
       metrics_path: "/debug/metrics/prometheus"
+      
+    # Kubernetes 시스템 메트릭 (Simple System Dashboard 지원)
+    - job_name: kube-state-metrics
+      static_configs:
+        - targets:
+            - "{{ .Release.Name }}-kube-state-metrics:8080"  # 차트 내부 kube-state-metrics 서비스
+      scrape_interval: "30s"
+      metrics_path: "/metrics"
+      
+
       
     # Blackbox Exporter 기반 헬스체크
     - job_name: blackbox-eth-node-synced
@@ -182,3 +192,53 @@ blackboxExporter:
   service:
     type: ClusterIP
     port: 9115
+
+# Kube State Metrics 설정 (Kubernetes 시스템 메트릭 제공)
+kubeStateMetrics:
+  enabled: true  # Simple System Dashboard 지원을 위해 활성화
+  
+  # 리소스 할당
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  # 서비스 설정
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  
+  # 수집할 리소스 타입 설정
+  collectors:
+    - certificatesigningrequests
+    - configmaps
+    - cronjobs
+    - daemonsets
+    - deployments
+    - endpoints
+    - horizontalpodautoscalers
+    - ingresses
+    - jobs
+    - limitranges
+    - mutatingwebhookconfigurations
+    - namespaces
+    - networkpolicies
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - poddisruptionbudgets
+    - pods
+    - replicasets
+    - replicationcontrollers
+    - resourcequotas
+    - secrets
+    - services
+    - statefulsets
+    - storageclasses
+    - validatingwebhookconfigurations
+    - volumeattachments
+
