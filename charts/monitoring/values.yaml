@@ -159,7 +159,7 @@ grafana:
     annotations:
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
       alb.ingress.kubernetes.io/group.name: thanos-monitoring
       alb.ingress.kubernetes.io/healthcheck-path: /api/health
     # hosts 설정을 제거하여 ALB가 기본 엔드포인트를 생성하도록 함
