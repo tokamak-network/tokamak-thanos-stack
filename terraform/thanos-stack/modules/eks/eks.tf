@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "aws_fargate_logging_policy" {
 }
 
 resource "aws_iam_policy" "aws_fargate_logging_policy" {
-  name   = "aws_fargate_logging_policy_${var.cluster_name}"
+  name   = "aws_fargate_logging_policy_${var.cluster_name}_${formatdate("YYYYMMDDHHmmss", timestamp())}"
   path   = "/"
   policy = data.aws_iam_policy_document.aws_fargate_logging_policy.json
 }
