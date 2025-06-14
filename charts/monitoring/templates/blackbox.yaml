@@ -12,44 +12,61 @@ metadata:
 data:
   config.yml: |
     modules:
+      # Module for checking Ethereum node sync status via JSON-RPC
+      # Sends eth_syncing request and expects 'false' response (meaning node is synced)
       http_post_eth_node_synced_2xx:
         prober: http
         timeout: 5s
         http:
           valid_http_versions: ['HTTP/1.1', 'HTTP/2.0']
-          valid_status_codes: []
+          valid_status_codes: []  # Accept any 2xx status code
           method: POST
           headers:
             content-type: application/json
           body: '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
           preferred_ip_protocol: 'ip4'
           ip_protocol_fallback: false
-          fail_if_body_not_matches_regexp: ['false']
+          fail_if_body_not_matches_regexp: ['false']  # Fail if response doesn't contain 'false'
+      
+      # Module for checking Ethereum node block number via JSON-RPC
+      # Sends eth_blockNumber request and expects hex response starting with '0x'
       http_post_eth_block_number_2xx:
         prober: http
         timeout: 5s
         http:
           valid_http_versions: ['HTTP/1.1', 'HTTP/2.0']
-          valid_status_codes: []
+          valid_status_codes: []  # Accept any 2xx status code
           method: POST
           headers:
             content-type: application/json
           body: '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}'
           preferred_ip_protocol: 'ip4'
           ip_protocol_fallback: false
-          fail_if_body_not_matches_regexp: ['0x']
+          fail_if_body_not_matches_regexp: ['0x']  # Fail if response doesn't contain '0x' (hex format)
+          # Extract block number from JSON response and convert hex to decimal
+          fail_if_body_matches_regexp: []
+          body_size_limit: 1024
+      
+      # Module for basic TCP connectivity check
+      # Simply attempts to establish TCP connection to target
       tcp_connect:
         prober: tcp
         timeout: 5s
+      
+      # Module for basic HTTP GET request check
+      # Validates HTTP connectivity and expects 2xx response
       http_2xx:
         prober: http
         timeout: 5s
         http:
           valid_http_versions: ['HTTP/1.1', 'HTTP/2.0']
-          valid_status_codes: []
+          valid_status_codes: []  # Accept any 2xx status code
           method: GET
           preferred_ip_protocol: 'ip4'
           ip_protocol_fallback: false
+      
+      # Module for ICMP ping check
+      # Tests network connectivity at Layer 3 (IP level)
       icmp:
         prober: icmp
         timeout: 5s
@@ -57,6 +74,8 @@ data:
           preferred_ip_protocol: 'ip4'
 
 ---
+# Deployment for Blackbox Exporter
+# Creates pods that run the Blackbox Exporter container
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -67,7 +86,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: 1  # Single replica is sufficient for most monitoring scenarios
   selector:
     matchLabels:
       app.kubernetes.io/name: blackbox-exporter
@@ -80,21 +99,23 @@ spec:
     spec:
       containers:
         - name: blackbox-exporter
-          image: prom/blackbox-exporter:v0.24.0
+          image: prom/blackbox-exporter:v0.24.0  # Official Prometheus Blackbox Exporter image
           args:
-            - '--config.file=/etc/blackbox_exporter/config.yml'
+            - '--config.file=/etc/blackbox_exporter/config.yml'  # Point to mounted config file
           ports:
-            - containerPort: 9115
+            - containerPort: 9115  # Default Blackbox Exporter port
               name: http
           volumeMounts:
             - name: config
-              mountPath: /etc/blackbox_exporter
+              mountPath: /etc/blackbox_exporter  # Mount config volume
       volumes:
         - name: config
           configMap:
-            name: {{ .Release.Name }}-blackbox-config
+            name: {{ .Release.Name }}-blackbox-config  # Reference to ConfigMap created above
 
 ---
+# Service to expose Blackbox Exporter within the cluster
+# Allows Prometheus to scrape metrics from Blackbox Exporter
 apiVersion: v1
 kind: Service
 metadata:
@@ -105,10 +126,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  type: {{ .Values.blackboxExporter.service.type }}
+  type: {{ .Values.blackboxExporter.service.type }}  # Typically ClusterIP for internal access
   ports:
-    - port: {{ .Values.blackboxExporter.service.port }}
-      targetPort: 9115
+    - port: {{ .Values.blackboxExporter.service.port }}  # Service port (usually 9115)
+      targetPort: 9115  # Container port
       protocol: TCP
       name: http
   selector:
