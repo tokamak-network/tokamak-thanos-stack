@@ -45,31 +45,26 @@ data:
                             # Convert hex to decimal
                             block_number = int(result['result'], 16)
                             
-                            metrics = f"""# HELP l1_block_number Current L1 block number
-# TYPE l1_block_number gauge
-l1_block_number {block_number}
-
-# HELP l1_rpc_up L1 RPC endpoint availability
-# TYPE l1_rpc_up gauge
-l1_rpc_up 1
-"""
+                            metrics = "# HELP l1_block_number Current L1 block number\n"
+                            metrics += "# TYPE l1_block_number gauge\n"
+                            metrics += f"l1_block_number {block_number}\n\n"
+                            metrics += "# HELP l1_rpc_up L1 RPC endpoint availability\n"
+                            metrics += "# TYPE l1_rpc_up gauge\n"
+                            metrics += "l1_rpc_up 1\n"
                         else:
-                            metrics = """# HELP l1_rpc_up L1 RPC endpoint availability
-# TYPE l1_rpc_up gauge
-l1_rpc_up 0
-"""
+                            metrics = "# HELP l1_rpc_up L1 RPC endpoint availability\n"
+                            metrics += "# TYPE l1_rpc_up gauge\n"
+                            metrics += "l1_rpc_up 0\n"
                     else:
-                        metrics = """# HELP l1_rpc_up L1 RPC endpoint availability
-# TYPE l1_rpc_up gauge
-l1_rpc_up 0
-"""
+                        metrics = "# HELP l1_rpc_up L1 RPC endpoint availability\n"
+                        metrics += "# TYPE l1_rpc_up gauge\n"
+                        metrics += "l1_rpc_up 0\n"
                         
                 except Exception as e:
                     print(f"Error fetching L1 block: {e}")
-                    metrics = """# HELP l1_rpc_up L1 RPC endpoint availability
-# TYPE l1_rpc_up gauge
-l1_rpc_up 0
-"""
+                    metrics = "# HELP l1_rpc_up L1 RPC endpoint availability\n"
+                    metrics += "# TYPE l1_rpc_up gauge\n"
+                    metrics += "l1_rpc_up 0\n"
                 
                 self.wfile.write(metrics.encode())
             else:
@@ -106,7 +101,7 @@ spec:
       containers:
         - name: l1-block-exporter
           image: python:3.9-slim
-          command: ["python3", "/app/exporter.py"]
+          command: ["sh", "-c", "pip install requests && python3 /app/exporter.py"]
           env:
             - name: L1_RPC_URL
               value: "{{ .Values.global.l1RpcUrl }}"
@@ -123,20 +118,11 @@ spec:
             limits:
               cpu: 100m
               memory: 128Mi
-      initContainers:
-        - name: install-deps
-          image: python:3.9-slim
-          command: ["pip", "install", "requests"]
-          volumeMounts:
-            - name: pip-cache
-              mountPath: /root/.cache/pip
       volumes:
         - name: script
           configMap:
             name: {{ .Release.Name }}-l1-block-exporter-script
             defaultMode: 0755
-        - name: pip-cache
-          emptyDir: {}
 
 ---
 apiVersion: v1
