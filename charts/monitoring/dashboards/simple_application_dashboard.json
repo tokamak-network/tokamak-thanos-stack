@@ -847,7 +847,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "probe_eth_block_number{job=\"blackbox-eth-block-number\"}",
+          "expr": "l1_block_number{job=\"l1-block-exporter\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -946,7 +946,7 @@
             "type": "prometheus"
           },
           "editorMode": "code",
-          "expr": "probe_eth_block_number{job=\"blackbox-eth-block-number\"}",
+          "expr": "l1_block_number{job=\"l1-block-exporter\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,

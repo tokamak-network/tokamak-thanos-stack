@@ -81,6 +81,14 @@ prometheus:
       scrape_interval: "30s"
       metrics_path: "/metrics"
       
+    # L1 블록 번호 및 RPC 상태 모니터링
+    - job_name: l1-block-exporter
+      static_configs:
+        - targets:
+            - "{{ .Release.Name }}-l1-block-exporter:8080"  # L1 블록 exporter 서비스
+      scrape_interval: "30s"
+      metrics_path: "/metrics"
+      
 
       
     # Blackbox Exporter 기반 헬스체크
@@ -241,4 +249,8 @@ kubeStateMetrics:
     - storageclasses
     - validatingwebhookconfigurations
     - volumeattachments
+
+# L1 Block Exporter 설정 (L1 블록 번호 모니터링)
+l1BlockExporter:
+  enabled: true  # L1 블록 번호 추적을 위해 활성화
 
