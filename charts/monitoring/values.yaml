@@ -7,7 +7,7 @@ global:
   l1RpcUrl: ""
 
 # Chart behavior settings  
-createNamespace: true
+createNamespace: false  # Handled by Helm --create-namespace flag
 nameOverride: ""
 fullnameOverride: ""
 
