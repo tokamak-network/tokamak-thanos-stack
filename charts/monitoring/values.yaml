@@ -1,256 +1,283 @@
-# Global settings (trh-sdk에서 동적으로 override할 설정값들)
+# Thanos Stack Monitoring Chart - Simplified Values
+# Based on Legacy structure optimization (trh-sdk Integration)
+
+# Global settings
 global:
-  # L1 RPC 설정 (trh-sdk에서 입력받을 값)
+  # L1 RPC URL (will be set by Rollup Hub SDK)
   l1RpcUrl: ""
-  
-  # 대시보드 자동 임포트 설정
-  dashboards:
-    autoImport: true
 
-# 영속성 활성화 설정 (EFS 사용)
-enablePersistence: false  # false로 설정하면 EmptyDir 사용 (Fargate 호환)
+# Chart behavior settings  
+createNamespace: true
+nameOverride: ""
+fullnameOverride: ""
 
-# Prometheus 설정
-prometheus:
-  enabled: true
+# Service account settings
+serviceAccount:
+  create: true
+  name: ""
   
-  # 리소스 할당
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 4Gi
-  
-  # 데이터 보관 설정
-  retention: 1y
-  retentionSize: 10GB
-  
-  # 스크랩 간격
-  scrapeInterval: 1m
-  evaluationInterval: 1m
-  
-  # 저장소 설정 (EFS 영속성 지원)
-  persistence:
-    enabled: false  # EFS 사용 시 true, EmptyDir 사용 시 false (Fargate 호환)
-    storageClass: "efs-sc"  # EFS 스토리지 클래스
-    size: "50Gi"
-  
-  # EFS 볼륨 설정 (enablePersistence: true일 때 사용)
-  volume:
-    capacity: "50Gi"
-    storageClassName: "efs-sc"
-    csi:
-      driver: "efs.csi.aws.com"
-      volumeHandle: "fs-0123456789abcdef0"  # EFS 파일시스템 ID (trh-sdk에서 자동으로 설정됨)
-  
-  # 스크랩 설정 (trh-sdk에서 동적으로 override)
-  scrapeConfigs:
-    # OP Stack 핵심 컴포넌트들
-    - job_name: op-node
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-thanos-stack-op-node:7300"  # 동적 릴리즈 이름 사용
-      scrape_interval: "30s"
-      metrics_path: "/metrics"
-      
-    - job_name: op-batcher
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-thanos-stack-op-batcher:7300"  # 동적 릴리즈 이름 사용
-      scrape_interval: "30s"
-      metrics_path: "/metrics"
-      
-    - job_name: op-proposer
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-thanos-stack-op-proposer:7300"  # 동적 릴리즈 이름 사용
-      scrape_interval: "30s"
-      metrics_path: "/metrics"
-      
-    - job_name: op-geth
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-thanos-stack-op-geth:6060"  # 동적 릴리즈 이름 사용
-      scrape_interval: "30s"
-      metrics_path: "/debug/metrics/prometheus"
-      
-    # Kubernetes 시스템 메트릭 (Simple System Dashboard 지원)
-    - job_name: kube-state-metrics
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-kube-state-metrics:8080"  # 차트 내부 kube-state-metrics 서비스
-      scrape_interval: "30s"
-      metrics_path: "/metrics"
-      
-    # L1 블록 번호 및 RPC 상태 모니터링
-    - job_name: l1-block-exporter
-      static_configs:
-        - targets:
-            - "{{ .Release.Name }}-l1-block-exporter:8080"  # L1 블록 exporter 서비스
-      scrape_interval: "30s"
-      metrics_path: "/metrics"
-      
+# Thanos Stack specific configuration (set by trh-sdk)
+thanosStack:
+  # Chain name (will be set by Rollup Hub SDK)
+  chainName: ""
+  # Namespace where Thanos Stack is deployed (will be set by trh-sdk)
+  namespace: ""
+  # Thanos Stack chart release name (will be set by trh-sdk)
+  releaseName: ""
 
+# ============================================================================
+# kube-prometheus-stack subchart configuration
+# ============================================================================
+kube-prometheus-stack:
+  # Prometheus configuration (based on Legacy structure)
+  prometheus:
+    prometheusSpec:
+      # Resource allocation (optimized for Thanos Stack)
+      resources:
+        requests:
+          cpu: 1500m      # From Legacy config
+          memory: 3Gi  # From Legacy config
+        
+      # Data retention settings
+      retention: 1y
+      retentionSize: 10GB
       
-    # Blackbox Exporter 기반 헬스체크
-    - job_name: blackbox-eth-node-synced
-      metrics_path: /probe
-      params:
-        module: [http_post_eth_node_synced_2xx]
-      static_configs:
-        - targets:
-            - "{{ .Values.global.l1RpcUrl }}"
-      relabel_configs:
-        - source_labels: [module]
-          target_label: __param_module
-        - source_labels: [__address__]
-          target_label: __param_target
-        - source_labels: [__param_target]
-          target_label: target
-        - target_label: __address__
-          replacement: "{{ .Release.Name }}-blackbox-exporter:9115"
-      scrape_interval: 1m
+      # Scrape configuration
+      scrapeInterval: 1m
+      evaluationInterval: 1m
       
-    - job_name: blackbox-eth-block-number
-      metrics_path: /probe
-      params:
-        module: [http_post_eth_block_number_2xx]
-      static_configs:
-        - targets:
-            - "{{ .Values.global.l1RpcUrl }}"
-      relabel_configs:
-        - source_labels: [module]
-          target_label: __param_module
-        - source_labels: [__address__]
-          target_label: __param_target
-        - source_labels: [__param_target]
-          target_label: target
-        - target_label: __address__
-          replacement: "{{ .Release.Name }}-blackbox-exporter:9115"
-      scrape_interval: 1m
+      # Storage configuration (will be enabled by trh-sdk if EFS available)
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: "efs-sc"
+            accessModes: ["ReadWriteMany"]
+            resources:
+              requests:
+                storage: "50Gi"
+      
+      # Thanos Stack scrape targets (trh-sdk format)
+      additionalScrapeConfigs: []
+      # Will be populated by trh-sdk with format:
+      # - job_name: op-node
+      #   static_configs:
+      #     - targets:
+      #         - "{release-name}-thanos-stack-op-node:7300"
+      #   metrics_path: "/metrics"
+      #   scrape_interval: "30s"
 
-# Grafana 설정
-grafana:
-  enabled: true
-  
-  # 관리자 설정 (trh-sdk에서 동적으로 override)
-  adminUser: admin
-  adminPassword: "change-me-password"  # trh-sdk에서 실제 패스워드로 override
-  
-  # 리소스 할당
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 4Gi
-  
-  # 영속성 설정 (EFS 영속성 지원)
-  persistence:
-    enabled: false  # EFS 사용 시 true, EmptyDir 사용 시 false (Fargate 호환)
-    size: "10Gi"
-    storageClass: "efs-sc"  # EFS 스토리지 클래스
-  
-  # EFS 볼륨 설정 (enablePersistence: true일 때 사용)
-  volume:
-    capacity: "10Gi"
-    storageClassName: "efs-sc"
-    csi:
-      driver: "efs.csi.aws.com"
-      volumeHandle: "fs-0123456789abcdef0"  # EFS 파일시스템 ID (trh-sdk에서 자동으로 설정됨)
-  
-  # 서비스 설정
-  service:
-    type: ClusterIP
-    port: 80
-    targetPort: 3000
-  
-  # Ingress 설정 (ALB)
-  ingress:
+  # Grafana configuration
+  grafana:
     enabled: true
-    className: alb
-    annotations:
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
-      alb.ingress.kubernetes.io/group.name: thanos-monitoring
-      alb.ingress.kubernetes.io/healthcheck-path: /api/health
-    # hosts 설정을 제거하여 ALB가 기본 엔드포인트를 생성하도록 함
-    # hosts:
-    #   - host: grafana-thanos.yourdomain.com
-    #     paths:
-    #       - path: /
-    #         pathType: Prefix
-  
-  # 데이터소스 설정
-  datasources:
-    - name: Prometheus
-      type: prometheus
-      url: "http://{{ .Release.Name }}-prometheus:9090"
-      access: proxy
-      isDefault: true
-      uid: prometheus  # 고정된 UID 설정
-  
-  # 대시보드 자동 로딩 설정
-  dashboards:
-    enabled: true  # boolean 값으로 직접 설정
+    
+    # Admin credentials (will be set by trh-sdk)
+    adminUser: admin
+    adminPassword: ""  # Will be set by user input
+    
+    # Resource allocation
+    resources:
+      requests:
+        cpu: 1500m
+        memory: 4Gi
+    
+    # Persistence (will be enabled by trh-sdk if EFS available)
+    persistence:
+      enabled: false  # Will be set by trh-sdk based on EFS availability
+      storageClassName: "efs-sc"
+      size: "10Gi"
+      accessModes:
+        - ReadWriteMany
+    
+    # Ingress for ALB
+    ingress:
+      enabled: true
+      ingressClassName: alb
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/group.name: thanos-monitoring
+        
+    # Dashboard providers
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: ALL
 
-# Blackbox Exporter 설정
-blackboxExporter:
+  # Alertmanager (optional)
+  alertmanager:
+    enabled: false
+  
+  # Additional exporters
+  nodeExporter:
+    enabled: true
+  
+  kubeStateMetrics:
+    enabled: true
+
+# ============================================================================
+# prometheus-blackbox-exporter subchart configuration  
+# ============================================================================
+prometheus-blackbox-exporter:
   enabled: true
   
-  # 서비스 설정
-  service:
-    type: ClusterIP
-    port: 9115
-
-# Kube State Metrics 설정 (Kubernetes 시스템 메트릭 제공)
-kubeStateMetrics:
-  enabled: true  # Simple System Dashboard 지원을 위해 활성화
+  # Blackbox Exporter configuration (optimized for trh-sdk)
+  config:
+    modules:
+      # RPC sync status check (for L1 RPC)
+      http_post_eth_node_synced_2xx:
+        prober: http
+        http:
+          method: "POST"
+          headers:
+            Content-Type: application/json
+          body: '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
+          valid_status_codes: [200]
+          fail_if_body_not_matches_regexp:
+            - "false"
+      # Block number check (for L1 RPC)
+      http_post_eth_block_number_2xx:
+        prober: http
+        http:
+          method: "POST"
+          headers:
+            Content-Type: application/json
+          body: '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}'
+          valid_status_codes: [200]
+          fail_if_body_not_matches_regexp:
+            - "0x"
+      # TCP connectivity check (general purpose)
+      tcp_connect:
+        prober: tcp
   
-  # 리소스 할당
+  # Resource allocation
   resources:
     requests:
       cpu: 100m
       memory: 128Mi
     limits:
-      cpu: 200m
+      cpu: 500m
       memory: 256Mi
   
-  # 서비스 설정
+  # Service configuration
   service:
     type: ClusterIP
-    port: 8080
-    targetPort: 8080
+    port: 9115
   
-  # 수집할 리소스 타입 설정
-  collectors:
-    - certificatesigningrequests
-    - configmaps
-    - cronjobs
-    - daemonsets
-    - deployments
-    - endpoints
-    - horizontalpodautoscalers
-    - ingresses
-    - jobs
-    - limitranges
-    - mutatingwebhookconfigurations
-    - namespaces
-    - networkpolicies
-    - nodes
-    - persistentvolumeclaims
-    - persistentvolumes
-    - poddisruptionbudgets
-    - pods
-    - replicasets
-    - replicationcontrollers
-    - resourcequotas
-    - secrets
-    - services
-    - statefulsets
-    - storageclasses
-    - validatingwebhookconfigurations
-    - volumeattachments
+  # ServiceMonitor for Prometheus discovery
+  serviceMonitor:
+    enabled: true
+    defaults:
+      labels:
+        app: blackbox-exporter
+      interval: 30s
+      scrapeTimeout: 30s
 
-# L1 Block Exporter 설정 (L1 블록 번호 모니터링)
-l1BlockExporter:
-  enabled: true  # L1 블록 번호 추적을 위해 활성화
+# ============================================================================
+# Chart-specific configurations (for templating and trh-sdk integration)
+# ============================================================================
+
+# Prometheus configuration (for templating)
+prometheus:
+  enabled: true
+  
+  # Thanos Stack specific scrape targets (template for trh-sdk)
+  scrapeTargets:
+    opNode:
+      enabled: true
+      port: 7300
+      path: "/metrics"
+      interval: "30s"
+      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-node
+    opBatcher:
+      enabled: true
+      port: 7300
+      path: "/metrics"
+      interval: "30s"
+      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-batcher
+    opProposer:
+      enabled: true
+      port: 7300
+      path: "/metrics"
+      interval: "30s"
+      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-proposer
+    opGeth:
+      enabled: true
+      port: 6060
+      path: "/debug/metrics/prometheus"
+      interval: "30s"
+      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-geth
+    blockscout:
+      enabled: true
+      port: 3000
+      path: "/metrics"
+      interval: "1m"
+      # Service name will be: {thanosStack.releaseName}-thanos-stack-blockscout
+
+# Grafana configuration (for templating)
+grafana:
+  enabled: true
+  
+  # Admin credentials (will be set by trh-sdk)
+  adminUser: admin
+  adminPassword: ""  # Will be set by user input
+  
+  # Note: Dashboards are now managed via files in dashboards/ directory
+  # They are automatically imported via Grafana sidecar when labeled with grafana_dashboard: "1"
+
+# Blackbox Exporter configuration (for templating)
+blackboxExporter:
+  enabled: true
+  
+  # Health check targets (trh-sdk will set these)
+  targets:
+    l1Rpc:
+      enabled: true
+      # URL will be set from global.l1RpcUrl
+    # Removed: proxyd, graph-node, redis as per requirements
+
+# Alert rules configuration
+alerting:
+  enabled: false
+  # Thanos Stack specific alerts
+  thanosStackAlerts:
+    enabled: true
+  # System alerts
+  systemAlerts:
+    enabled: true
+
+# Service monitoring configuration (trh-sdk managed)
+serviceMonitoring:
+  # Enable automatic service discovery in Thanos namespace
+  autoDiscovery:
+    enabled: true
+    # Namespaces will be set by trh-sdk (thanosStack.namespace)
+    namespaces: []
+  
+  # Service endpoints (will be populated by trh-sdk)
+  endpoints:
+    opNode: ""       # Will be set to: {thanosStack.releaseName}-thanos-stack-op-node:7300
+    opBatcher: ""    # Will be set to: {thanosStack.releaseName}-thanos-stack-op-batcher:7300
+    opProposer: ""   # Will be set to: {thanosStack.releaseName}-thanos-stack-op-proposer:7300
+    opGeth: ""       # Will be set to: {thanosStack.releaseName}-thanos-stack-op-geth:6060
+    blockscout: ""   # Will be set to: {thanosStack.releaseName}-thanos-stack-blockscout:3000
+
+# Legacy compatibility settings (deprecated with trh-sdk)
+legacy:
+  enabled: false
+  # Legacy service names are no longer used with trh-sdk integration
+
+# Advanced configuration
+advanced:
+  # EFS configuration (set by trh-sdk)
+  efs:
+    enabled: false
+    fileSystemId: ""
+  
+  # Additional scrape configs (can be extended by trh-sdk)
+  additionalScrapeConfigs: []
+  
+  # Custom dashboards (can be added by trh-sdk)
+  customDashboards: []
 

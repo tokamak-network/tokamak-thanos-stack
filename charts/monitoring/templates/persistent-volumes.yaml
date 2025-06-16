@@ -1,0 +1,62 @@
+{{- if .Values.advanced.efs.enabled }}
+---
+# EFS StorageClass for Prometheus and Grafana persistence
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs-sc
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: {{ .Values.advanced.efs.fileSystemId }}
+  directoryPerms: "0755"
+  gidRangeStart: "1000"
+  gidRangeEnd: "2000"
+  basePath: "/monitoring"
+
+{{- if .Values.prometheus.persistence.enabled }}
+---
+# Prometheus Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "monitoring.fullname" . }}-prometheus-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.prometheus.persistence.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.advanced.efs.fileSystemId }}:/prometheus
+{{- end }}
+
+{{- if .Values.grafana.persistence.enabled }}
+---
+# Grafana Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "monitoring.fullname" . }}-grafana-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.grafana.persistence.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.advanced.efs.fileSystemId }}:/grafana
+{{- end }}
+{{- end }} 
