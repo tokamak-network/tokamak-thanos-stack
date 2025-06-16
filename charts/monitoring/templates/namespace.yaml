@@ -1,4 +1,5 @@
-{{- if .Values.createNamespace | default true }}
+{{- if false }}
+{{/* Namespace creation is handled by Helm --create-namespace flag */}}
 apiVersion: v1
 kind: Namespace
 metadata:
