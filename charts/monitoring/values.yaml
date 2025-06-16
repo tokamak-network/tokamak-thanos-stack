@@ -263,21 +263,10 @@ serviceMonitoring:
     opGeth: ""       # Will be set to: {thanosStack.releaseName}-thanos-stack-op-geth:6060
     blockscout: ""   # Will be set to: {thanosStack.releaseName}-thanos-stack-blockscout:3000
 
-# Legacy compatibility settings (deprecated with trh-sdk)
-legacy:
-  enabled: false
-  # Legacy service names are no longer used with trh-sdk integration
-
 # Advanced configuration
 advanced:
   # EFS configuration (set by trh-sdk)
   efs:
     enabled: false
     fileSystemId: ""
-  
-  # Additional scrape configs (can be extended by trh-sdk)
-  additionalScrapeConfigs: []
-  
-  # Custom dashboards (can be added by trh-sdk)
-  customDashboards: []
 
