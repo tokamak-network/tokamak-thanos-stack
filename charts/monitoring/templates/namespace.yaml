@@ -1,0 +1,14 @@
+{{- if .Values.createNamespace | default true }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.thanosStack.namespace | default "monitoring" }}
+  labels:
+    app.kubernetes.io/name: {{ include "monitoring.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: thanos-stack
+    {{- if .Values.thanosStack.chainName }}
+    chain: {{ .Values.thanosStack.chainName }}
+    {{- end }}
+{{- end }} 

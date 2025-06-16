@@ -1,0 +1,114 @@
+{{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
+---
+# ConfigMap for trh-sdk dynamic scrape configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" . }}-scrape-config
+  namespace: {{ .Values.thanosStack.namespace | default "monitoring" }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+data:
+  # Additional scrape configs for Prometheus (trh-sdk format)
+  additional-scrape-configs.yaml: |
+    {{- if .Values.prometheus.scrapeTargets.opNode.enabled }}
+    - job_name: op-node
+      static_configs:
+        - targets:
+            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-node:{{ .Values.prometheus.scrapeTargets.opNode.port }}"
+      metrics_path: {{ .Values.prometheus.scrapeTargets.opNode.path }}
+      scrape_interval: {{ .Values.prometheus.scrapeTargets.opNode.interval }}
+    {{- end }}
+    
+    {{- if .Values.prometheus.scrapeTargets.opBatcher.enabled }}
+    - job_name: op-batcher
+      static_configs:
+        - targets:
+            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-batcher:{{ .Values.prometheus.scrapeTargets.opBatcher.port }}"
+      metrics_path: {{ .Values.prometheus.scrapeTargets.opBatcher.path }}
+      scrape_interval: {{ .Values.prometheus.scrapeTargets.opBatcher.interval }}
+    {{- end }}
+    
+    {{- if .Values.prometheus.scrapeTargets.opProposer.enabled }}
+    - job_name: op-proposer
+      static_configs:
+        - targets:
+            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-proposer:{{ .Values.prometheus.scrapeTargets.opProposer.port }}"
+      metrics_path: {{ .Values.prometheus.scrapeTargets.opProposer.path }}
+      scrape_interval: {{ .Values.prometheus.scrapeTargets.opProposer.interval }}
+    {{- end }}
+    
+    {{- if .Values.prometheus.scrapeTargets.opGeth.enabled }}
+    - job_name: op-geth
+      static_configs:
+        - targets:
+            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-geth:{{ .Values.prometheus.scrapeTargets.opGeth.port }}"
+      metrics_path: {{ .Values.prometheus.scrapeTargets.opGeth.path }}
+      scrape_interval: {{ .Values.prometheus.scrapeTargets.opGeth.interval }}
+    {{- end }}
+    
+    {{- if .Values.prometheus.scrapeTargets.blockscout.enabled }}
+    - job_name: blockscout
+      static_configs:
+        - targets:
+            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-blockscout:{{ .Values.prometheus.scrapeTargets.blockscout.port }}"
+      metrics_path: {{ .Values.prometheus.scrapeTargets.blockscout.path }}
+      scrape_interval: {{ .Values.prometheus.scrapeTargets.blockscout.interval }}
+    {{- end }}
+    
+    {{- if and .Values.blackboxExporter.enabled .Values.global.l1RpcUrl }}
+    # Blackbox exporter health checks for L1 RPC
+    - job_name: blackbox-l1-rpc-synced
+      metrics_path: /probe
+      params:
+        module: [http_post_eth_node_synced_2xx]
+      static_configs:
+        - targets:
+            - {{ .Values.global.l1RpcUrl | quote }}
+      relabel_configs:
+        - source_labels: [module]
+          target_label: __param_module
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: target
+        - target_label: __address__
+          replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
+          
+    - job_name: blackbox-l1-rpc-block-number
+      metrics_path: /probe
+      params:
+        module: [http_post_eth_block_number_2xx]
+      static_configs:
+        - targets:
+            - {{ .Values.global.l1RpcUrl | quote }}
+      relabel_configs:
+        - source_labels: [module]
+          target_label: __param_module
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: target
+        - target_label: __address__
+          replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
+    {{- end }}
+    
+    {{- range .Values.advanced.additionalScrapeConfigs }}
+    {{ . | toYaml | nindent 4 }}
+    {{- end }}
+
+{{- end }}
+
+{{- if .Values.global.l1RpcUrl }}
+---
+# ConfigMap to store L1 RPC URL for reference
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" . }}-l1-rpc-config
+  namespace: {{ .Values.thanosStack.namespace | default "monitoring" }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+data:
+  l1-rpc-url: {{ .Values.global.l1RpcUrl | quote }}
+{{- end }} 
