@@ -9,7 +9,7 @@ global:
   # Storage configuration
   storage:
     # Enable persistent storage
-    enabled: true
+    enabled: false
     # Storage class to use (efs-sc for EFS, gp2 for EBS)
     storageClass: "efs-sc"
     # EFS file system ID (optional, will be auto-detected or created)
@@ -103,7 +103,11 @@ kube-prometheus-stack:
         alb.ingress.kubernetes.io/scheme: internet-facing
         alb.ingress.kubernetes.io/target-type: ip
         alb.ingress.kubernetes.io/group.name: thanos-monitoring
-        
+    
+    # Prometheus datasource configuration
+    defaultDashboardsEnabled: true
+    defaultDashboardsTimezone: utc
+    
     # Dashboard providers
     sidecar:
       dashboards:
@@ -111,6 +115,9 @@ kube-prometheus-stack:
         label: grafana_dashboard
         labelValue: "1"
         searchNamespace: ALL
+      datasources:
+        enabled: true
+        defaultDatasourceEnabled: true
 
   # Alertmanager (optional)
   alertmanager:
