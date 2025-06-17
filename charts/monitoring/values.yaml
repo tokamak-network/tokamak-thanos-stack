@@ -105,7 +105,7 @@ kube-prometheus-stack:
         alb.ingress.kubernetes.io/group.name: thanos-monitoring
     
     # Prometheus datasource configuration
-    defaultDashboardsEnabled: true
+    defaultDashboardsEnabled: false
     defaultDashboardsTimezone: utc
     
     # Dashboard providers

@@ -1,0 +1,43 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      follow_redirects: true
+      preferred_ip_protocol: ip4
+      valid_http_versions:
+      - HTTP/1.1
+      - HTTP/2.0
+  http_post_eth_block_number_2xx:
+    prober: http
+    timeout: 15s
+    http:
+      method: POST
+      headers:
+        Content-Type: application/json
+      body: '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}'
+      valid_status_codes: [200]
+      preferred_ip_protocol: ip4
+      follow_redirects: true
+      fail_if_body_not_matches_regexp:
+        - "0x"
+      tls_config:
+        insecure_skip_verify: false
+  http_post_eth_node_synced_2xx:
+    prober: http
+    timeout: 15s
+    http:
+      method: POST
+      headers:
+        Content-Type: application/json
+      body: '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
+      valid_status_codes: [200]
+      preferred_ip_protocol: ip4
+      follow_redirects: true
+      fail_if_body_not_matches_regexp:
+        - "false"
+      tls_config:
+        insecure_skip_verify: false
+  tcp_connect:
+    prober: tcp
+    timeout: 10s 
