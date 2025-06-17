@@ -1,3 +1,100 @@
+# Values override for dynamic configuration based on global settings
+# This ConfigMap contains the computed values for the monitoring stack
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" . }}-values-override
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+data:
+  # Storage configuration
+  storage-enabled: {{ .Values.global.storage.enabled | quote }}
+  storage-class: {{ .Values.global.storage.storageClass | quote }}
+  {{- if .Values.global.storage.efsFileSystemId }}
+  efs-file-system-id: {{ .Values.global.storage.efsFileSystemId | quote }}
+  {{- end }}
+  force-efs: {{ .Values.global.storage.forceEFS | quote }}
+  prometheus-size: {{ .Values.global.storage.prometheus.size | quote }}
+  grafana-size: {{ .Values.global.storage.grafana.size | quote }}
+  
+  {{- if eq .Values.global.storage.storageClass "efs-sc" }}
+  # EFS specific information
+  efs-enabled: "true"
+  storage-info: |
+    EFS Storage Configuration:
+    - StorageClass: {{ .Values.global.storage.storageClass }}
+    - Access Mode: ReadWriteMany
+    - Provisioner: efs.csi.aws.com
+    {{- if .Values.global.storage.efsFileSystemId }}
+    - File System ID: {{ .Values.global.storage.efsFileSystemId }}
+    {{- else }}
+    - File System ID: Auto-detected or created
+    {{- end }}
+    - Force EFS: {{ .Values.global.storage.forceEFS }}
+  {{- end }}
+  
+  # Computed values for subchart configuration
+  values-override.yaml: |
+    # kube-prometheus-stack configuration
+    kube-prometheus-stack:
+      prometheus:
+        prometheusSpec:
+          # Storage configuration
+          {{- if .Values.global.storage.enabled }}
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: {{ .Values.global.storage.storageClass | quote }}
+                accessModes:
+                  {{- if eq .Values.global.storage.storageClass "efs-sc" }}
+                  - "ReadWriteMany"
+                  {{- else }}
+                  - "ReadWriteOnce"
+                  {{- end }}
+                resources:
+                  requests:
+                    storage: {{ .Values.global.storage.prometheus.size | quote }}
+          {{- end }}
+          
+          # Apply global security context
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          
+          podSecurityContext:
+            {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+            
+      # Grafana configuration
+      grafana:
+        # Persistence configuration
+        {{- if .Values.global.storage.enabled }}
+        persistence:
+          enabled: true
+          storageClassName: {{ .Values.global.storage.storageClass | quote }}
+          size: {{ .Values.global.storage.grafana.size | quote }}
+          accessModes:
+            {{- if eq .Values.global.storage.storageClass "efs-sc" }}
+            - ReadWriteMany
+            {{- else }}
+            - ReadWriteOnce
+            {{- end }}
+        {{- else }}
+        persistence:
+          enabled: false
+        {{- end }}
+        
+        # Apply global security context
+        securityContext:
+          {{- toYaml .Values.global.securityContext | nindent 10 }}
+        
+        podSecurityContext:
+          {{- toYaml .Values.global.podSecurityContext | nindent 10 }}
+          
+      # Disable NodeExporter for Fargate compatibility
+      nodeExporter:
+        enabled: false
+
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
 ---
 # ConfigMap for trh-sdk dynamic scrape configuration
@@ -11,52 +108,18 @@ metadata:
 data:
   # Additional scrape configs for Prometheus (trh-sdk format)
   additional-scrape-configs.yaml: |
-    {{- if .Values.prometheus.scrapeTargets.opNode.enabled }}
-    - job_name: op-node
+    {{- range $name, $config := .Values.scrapeTargets }}
+    {{- if $config.enabled }}
+    - job_name: {{ $name | kebabcase }}
       static_configs:
         - targets:
-            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-node:{{ .Values.prometheus.scrapeTargets.opNode.port }}"
-      metrics_path: {{ .Values.prometheus.scrapeTargets.opNode.path }}
-      scrape_interval: {{ .Values.prometheus.scrapeTargets.opNode.interval }}
+            - "{{ $.Values.thanosStack.releaseName }}-thanos-stack-{{ $name | kebabcase }}:{{ $config.port }}"
+      metrics_path: {{ $config.path }}
+      scrape_interval: {{ $config.interval }}
+    {{- end }}
     {{- end }}
     
-    {{- if .Values.prometheus.scrapeTargets.opBatcher.enabled }}
-    - job_name: op-batcher
-      static_configs:
-        - targets:
-            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-batcher:{{ .Values.prometheus.scrapeTargets.opBatcher.port }}"
-      metrics_path: {{ .Values.prometheus.scrapeTargets.opBatcher.path }}
-      scrape_interval: {{ .Values.prometheus.scrapeTargets.opBatcher.interval }}
-    {{- end }}
-    
-    {{- if .Values.prometheus.scrapeTargets.opProposer.enabled }}
-    - job_name: op-proposer
-      static_configs:
-        - targets:
-            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-proposer:{{ .Values.prometheus.scrapeTargets.opProposer.port }}"
-      metrics_path: {{ .Values.prometheus.scrapeTargets.opProposer.path }}
-      scrape_interval: {{ .Values.prometheus.scrapeTargets.opProposer.interval }}
-    {{- end }}
-    
-    {{- if .Values.prometheus.scrapeTargets.opGeth.enabled }}
-    - job_name: op-geth
-      static_configs:
-        - targets:
-            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-op-geth:{{ .Values.prometheus.scrapeTargets.opGeth.port }}"
-      metrics_path: {{ .Values.prometheus.scrapeTargets.opGeth.path }}
-      scrape_interval: {{ .Values.prometheus.scrapeTargets.opGeth.interval }}
-    {{- end }}
-    
-    {{- if .Values.prometheus.scrapeTargets.blockscout.enabled }}
-    - job_name: blockscout
-      static_configs:
-        - targets:
-            - "{{ .Values.thanosStack.releaseName }}-thanos-stack-blockscout:{{ .Values.prometheus.scrapeTargets.blockscout.port }}"
-      metrics_path: {{ .Values.prometheus.scrapeTargets.blockscout.path }}
-      scrape_interval: {{ .Values.prometheus.scrapeTargets.blockscout.interval }}
-    {{- end }}
-    
-    {{- if and .Values.blackboxExporter.enabled .Values.global.l1RpcUrl }}
+    {{- if .Values.global.l1RpcUrl }}
     # Blackbox exporter health checks for L1 RPC
     - job_name: blackbox-l1-rpc-synced
       metrics_path: /probe
@@ -93,7 +156,7 @@ data:
           replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
     {{- end }}
     
-    {{- range .Values.advanced.additionalScrapeConfigs }}
+    {{- range .Values.additionalScrapeConfigs }}
     {{ . | toYaml | nindent 4 }}
     {{- end }}
 

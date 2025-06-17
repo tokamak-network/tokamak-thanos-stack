@@ -5,6 +5,37 @@
 global:
   # L1 RPC URL (will be set by Rollup Hub SDK)
   l1RpcUrl: ""
+  
+  # Storage configuration
+  storage:
+    # Enable persistent storage
+    enabled: true
+    # Storage class to use (efs-sc for EFS, gp2 for EBS)
+    storageClass: "efs-sc"
+    # EFS file system ID (optional, will be auto-detected or created)
+    efsFileSystemId: ""
+    # Force EFS usage even in Fargate environments
+    forceEFS: false
+    
+    # Storage size configurations
+    prometheus:
+      size: "50Gi"
+    grafana:
+      size: "10Gi"
+  
+  # Fargate-compatible security context (applied to all components)
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+  
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
 
 # Chart behavior settings  
 createNamespace: false  # Handled by Helm --create-namespace flag
@@ -36,7 +67,7 @@ kube-prometheus-stack:
       resources:
         requests:
           cpu: 1500m      # From Legacy config
-          memory: 3Gi  # From Legacy config
+          memory: 3Gi     # From Legacy config
         
       # Data retention settings
       retention: 1y
@@ -46,25 +77,9 @@ kube-prometheus-stack:
       scrapeInterval: 1m
       evaluationInterval: 1m
       
-      # Storage configuration (will be enabled by trh-sdk if EFS available)
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: "efs-sc"
-            accessModes: ["ReadWriteMany"]
-            resources:
-              requests:
-                storage: "50Gi"
-      
+      # Storage and security will be configured by templates
       # Thanos Stack scrape targets (trh-sdk format)
       additionalScrapeConfigs: []
-      # Will be populated by trh-sdk with format:
-      # - job_name: op-node
-      #   static_configs:
-      #     - targets:
-      #         - "{release-name}-thanos-stack-op-node:7300"
-      #   metrics_path: "/metrics"
-      #   scrape_interval: "30s"
 
   # Grafana configuration
   grafana:
@@ -79,14 +94,6 @@ kube-prometheus-stack:
       requests:
         cpu: 1500m
         memory: 4Gi
-    
-    # Persistence (will be enabled by trh-sdk if EFS available)
-    persistence:
-      enabled: false  # Will be set by trh-sdk based on EFS availability
-      storageClassName: "efs-sc"
-      size: "10Gi"
-      accessModes:
-        - ReadWriteMany
     
     # Ingress for ALB
     ingress:
@@ -109,9 +116,9 @@ kube-prometheus-stack:
   alertmanager:
     enabled: false
   
-  # Additional exporters
+  # Additional exporters (NodeExporter disabled for Fargate compatibility)
   nodeExporter:
-    enabled: true
+    enabled: false  # Always disabled for Fargate compatibility
   
   kubeStateMetrics:
     enabled: true
@@ -175,98 +182,37 @@ prometheus-blackbox-exporter:
       scrapeTimeout: 30s
 
 # ============================================================================
-# Chart-specific configurations (for templating and trh-sdk integration)
+# Thanos Stack Integration (for trh-sdk)
 # ============================================================================
 
-# Prometheus configuration (for templating)
-prometheus:
-  enabled: true
-  
-  # Thanos Stack specific scrape targets (template for trh-sdk)
-  scrapeTargets:
-    opNode:
-      enabled: true
-      port: 7300
-      path: "/metrics"
-      interval: "30s"
-      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-node
-    opBatcher:
-      enabled: true
-      port: 7300
-      path: "/metrics"
-      interval: "30s"
-      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-batcher
-    opProposer:
-      enabled: true
-      port: 7300
-      path: "/metrics"
-      interval: "30s"
-      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-proposer
-    opGeth:
-      enabled: true
-      port: 6060
-      path: "/debug/metrics/prometheus"
-      interval: "30s"
-      # Service name will be: {thanosStack.releaseName}-thanos-stack-op-geth
-    blockscout:
-      enabled: true
-      port: 3000
-      path: "/metrics"
-      interval: "1m"
-      # Service name will be: {thanosStack.releaseName}-thanos-stack-blockscout
-
-# Grafana configuration (for templating)
-grafana:
-  enabled: true
-  
-  # Admin credentials (will be set by trh-sdk)
-  adminUser: admin
-  adminPassword: ""  # Will be set by user input
-  
-  # Note: Dashboards are now managed via files in dashboards/ directory
-  # They are automatically imported via Grafana sidecar when labeled with grafana_dashboard: "1"
-
-# Blackbox Exporter configuration (for templating)
-blackboxExporter:
-  enabled: true
-  
-  # Health check targets (trh-sdk will set these)
-  targets:
-    l1Rpc:
-      enabled: true
-      # URL will be set from global.l1RpcUrl
-    # Removed: proxyd, graph-node, redis as per requirements
-
-# Alert rules configuration
-alerting:
-  enabled: false
-  # Thanos Stack specific alerts
-  thanosStackAlerts:
+# Thanos Stack specific scrape targets (template for trh-sdk)
+scrapeTargets:
+  opNode:
     enabled: true
-  # System alerts
-  systemAlerts:
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opBatcher:
     enabled: true
-
-# Service monitoring configuration (trh-sdk managed)
-serviceMonitoring:
-  # Enable automatic service discovery in Thanos namespace
-  autoDiscovery:
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opProposer:
     enabled: true
-    # Namespaces will be set by trh-sdk (thanosStack.namespace)
-    namespaces: []
-  
-  # Service endpoints (will be populated by trh-sdk)
-  endpoints:
-    opNode: ""       # Will be set to: {thanosStack.releaseName}-thanos-stack-op-node:7300
-    opBatcher: ""    # Will be set to: {thanosStack.releaseName}-thanos-stack-op-batcher:7300
-    opProposer: ""   # Will be set to: {thanosStack.releaseName}-thanos-stack-op-proposer:7300
-    opGeth: ""       # Will be set to: {thanosStack.releaseName}-thanos-stack-op-geth:6060
-    blockscout: ""   # Will be set to: {thanosStack.releaseName}-thanos-stack-blockscout:3000
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opGeth:
+    enabled: true
+    port: 6060
+    path: "/debug/metrics/prometheus"
+    interval: "30s"
+  blockscout:
+    enabled: true
+    port: 3000
+    path: "/metrics"
+    interval: "1m"
 
-# Advanced configuration
-advanced:
-  # EFS configuration (set by trh-sdk)
-  efs:
-    enabled: false
-    fileSystemId: ""
+# Additional scrape configurations (for custom targets)
+additionalScrapeConfigs: []
 

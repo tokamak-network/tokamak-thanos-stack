@@ -1,0 +1,22 @@
+{{- if and .Values.global.storage.enabled (eq .Values.global.storage.storageClass "efs-sc") }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs-sc
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  {{- if .Values.global.storage.efsFileSystemId }}
+  fileSystemId: {{ .Values.global.storage.efsFileSystemId }}
+  {{- end }}
+  directoryPerms: "0755"
+  gidRangeStart: "1000"
+  gidRangeEnd: "2000"
+  basePath: "/dynamic_provisioning"
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+reclaimPolicy: Delete
+{{- end }} 
