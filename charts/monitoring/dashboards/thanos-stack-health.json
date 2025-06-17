@@ -738,7 +738,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Thanos Stack - Health Checks",
-  "uid": "thanos-stack-health",
+  "uid": "thanos-stack-health-fixed",
   "version": 1,
   "weekStart": ""
 } 
