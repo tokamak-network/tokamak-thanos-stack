@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "Thanos Stack System Metrics - Infrastructure and Kubernetes Monitoring",
+  "description": "Cluster-wide System Metrics with namespace filtering",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -34,7 +34,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Pod status overview",
+      "description": "Pod status overview filtered by namespace",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -91,7 +91,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "kube_pod_info{namespace=~\".*thanos.*|.*monitoring.*\"}",
+          "expr": "kube_pod_info{namespace=~\"$namespace\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -132,7 +132,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "CPU usage by pod",
+      "description": "CPU usage by pod (aggregated by pod name to avoid duplicates)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -204,11 +204,10 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -216,8 +215,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(container_cpu_usage_seconds_total{namespace=~\".*thanos.*|.*monitoring.*\", container!=\"POD\", container!=\"\"}[5m]) * 100",
-          "legendFormat": "{{pod}} - {{container}}",
+          "expr": "sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"POD\", container!=\"\"}[5m])) * 100",
+          "legendFormat": "{{namespace}}/{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -230,7 +229,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Memory usage by pod",
+      "description": "Memory usage by pod (aggregated by pod name to avoid duplicates)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -300,11 +299,10 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -312,8 +310,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "container_memory_usage_bytes{namespace=~\".*thanos.*|.*monitoring.*\", container!=\"POD\", container!=\"\"}",
-          "legendFormat": "{{pod}} - {{container}}",
+          "expr": "sum by (namespace, pod) (container_memory_usage_bytes{namespace=~\"$namespace\", container!=\"POD\", container!=\"\"})",
+          "legendFormat": "{{namespace}}/{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -326,7 +324,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Total CPU cores used",
+      "description": "Total CPU usage for selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -341,16 +339,12 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 2
-              },
-              {
                 "color": "red",
-                "value": 4
+                "value": 80
               }
             ]
           },
-          "unit": "short"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -362,9 +356,6 @@
       },
       "id": 4,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -373,7 +364,8 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -383,7 +375,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\".*thanos.*|.*monitoring.*\", container!=\"POD\", container!=\"\"}[5m]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"POD\", container!=\"\"}[5m]))",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -391,14 +383,14 @@
         }
       ],
       "title": "Total CPU Usage",
-      "type": "stat"
+      "type": "gauge"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Total memory used",
+      "description": "Total memory usage for selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -413,12 +405,8 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 2147483648
-              },
-              {
                 "color": "red",
-                "value": 4294967296
+                "value": 80
               }
             ]
           },
@@ -434,9 +422,6 @@
       },
       "id": 5,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -445,7 +430,8 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -455,7 +441,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(container_memory_usage_bytes{namespace=~\".*thanos.*|.*monitoring.*\", container!=\"POD\", container!=\"\"})",
+          "expr": "sum(container_memory_usage_bytes{namespace=~\"$namespace\", container!=\"POD\", container!=\"\"})",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -463,14 +449,14 @@
         }
       ],
       "title": "Total Memory Usage",
-      "type": "stat"
+      "type": "gauge"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Number of running pods",
+      "description": "Number of running pods in selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -481,20 +467,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "green",
-                "value": 3
+                "color": "red",
+                "value": 80
               }
             ]
-          },
-          "unit": "short"
+          }
         },
         "overrides": []
       },
@@ -527,7 +508,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "count(kube_pod_info{namespace=~\".*thanos.*|.*monitoring.*\", phase=\"Running\"})",
+          "expr": "count(kube_pod_info{namespace=~\"$namespace\", phase=\"Running\"})",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -542,7 +523,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Pod restart count",
+      "description": "Total container restarts in selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -558,15 +539,14 @@
               },
               {
                 "color": "yellow",
-                "value": 1
+                "value": 5
               },
               {
                 "color": "red",
-                "value": 5
+                "value": 10
               }
             ]
-          },
-          "unit": "short"
+          }
         },
         "overrides": []
       },
@@ -599,7 +579,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_status_restarts_total{namespace=~\".*thanos.*|.*monitoring.*\"})",
+          "expr": "sum(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"})",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -614,7 +594,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Network I/O by pod",
+      "description": "Network I/O for pods in selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -684,11 +664,10 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -696,8 +675,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(container_network_receive_bytes_total{namespace=~\".*thanos.*|.*monitoring.*\"}[5m])",
-          "legendFormat": "{{pod}} - RX",
+          "expr": "sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[5m]))",
+          "legendFormat": "{{namespace}}/{{pod}} - RX",
           "range": true,
           "refId": "A"
         },
@@ -707,9 +686,9 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(container_network_transmit_bytes_total{namespace=~\".*thanos.*|.*monitoring.*\"}[5m])",
+          "expr": "sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[5m]))",
           "hide": false,
-          "legendFormat": "{{pod}} - TX",
+          "legendFormat": "{{namespace}}/{{pod}} - TX",
           "range": true,
           "refId": "B"
         }
@@ -722,7 +701,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Storage usage by persistent volumes",
+      "description": "Storage usage by PVC in selected namespaces",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -770,12 +749,8 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 70
-              },
-              {
                 "color": "red",
-                "value": 90
+                "value": 80
               }
             ]
           },
@@ -798,11 +773,10 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -810,8 +784,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 - (kubelet_volume_stats_available_bytes{namespace=~\".*thanos.*|.*monitoring.*\"} / kubelet_volume_stats_capacity_bytes{namespace=~\".*thanos.*|.*monitoring.*\"}) * 100",
-          "legendFormat": "{{persistentvolumeclaim}}",
+          "expr": "100 - (kubelet_volume_stats_available_bytes{namespace=~\"$namespace\"} / kubelet_volume_stats_capacity_bytes{namespace=~\"$namespace\"}) * 100",
+          "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
           "range": true,
           "refId": "A"
         }
@@ -821,11 +795,47 @@
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 38,
+  "schemaVersion": 37,
   "style": "dark",
-  "tags": ["thanos", "system", "kubernetes"],
+  "tags": [
+    "kubernetes",
+    "monitoring",
+    "system"
+  ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_pod_info, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -833,8 +843,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Thanos Stack - System Metrics",
-  "uid": "thanos-stack-system",
+  "title": "Cluster-wide System Metrics",
+  "uid": "thanos-stack-system-fixed",
   "version": 1,
   "weekStart": ""
 } 

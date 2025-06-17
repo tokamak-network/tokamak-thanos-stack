@@ -622,7 +622,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Thanos Stack - Application Metrics",
-  "uid": "thanos-stack-app",
+  "uid": "thanos-stack-app-fixed",
   "version": 1,
   "weekStart": ""
 } 
