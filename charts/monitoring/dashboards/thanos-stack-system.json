@@ -1559,7 +1559,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Thanos Stack System Resource Monitoring Dashboard",
-  "uid": "thanos-stack-system",
+  "uid": "thanos-stack-system-fixed",
   "version": 1,
   "weekStart": ""
 } 
