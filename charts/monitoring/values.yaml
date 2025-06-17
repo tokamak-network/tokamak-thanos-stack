@@ -219,6 +219,11 @@ scrapeTargets:
     port: 3000
     path: "/metrics"
     interval: "1m"
+  blockExplorerFrontend:
+    enabled: true
+    port: 80
+    path: "/api/healthz"
+    interval: "1m"
 
 # Additional scrape configurations (for custom targets)
 additionalScrapeConfigs: []

@@ -688,7 +688,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Thanos Stack Blackbox Monitoring Dashboard",
-  "uid": "thanos-stack-health",
+  "uid": "thanos-stack-blackbox",
   "version": 1,
   "weekStart": ""
 } 
