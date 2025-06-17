@@ -1,27 +1,13 @@
-{{- if and .Values.kubePrometheusStack.prometheus.prometheusSpec.storageSpec .Values.kubePrometheusStack.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate }}
----
-# EFS StorageClass for Prometheus and Grafana persistence
-# Note: This is typically created by the Kubernetes cluster setup (terraform)
-# but included here for completeness
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: efs-sc
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-provisioner: efs.csi.aws.com
-parameters:
-  provisioningMode: efs-ap
-  directoryPerms: "0755"
-  gidRangeStart: "1000"
-  gidRangeEnd: "2000"
-  basePath: "/monitoring"
-{{- end }}
-
 {{/* 
-Note: PersistentVolumes are not needed when using dynamic provisioning with EFS StorageClass.
-The kube-prometheus-stack will create PVCs automatically, and the EFS CSI driver will 
-provision the volumes dynamically.
+StorageClass and PersistentVolumes are handled externally:
 
-Manual PV creation is only needed for static provisioning scenarios.
+1. EFS StorageClass (efs-sc) is created by terraform/kubernetes setup
+2. PersistentVolumes are dynamically provisioned by the EFS CSI driver
+3. kube-prometheus-stack creates PVCs automatically when storageSpec is configured
+
+This template file is kept for reference but contains no active resources.
+All storage provisioning is handled by:
+- Terraform (creates EFS and StorageClass)
+- kube-prometheus-stack subchart (creates PVCs)
+- EFS CSI driver (provisions PVs dynamically)
 */}} 
