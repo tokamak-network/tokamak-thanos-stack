@@ -852,13 +852,9 @@
     "list": [
       {
         "current": {
-          "selected": true,
-          "text": [
-            "theo0613"
-          ],
-          "value": [
-            "theo0613"
-          ]
+          "selected": false,
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
