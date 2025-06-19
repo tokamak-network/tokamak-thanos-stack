@@ -110,18 +110,18 @@ data:
   additional-scrape-configs.yaml: |
     {{- range $name, $config := .Values.scrapeTargets }}
     {{- if $config.enabled }}
-    - job_name: {{ $name | kebabcase }}
+    - job_name: {{ $name }}
       static_configs:
         - targets:
-            - "{{ $.Values.thanosStack.releaseName }}-thanos-stack-{{ $name | kebabcase }}:{{ $config.port }}"
+            - "{{ $.Values.thanosStack.releaseName }}-thanos-stack-{{ $name }}:{{ $config.port }}"
       metrics_path: {{ $config.path }}
       scrape_interval: {{ $config.interval }}
     {{- end }}
     {{- end }}
     
     {{- if .Values.global.l1RpcUrl }}
-    # Blackbox exporter health checks for L1 RPC
-    - job_name: blackbox-l1-rpc-synced
+    # Blackbox exporter health checks for L1 RPC (dashboard-compatible job names)
+    - job_name: blackbox-eth-node-synced
       metrics_path: /probe
       params:
         module: [http_post_eth_node_synced_2xx]
@@ -138,7 +138,7 @@ data:
         - target_label: __address__
           replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
           
-    - job_name: blackbox-l1-rpc-block-number
+    - job_name: blackbox-eth-block-number
       metrics_path: /probe
       params:
         module: [http_post_eth_block_number_2xx]
