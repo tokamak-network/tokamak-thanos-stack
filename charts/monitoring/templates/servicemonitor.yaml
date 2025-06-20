@@ -1,9 +1,10 @@
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
-# ServiceMonitor for OP Stack components
+# Universal ServiceMonitor for all OP Stack and Blockchain services
+# Dynamically discovers services with proper labels and monitors multiple metric endpoints
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "monitoring.fullname" . }}-op-node
+  name: {{ include "monitoring.fullname" . }}-universal
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "monitoring.labels" . | nindent 4 }}
@@ -14,128 +15,54 @@ spec:
       - {{ .Values.thanosStack.namespace }}
   selector:
     matchExpressions:
+      # Match services with either app.kubernetes.io/name or app.kubernetes.io/instance labels
       - key: app.kubernetes.io/name
-        operator: In
-        values: ["op-node"]
-  endpoints:
-    - port: metrics
-      path: /metrics
-      interval: 30s
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_service_name]
-          targetLabel: job
-          replacement: "op-node"
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ include "monitoring.fullname" . }}-op-batcher
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    release: {{ .Release.Name }}
-spec:
-  namespaceSelector:
-    matchNames:
-      - {{ .Values.thanosStack.namespace }}
-  selector:
-    matchExpressions:
-      - key: app.kubernetes.io/name
-        operator: In
-        values: ["op-batcher"]
-  endpoints:
-    - port: metrics
-      path: /metrics
-      interval: 30s
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_service_name]
-          targetLabel: job
-          replacement: "op-batcher"
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ include "monitoring.fullname" . }}-op-proposer
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    release: {{ .Release.Name }}
-spec:
-  namespaceSelector:
-    matchNames:
-      - {{ .Values.thanosStack.namespace }}
-  selector:
-    matchExpressions:
-      - key: app.kubernetes.io/name
-        operator: In
-        values: ["op-proposer"]
-  endpoints:
-    - port: metrics
-      path: /metrics
-      interval: 30s
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_service_name]
-          targetLabel: job
-          replacement: "op-proposer"
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ include "monitoring.fullname" . }}-op-geth
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    release: {{ .Release.Name }}
-spec:
-  namespaceSelector:
-    matchNames:
-      - {{ .Values.thanosStack.namespace }}
-  selector:
-    matchExpressions:
-      - key: app.kubernetes.io/name
-        operator: In
-        values: ["op-geth"]
-  endpoints:
-    - port: metrics
-      path: /debug/metrics/prometheus
-      interval: 30s
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_service_name]
-          targetLabel: job
-          replacement: "op-geth"
----
-# ServiceMonitor for any Thanos Stack service (fallback)
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ include "monitoring.fullname" . }}-thanos-stack-fallback
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    release: {{ .Release.Name }}
-spec:
-  namespaceSelector:
-    matchNames:
-      - {{ .Values.thanosStack.namespace }}
-  selector:
-    matchExpressions:
+        operator: Exists
       - key: app.kubernetes.io/instance
         operator: Exists
   endpoints:
+    # Standard metrics endpoint (most OP Stack components)
     - port: metrics
       path: /metrics
       interval: 30s
       relabelings:
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: job
-          regex: ".*-(op-node|op-batcher|op-proposer|op-geth|blockscout).*"
+          regex: ".*-([^-]+)(?:-svc)?$"
           replacement: "${1}"
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service_name
+    # Geth-style metrics endpoint
     - port: metrics
       path: /debug/metrics/prometheus
       interval: 30s
       relabelings:
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: job
-          regex: ".*-op-geth.*"
-          replacement: "op-geth"
+          regex: ".*(geth|l2geth).*"
+          replacement: "geth"
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service_name
+    # Blockscout metrics endpoint
+    - port: http
+      path: /metrics
+      interval: 1m
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: job
+          regex: ".*blockscout.*"
+          replacement: "blockscout"
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service_name
+    # Health check endpoint for frontend services
+    - port: http
+      path: /api/healthz
+      interval: 1m
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: job
+          regex: ".*(frontend|explorer).*"
+          replacement: "frontend"
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service_name
 {{- end }} 
