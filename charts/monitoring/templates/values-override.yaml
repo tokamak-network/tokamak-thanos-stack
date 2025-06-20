@@ -97,7 +97,8 @@ data:
 
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
 ---
-# ConfigMap for trh-sdk dynamic scrape configuration
+# ConfigMap for Prometheus additional scrape configuration
+# This is dynamically generated based on values.yaml scrapeTargets and global settings
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -106,21 +107,21 @@ metadata:
   labels:
     {{- include "monitoring.labels" . | nindent 4 }}
 data:
-  # Additional scrape configs for Prometheus (trh-sdk format)
+  # Additional scrape configs for Prometheus
   additional-scrape-configs.yaml: |
     {{- range $name, $config := .Values.scrapeTargets }}
     {{- if $config.enabled }}
     - job_name: {{ $name }}
       static_configs:
         - targets:
-            - "{{ $.Values.thanosStack.releaseName }}-thanos-stack-{{ $name }}:{{ $config.port }}"
+            - "{{ $.Values.thanosStack.releaseName }}-{{ $name }}:{{ $config.port }}"
       metrics_path: {{ $config.path }}
       scrape_interval: {{ $config.interval }}
     {{- end }}
     {{- end }}
     
     {{- if .Values.global.l1RpcUrl }}
-    # Blackbox exporter health checks for L1 RPC (dashboard-compatible job names)
+    # Blackbox exporter health checks for L1 RPC
     - job_name: blackbox-eth-node-synced
       metrics_path: /probe
       params:
@@ -156,22 +157,9 @@ data:
           replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
     {{- end }}
     
+    # Custom additional scrape configurations (if any)
     {{- range .Values.additionalScrapeConfigs }}
     {{ . | toYaml | nindent 4 }}
     {{- end }}
 
-{{- end }}
-
-{{- if .Values.global.l1RpcUrl }}
----
-# ConfigMap to store L1 RPC URL for reference
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "monitoring.fullname" . }}-l1-rpc-config
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-data:
-  l1-rpc-url: {{ .Values.global.l1RpcUrl | quote }}
 {{- end }} 
