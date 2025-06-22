@@ -10,6 +10,7 @@ data "aws_vpc" "vpc" {
 
 module "efs" {
   source = "terraform-aws-modules/efs/aws"
+  version = "< 2.0.0"
 
   # File system
   name           = var.efs_name
