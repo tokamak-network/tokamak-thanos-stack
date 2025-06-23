@@ -23,22 +23,28 @@
     "liveNow": false,
     "panels": [
       {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 50,
+        "panels": [],
+        "title": "Core Components Status",
+        "type": "row"
+      },
+      {
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "description": "Status of OP Stack components",
+        "description": "OP Node component status",
         "fieldConfig": {
           "defaults": {
             "color": {
               "mode": "thresholds"
-            },
-            "custom": {
-              "align": "auto",
-              "cellOptions": {
-                "type": "auto"
-              },
-              "inspect": false
             },
             "mappings": [
               {
@@ -61,36 +67,42 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
+                  "color": "red",
                   "value": null
                 },
                 {
-                  "color": "red",
-                  "value": 80
+                  "color": "green",
+                  "value": 1
                 }
               ]
-            }
+            },
+            "unit": "short"
           },
           "overrides": []
         },
         "gridPos": {
-          "h": 6,
-          "w": 24,
+          "h": 4,
+          "w": 6,
           "x": 0,
-          "y": 0
+          "y": 1
         },
-        "id": 1,
+        "id": 51,
         "options": {
-          "cellHeight": "sm",
-          "footer": {
-            "countRows": false,
-            "fields": "",
-            "reducer": [
-              "sum"
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
             ],
-            "show": false
+            "fields": "",
+            "values": false
           },
-          "showHeader": true
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
         },
         "pluginVersion": "11.2.1",
         "targets": [
@@ -100,33 +112,276 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "up{job=~\"op-node|op-batcher|op-proposer|op-geth\"}",
-            "format": "table",
+            "expr": "up{job=\"op-node\"}",
             "instant": true,
-            "legendFormat": "__auto",
+            "legendFormat": "OP Node",
             "range": false,
             "refId": "A"
           }
         ],
-        "title": "OP Stack Components Status",
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {
-                "Time": true,
-                "__name__": true
-              },
-              "indexByName": {},
-              "renameByName": {
-                "Value": "Status",
-                "instance": "Instance",
-                "job": "Component"
+        "title": "OP Node Status",
+        "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "OP Geth component status",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "index": 1,
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "index": 0,
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
               }
-            }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 1
+        },
+        "id": 52,
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "11.2.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "up{job=\"op-geth\"}",
+            "instant": true,
+            "legendFormat": "OP Geth",
+            "range": false,
+            "refId": "A"
           }
         ],
-        "type": "table"
+        "title": "OP Geth Status",
+        "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "OP Proposer component status",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "index": 1,
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "index": 0,
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 1
+        },
+        "id": 53,
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "11.2.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "up{job=\"op-proposer\"}",
+            "instant": true,
+            "legendFormat": "OP Proposer",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "OP Proposer Status",
+        "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "OP Batcher component status",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "index": 1,
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "index": 0,
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 1
+        },
+        "id": 54,
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "11.2.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "up{job=\"op-batcher\"}",
+            "instant": true,
+            "legendFormat": "OP Batcher",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "OP Batcher Status",
+        "type": "stat"
       },
       {
         "datasource": {
@@ -177,7 +432,7 @@
           "h": 4,
           "w": 6,
           "x": 0,
-          "y": 6
+          "y": 5
         },
         "id": 10,
         "options": {
@@ -264,7 +519,7 @@
           "h": 4,
           "w": 6,
           "x": 6,
-          "y": 6
+          "y": 5
         },
         "id": 11,
         "options": {
@@ -783,14 +1038,14 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "op_proposer_default_txmgr_confirm_total{status=\"success\"}",
+            "expr": "op_proposer_default_txmgr_pending_txs",
             "instant": true,
-            "legendFormat": "Proposer Confirmations",
+            "legendFormat": "Pending Transactions",
             "range": false,
             "refId": "A"
           }
         ],
-        "title": "Proposer Successful Confirmations",
+        "title": "Proposer Pending Transactions",
         "type": "stat"
       },
       {
@@ -858,7 +1113,7 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "op_proposer_default_txmgr_tx_fee_gwei_total / 1000000000",
+            "expr": "op_proposer_default_txmgr_tx_fee_gwei / 1000000000",
             "instant": true,
             "legendFormat": "Proposer Fees (ETH)",
             "range": false,
@@ -1022,7 +1277,7 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "op_batcher_default_batcher_tx_total{stage=\"submitted\"}",
+            "expr": "op_batcher_default_batcher_tx_total{job=\"op-batcher\",stage=\"submitted\"}",
             "instant": true,
             "legendFormat": "Submitted Batches",
             "range": false,

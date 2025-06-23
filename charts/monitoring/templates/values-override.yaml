@@ -11,25 +11,8 @@ metadata:
 data:
   # Storage configuration
   storage-enabled: {{ .Values.global.storage.enabled | quote }}
-  {{- if .Values.global.storage.efsFileSystemId }}
-  efs-file-system-id: {{ .Values.global.storage.efsFileSystemId | quote }}
-  {{- end }}
   {{- if .Values.global.storage.awsRegion }}
   aws-region: {{ .Values.global.storage.awsRegion | quote }}
-  {{- end }}
-  
-  {{- if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId }}
-  # EFS direct mount information
-  efs-enabled: "true"
-  storage-info: |
-    EFS Direct Mount Configuration:
-    - Method: Direct NFS mount (no CSI driver required)
-    - Access Mode: ReadWriteMany
-    {{- if .Values.global.storage.efsFileSystemId }}
-    - File System ID: {{ .Values.global.storage.efsFileSystemId }}
-    - NFS Server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
-    {{- end }}
-    - Fargate Compatible: Yes
   {{- end }}
   
   # Computed values for subchart configuration
@@ -53,18 +36,9 @@ data:
                     app: prometheus
                     monitoring-stack: {{ .Values.thanosStack.chainName }}
                     component: monitoring
-          {{- else if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId .Values.global.storage.awsRegion }}
-          # EFS direct mount configuration (fallback)
-          extraVolumes:
-            - name: prometheus-efs-storage
-              nfs:
-                server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
-                path: /prometheus
-          extraVolumeMounts:
-            - name: prometheus-efs-storage
-              mountPath: /prometheus-efs
-              subPath: ""
           {{- end }}
+          
+
           
           # Apply global security context
           securityContext:
@@ -87,20 +61,6 @@ data:
               app: grafana
               monitoring-stack: {{ .Values.thanosStack.chainName }}
               component: monitoring
-        {{- else if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId .Values.global.storage.awsRegion }}
-        # EFS direct mount configuration (fallback)
-        extraVolumes:
-          - name: grafana-efs-storage
-            nfs:
-              server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
-              path: /grafana
-        extraVolumeMounts:
-          - name: grafana-efs-storage
-            mountPath: /var/lib/grafana-efs
-            subPath: ""
-        # Disable default persistence since we're using direct mount
-        persistence:
-          enabled: false
         {{- else }}
         persistence:
           enabled: false  # Use emptyDir volumes
@@ -183,5 +143,7 @@ data:
     {{- range .Values.additionalScrapeConfigs }}
     {{ . | toYaml | nindent 4 }}
     {{- end }}
+
+
 
 {{- end }} 

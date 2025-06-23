@@ -15,36 +15,35 @@ spec:
       - {{ .Values.thanosStack.namespace }}
   selector:
     matchExpressions:
-      # Match services with either app.kubernetes.io/name or app.kubernetes.io/instance labels
-      - key: app.kubernetes.io/name
-        operator: Exists
-      - key: app.kubernetes.io/instance
-        operator: Exists
+      # Match services managed by Helm (covers Thanos Stack services)
+      - key: app.kubernetes.io/managed-by
+        operator: In
+        values: ["Helm"]
   endpoints:
-    # Standard metrics endpoint (most OP Stack components)
-    - port: metrics
+    # OP Stack components metrics endpoint (7300 port)
+    - targetPort: 7300
       path: /metrics
       interval: 30s
       relabelings:
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: job
-          regex: ".*-([^-]+)(?:-svc)?$"
+          regex: ".*-(op-[^-]+).*"
           replacement: "${1}"
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: service_name
-    # Geth-style metrics endpoint
-    - port: metrics
+    # Geth metrics endpoint (6060 port)
+    - targetPort: 6060
       path: /debug/metrics/prometheus
       interval: 30s
       relabelings:
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: job
-          regex: ".*(geth|l2geth).*"
-          replacement: "geth"
+          regex: ".*(geth).*"
+          replacement: "op-geth"
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: service_name
-    # Blockscout metrics endpoint
-    - port: http
+    # Blockscout metrics endpoint (3000 port)
+    - targetPort: 3000
       path: /metrics
       interval: 1m
       relabelings:
@@ -54,15 +53,87 @@ spec:
           replacement: "blockscout"
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: service_name
-    # Health check endpoint for frontend services
-    - port: http
-      path: /api/healthz
+    # OP Bridge metrics endpoint (3000 port)
+    - targetPort: 3000
+      path: /metrics
       interval: 1m
       relabelings:
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: job
-          regex: ".*(frontend|explorer).*"
-          replacement: "frontend"
+          regex: ".*(bridge).*"
+          replacement: "op-bridge"
         - sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: service_name
+
+{{- if .Values.global.l1RpcUrl }}
+---
+# Blackbox Exporter ServiceMonitor for L1 RPC health checks
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "monitoring.fullname" . }}-blackbox
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-blackbox-exporter
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /probe
+    params:
+      module: [http_post_eth_node_synced_2xx]
+      target: [{{ .Values.global.l1RpcUrl }}]
+    relabelings:
+    - sourceLabels: [__param_target]
+      targetLabel: instance
+    - sourceLabels: [__param_module]
+      targetLabel: module  
+    - targetLabel: __tmp_prometheus_job_name
+      replacement: blackbox-eth-node-synced
+    - targetLabel: job
+      replacement: blackbox-eth-node-synced
+    metricRelabelings:
+    - sourceLabels: [job]
+      targetLabel: job
+      replacement: blackbox-eth-node-synced
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "monitoring.fullname" . }}-blackbox-block
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-blackbox-exporter
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /probe
+    params:
+      module: [http_post_eth_block_number_2xx]
+      target: [{{ .Values.global.l1RpcUrl }}]
+    relabelings:
+    - sourceLabels: [__param_target]
+      targetLabel: instance
+    - sourceLabels: [__param_module]
+      targetLabel: module
+    - targetLabel: __tmp_prometheus_job_name
+      replacement: blackbox-eth-block-number
+    - targetLabel: job
+      replacement: blackbox-eth-block-number
+    metricRelabelings:
+    - sourceLabels: [job]
+      targetLabel: job
+      replacement: blackbox-eth-block-number
+{{- end }}
 {{- end }} 
