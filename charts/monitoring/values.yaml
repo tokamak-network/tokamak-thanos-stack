@@ -8,14 +8,12 @@ global:
   
   # Storage configuration
   storage:
-    # Enable persistent storage
+    # Enable persistent storage (dynamically set by trh-sdk based on user choice)
     enabled: false
     # Storage class to use (efs-sc for EFS, gp2 for EBS)
     storageClass: "efs-sc"
     # EFS file system ID (optional, will be auto-detected or created)
     efsFileSystemId: ""
-    # Force EFS usage even in Fargate environments
-    forceEFS: false
     
     # Storage size configurations
     prometheus:
