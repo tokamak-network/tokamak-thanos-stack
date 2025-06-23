@@ -11,28 +11,25 @@ metadata:
 data:
   # Storage configuration
   storage-enabled: {{ .Values.global.storage.enabled | quote }}
-  storage-class: {{ .Values.global.storage.storageClass | quote }}
   {{- if .Values.global.storage.efsFileSystemId }}
   efs-file-system-id: {{ .Values.global.storage.efsFileSystemId | quote }}
   {{- end }}
-  force-efs: {{ .Values.global.storage.forceEFS | quote }}
-  prometheus-size: {{ .Values.global.storage.prometheus.size | quote }}
-  grafana-size: {{ .Values.global.storage.grafana.size | quote }}
+  {{- if .Values.global.storage.awsRegion }}
+  aws-region: {{ .Values.global.storage.awsRegion | quote }}
+  {{- end }}
   
-  {{- if eq .Values.global.storage.storageClass "efs-sc" }}
-  # EFS specific information
+  {{- if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId }}
+  # EFS direct mount information
   efs-enabled: "true"
   storage-info: |
-    EFS Storage Configuration:
-    - StorageClass: {{ .Values.global.storage.storageClass }}
+    EFS Direct Mount Configuration:
+    - Method: Direct NFS mount (no CSI driver required)
     - Access Mode: ReadWriteMany
-    - Provisioner: efs.csi.aws.com
     {{- if .Values.global.storage.efsFileSystemId }}
     - File System ID: {{ .Values.global.storage.efsFileSystemId }}
-    {{- else }}
-    - File System ID: Auto-detected or created
+    - NFS Server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
     {{- end }}
-    - Force EFS: {{ .Values.global.storage.forceEFS }}
+    - Fargate Compatible: Yes
   {{- end }}
   
   # Computed values for subchart configuration
@@ -41,17 +38,32 @@ data:
     kube-prometheus-stack:
       prometheus:
         prometheusSpec:
-          # Storage configuration
-          {{- if .Values.global.storage.enabled }}
+          {{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
+          # Static provisioning with PVC
           storageSpec:
             volumeClaimTemplate:
               spec:
-                storageClassName: {{ .Values.global.storage.storageClass | quote }}
-                accessModes:
-                  - "ReadWriteMany"  # EFS supports multi-pod access
+                storageClassName: monitoring-efs-sc
+                accessModes: ["ReadWriteMany"]
                 resources:
                   requests:
-                    storage: {{ .Values.global.storage.prometheus.size | quote }}
+                    storage: 20Gi
+                selector:
+                  matchLabels:
+                    app: prometheus
+                    monitoring-stack: {{ .Values.thanosStack.chainName }}
+                    component: monitoring
+          {{- else if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId .Values.global.storage.awsRegion }}
+          # EFS direct mount configuration (fallback)
+          extraVolumes:
+            - name: prometheus-efs-storage
+              nfs:
+                server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
+                path: /prometheus
+          extraVolumeMounts:
+            - name: prometheus-efs-storage
+              mountPath: /prometheus-efs
+              subPath: ""
           {{- end }}
           
           # Apply global security context
@@ -63,14 +75,32 @@ data:
             
       # Grafana configuration
       grafana:
-        # Persistence configuration
-        {{- if .Values.global.storage.enabled }}
+        {{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
+        # Static provisioning with PVC
         persistence:
           enabled: true
-          storageClassName: {{ .Values.global.storage.storageClass | quote }}
-          size: {{ .Values.global.storage.grafana.size | quote }}
-          accessModes:
-            - ReadWriteMany  # EFS supports multi-pod access
+          storageClassName: monitoring-efs-sc
+          accessModes: ["ReadWriteMany"]
+          size: 10Gi
+          selector:
+            matchLabels:
+              app: grafana
+              monitoring-stack: {{ .Values.thanosStack.chainName }}
+              component: monitoring
+        {{- else if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId .Values.global.storage.awsRegion }}
+        # EFS direct mount configuration (fallback)
+        extraVolumes:
+          - name: grafana-efs-storage
+            nfs:
+              server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
+              path: /grafana
+        extraVolumeMounts:
+          - name: grafana-efs-storage
+            mountPath: /var/lib/grafana-efs
+            subPath: ""
+        # Disable default persistence since we're using direct mount
+        persistence:
+          enabled: false
         {{- else }}
         persistence:
           enabled: false  # Use emptyDir volumes

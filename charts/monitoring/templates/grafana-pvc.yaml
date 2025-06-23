@@ -1,0 +1,23 @@
+{{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "monitoring.fullname" . }}-grafana-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: grafana
+    component: monitoring
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: monitoring-efs-sc
+  selector:
+    matchLabels:
+      app: grafana
+      monitoring-stack: {{ .Values.thanosStack.chainName }}
+      component: monitoring
+{{- end }} 

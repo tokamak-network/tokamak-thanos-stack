@@ -1,0 +1,23 @@
+{{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "monitoring.fullname" . }}-prometheus-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: prometheus
+    component: monitoring
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: monitoring-efs-sc
+  selector:
+    matchLabels:
+      app: prometheus
+      monitoring-stack: {{ .Values.thanosStack.chainName }}
+      component: monitoring
+{{- end }} 

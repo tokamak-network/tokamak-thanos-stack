@@ -10,16 +10,12 @@ global:
   storage:
     # Enable persistent storage (dynamically set by trh-sdk based on user choice)
     enabled: false
-    # Storage class to use (always EFS when persistent storage is enabled)
-    storageClass: "efs-sc"
-    # EFS file system ID (optional, will be auto-detected or created)
+    # Use static provisioning with pre-created PV/PVC (recommended for production)
+    useStaticProvisioning: false
+    # EFS file system ID (required when persistent storage is enabled)
     efsFileSystemId: ""
-    
-    # Storage size configurations
-    prometheus:
-      size: "50Gi"
-    grafana:
-      size: "10Gi"
+    # AWS region (required for EFS direct mount)
+    awsRegion: ""
   
   # Fargate-compatible security context (applied to all components)
   securityContext:
