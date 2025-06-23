@@ -10,7 +10,7 @@ global:
   storage:
     # Enable persistent storage (dynamically set by trh-sdk based on user choice)
     enabled: false
-    # Storage class to use (efs-sc for EFS, gp2 for EBS)
+    # Storage class to use (always EFS when persistent storage is enabled)
     storageClass: "efs-sc"
     # EFS file system ID (optional, will be auto-detected or created)
     efsFileSystemId: ""
@@ -47,7 +47,7 @@ serviceAccount:
   
 # Thanos Stack specific configuration (set by trh-sdk)
 thanosStack:
-  # Chain name (will be set by Rollup Hub SDK)
+  # Chain name (will be set by trh-sdk)
   chainName: ""
   # Namespace where Thanos Stack is deployed (will be set by trh-sdk)
   namespace: ""
@@ -192,10 +192,10 @@ prometheus-blackbox-exporter:
       scrapeTimeout: 30s
 
 # ============================================================================
-# Thanos Stack Integration (for trh-sdk)
+# Thanos Stack Integration
 # ============================================================================
 
-# Thanos Stack specific scrape targets (template for trh-sdk)
+# Specific scrape targets
 scrapeTargets:
   opNode:
     enabled: true

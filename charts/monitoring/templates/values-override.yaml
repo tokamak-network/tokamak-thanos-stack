@@ -48,11 +48,7 @@ data:
               spec:
                 storageClassName: {{ .Values.global.storage.storageClass | quote }}
                 accessModes:
-                  {{- if eq .Values.global.storage.storageClass "efs-sc" }}
-                  - "ReadWriteMany"
-                  {{- else }}
-                  - "ReadWriteOnce"
-                  {{- end }}
+                  - "ReadWriteMany"  # EFS supports multi-pod access
                 resources:
                   requests:
                     storage: {{ .Values.global.storage.prometheus.size | quote }}
@@ -74,14 +70,10 @@ data:
           storageClassName: {{ .Values.global.storage.storageClass | quote }}
           size: {{ .Values.global.storage.grafana.size | quote }}
           accessModes:
-            {{- if eq .Values.global.storage.storageClass "efs-sc" }}
-            - ReadWriteMany
-            {{- else }}
-            - ReadWriteOnce
-            {{- end }}
+            - ReadWriteMany  # EFS supports multi-pod access
         {{- else }}
         persistence:
-          enabled: false
+          enabled: false  # Use emptyDir volumes
         {{- end }}
         
         # Apply global security context
