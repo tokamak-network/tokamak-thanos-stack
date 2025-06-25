@@ -71,7 +71,10 @@ kube-prometheus-stack:
       scrapeInterval: 1m
       evaluationInterval: 1m
       
-      # Storage and security will be configured by templates
+      # Storage configuration (will be set based on global.storage settings)
+      # When global.storage.enabled=true and useStaticProvisioning=true:
+      # storageSpec will be configured via Helm templates
+      
       # Thanos Stack scrape targets (trh-sdk format)
       additionalScrapeConfigs: []
 

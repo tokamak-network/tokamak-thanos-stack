@@ -31,21 +31,17 @@ data:
                 resources:
                   requests:
                     storage: 20Gi
-                selector:
-                  matchLabels:
-                    app: prometheus
-                    monitoring-stack: {{ .Values.thanosStack.chainName }}
-                    component: monitoring
+          {{- else if .Values.global.storage.enabled }}
+          # Direct NFS Mount for EFS
+          volumes:
+            - name: prometheus-efs-storage
+              nfs:
+                server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
+                path: /prometheus
+          volumeMounts:
+            - name: prometheus-efs-storage
+              mountPath: /prometheus
           {{- end }}
-          
-
-          
-          # Apply global security context
-          securityContext:
-            {{- toYaml .Values.global.securityContext | nindent 12 }}
-          
-          podSecurityContext:
-            {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
             
       # Grafana configuration
       grafana:
@@ -56,22 +52,22 @@ data:
           storageClassName: monitoring-efs-sc
           accessModes: ["ReadWriteMany"]
           size: 10Gi
-          selector:
-            matchLabels:
-              app: grafana
-              monitoring-stack: {{ .Values.thanosStack.chainName }}
-              component: monitoring
+        {{- else if .Values.global.storage.enabled }}
+        # Direct NFS Mount for EFS
+        persistence:
+          enabled: false
+        extraVolumes:
+          - name: grafana-efs-storage
+            nfs:
+              server: {{ .Values.global.storage.efsFileSystemId }}.efs.{{ .Values.global.storage.awsRegion }}.amazonaws.com
+              path: /grafana
+        extraVolumeMounts:
+          - name: grafana-efs-storage
+            mountPath: /var/lib/grafana
         {{- else }}
         persistence:
-          enabled: false  # Use emptyDir volumes
+          enabled: false
         {{- end }}
-        
-        # Apply global security context
-        securityContext:
-          {{- toYaml .Values.global.securityContext | nindent 10 }}
-        
-        podSecurityContext:
-          {{- toYaml .Values.global.podSecurityContext | nindent 10 }}
           
       # Disable NodeExporter for Fargate compatibility
       nodeExporter:
@@ -80,7 +76,6 @@ data:
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
 ---
 # ConfigMap for Prometheus additional scrape configuration
-# This is dynamically generated based on values.yaml scrapeTargets and global settings
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -89,7 +84,6 @@ metadata:
   labels:
     {{- include "monitoring.labels" . | nindent 4 }}
 data:
-  # Additional scrape configs for Prometheus
   additional-scrape-configs.yaml: |
     {{- range $name, $config := .Values.scrapeTargets }}
     {{- if $config.enabled }}
@@ -101,49 +95,4 @@ data:
       scrape_interval: {{ $config.interval }}
     {{- end }}
     {{- end }}
-    
-    {{- if .Values.global.l1RpcUrl }}
-    # Blackbox exporter health checks for L1 RPC
-    - job_name: blackbox-eth-node-synced
-      metrics_path: /probe
-      params:
-        module: [http_post_eth_node_synced_2xx]
-      static_configs:
-        - targets:
-            - {{ .Values.global.l1RpcUrl | quote }}
-      relabel_configs:
-        - source_labels: [module]
-          target_label: __param_module
-        - source_labels: [__address__]
-          target_label: __param_target
-        - source_labels: [__param_target]
-          target_label: target
-        - target_label: __address__
-          replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
-          
-    - job_name: blackbox-eth-block-number
-      metrics_path: /probe
-      params:
-        module: [http_post_eth_block_number_2xx]
-      static_configs:
-        - targets:
-            - {{ .Values.global.l1RpcUrl | quote }}
-      relabel_configs:
-        - source_labels: [module]
-          target_label: __param_module
-        - source_labels: [__address__]
-          target_label: __param_target
-        - source_labels: [__param_target]
-          target_label: target
-        - target_label: __address__
-          replacement: "{{ include "monitoring.fullname" . }}-prometheus-blackbox-exporter:9115"
-    {{- end }}
-    
-    # Custom additional scrape configurations (if any)
-    {{- range .Values.additionalScrapeConfigs }}
-    {{ . | toYaml | nindent 4 }}
-    {{- end }}
-
-
-
 {{- end }} 
