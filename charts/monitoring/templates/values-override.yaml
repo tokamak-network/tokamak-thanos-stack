@@ -21,8 +21,8 @@ data:
     kube-prometheus-stack:
       prometheus:
         prometheusSpec:
-          {{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
-          # Static provisioning with PVC using existing efs-sc StorageClass
+          {{- if .Values.global.storage.enabled }}
+          # Dynamic provisioning with existing efs-sc StorageClass
           storageSpec:
             volumeClaimTemplate:
               spec:
@@ -35,8 +35,8 @@ data:
             
       # Grafana configuration
       grafana:
-        {{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning }}
-        # Static provisioning with PVC using existing efs-sc StorageClass
+        {{- if .Values.global.storage.enabled }}
+        # Dynamic provisioning with existing efs-sc StorageClass
         persistence:
           enabled: true
           storageClassName: efs-sc

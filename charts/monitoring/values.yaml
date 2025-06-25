@@ -8,14 +8,8 @@ global:
   
   # Storage configuration
   storage:
-    # Enable persistent storage (dynamically set by trh-sdk based on user choice)
+    # Enable persistent storage (dynamically set by trh-sdk)
     enabled: false
-    # Use static provisioning with pre-created PV/PVC (recommended for production)
-    useStaticProvisioning: false
-    # EFS file system ID (required when persistent storage is enabled)
-    efsFileSystemId: ""
-    # AWS region (required for EFS direct mount)
-    awsRegion: ""
   
   # Fargate-compatible security context (applied to all components)
   securityContext:
