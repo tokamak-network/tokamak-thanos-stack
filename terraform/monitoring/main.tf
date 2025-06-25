@@ -35,42 +35,24 @@ provider "kubectl" {
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
-# EFS StorageClass for monitoring
-resource "kubernetes_storage_class" "monitoring_efs_sc" {
-  count = var.enable_monitoring_persistence ? 1 : 0
-  
+# Get existing efs-sc StorageClass used by op-geth/op-node
+data "kubernetes_storage_class" "efs_sc" {
   metadata {
-    name = "monitoring-efs-sc"
-    labels = {
-      component = "monitoring"
-      managed-by = "terraform"
-    }
+    name = "efs-sc"
   }
-  
-  storage_provisioner = "efs.csi.aws.com"
-  
-  parameters = {
-    provisioningMode = "efs-utils"
-    fileSystemId     = var.efs_file_system_id
-    directoryPerms   = "0755"
-  }
-  
-  reclaim_policy         = "Retain"
-  allow_volume_expansion = true
-  volume_binding_mode    = "Immediate"
 }
 
-# Monitoring Persistent Volumes
+# Monitoring Persistent Volumes using existing efs-sc StorageClass
 resource "kubernetes_persistent_volume" "monitoring_prometheus" {
   count = var.enable_monitoring_persistence ? 1 : 0
   
   metadata {
     name = "${var.monitoring_stack_name}-prometheus-pv"
     labels = {
-      app            = "prometheus"
+      app              = "prometheus"
       monitoring-stack = var.monitoring_stack_name
-      component      = "monitoring"
-      managed-by     = "terraform"
+      component        = "monitoring"
+      managed-by       = "terraform"
     }
   }
   
@@ -81,20 +63,15 @@ resource "kubernetes_persistent_volume" "monitoring_prometheus" {
     
     access_modes                     = ["ReadWriteMany"]
     persistent_volume_reclaim_policy = "Retain"
-    storage_class_name              = kubernetes_storage_class.monitoring_efs_sc[0].metadata[0].name
+    storage_class_name              = "efs-sc"  # Use existing StorageClass
     
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = var.efs_file_system_id
-        volume_attributes = {
-          path = "/monitoring/prometheus"
-        }
+        volume_handle = "${var.efs_file_system_id}:/prometheus"
       }
     }
   }
-
-  depends_on = [kubernetes_storage_class.monitoring_efs_sc]
 }
 
 resource "kubernetes_persistent_volume" "monitoring_grafana" {
@@ -103,10 +80,10 @@ resource "kubernetes_persistent_volume" "monitoring_grafana" {
   metadata {
     name = "${var.monitoring_stack_name}-grafana-pv"
     labels = {
-      app            = "grafana"
+      app              = "grafana"
       monitoring-stack = var.monitoring_stack_name
-      component      = "monitoring"
-      managed-by     = "terraform"
+      component        = "monitoring"
+      managed-by       = "terraform"
     }
   }
   
@@ -117,18 +94,13 @@ resource "kubernetes_persistent_volume" "monitoring_grafana" {
     
     access_modes                     = ["ReadWriteMany"]
     persistent_volume_reclaim_policy = "Retain"
-    storage_class_name              = kubernetes_storage_class.monitoring_efs_sc[0].metadata[0].name
+    storage_class_name              = "efs-sc"  # Use existing StorageClass
     
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = var.efs_file_system_id
-        volume_attributes = {
-          path = "/monitoring/grafana"
-        }
+        volume_handle = "${var.efs_file_system_id}:/grafana"
       }
     }
   }
-
-  depends_on = [kubernetes_storage_class.monitoring_efs_sc]
 } 
