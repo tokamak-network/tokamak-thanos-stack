@@ -10,24 +10,25 @@ global:
   storage:
     # Enable persistent storage (dynamically set by trh-sdk)
     enabled: false
-    # Use static provisioning instead of dynamic provisioning (for Fargate compatibility)
-    useStaticProvisioning: false
+    # Use static provisioning instead of dynamic provisioning (for op-geth/op-node compatibility)
+    useStaticProvisioning: true
     # EFS filesystem ID (will be set by trh-sdk)
     efsFileSystemId: ""
   
   # Fargate-compatible security context (applied to all components)
+  # Using grafana user (472) for EFS compatibility
   securityContext:
     runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
+    runAsUser: 472
+    runAsGroup: 472
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
   
   podSecurityContext:
     runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
-    fsGroup: 65534
+    runAsUser: 472
+    runAsGroup: 472
+    fsGroup: 472
 
 # Chart behavior settings  
 createNamespace: false  # Handled by Helm --create-namespace flag
