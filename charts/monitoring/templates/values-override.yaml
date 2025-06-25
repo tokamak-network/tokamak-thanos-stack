@@ -11,8 +11,11 @@ metadata:
 data:
   # Storage configuration
   storage-enabled: {{ .Values.global.storage.enabled | quote }}
-  {{- if .Values.global.storage.awsRegion }}
-  aws-region: {{ .Values.global.storage.awsRegion | quote }}
+  {{- if .Values.global.storage.useStaticProvisioning }}
+  use-static-provisioning: {{ .Values.global.storage.useStaticProvisioning | quote }}
+  {{- end }}
+  {{- if .Values.global.storage.efsFileSystemId }}
+  efs-filesystem-id: {{ .Values.global.storage.efsFileSystemId | quote }}
   {{- end }}
   
   # Computed values for subchart configuration
@@ -22,6 +25,17 @@ data:
       prometheus:
         prometheusSpec:
           {{- if .Values.global.storage.enabled }}
+          {{- if .Values.global.storage.useStaticProvisioning }}
+          # Static provisioning with pre-created PVs
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: efs-sc
+                accessModes: ["ReadWriteMany"]
+                resources:
+                  requests:
+                    storage: 20Gi
+          {{- else }}
           # Dynamic provisioning with existing efs-sc StorageClass
           storageSpec:
             volumeClaimTemplate:
@@ -32,16 +46,26 @@ data:
                   requests:
                     storage: 20Gi
           {{- end }}
+          {{- end }}
             
       # Grafana configuration
       grafana:
         {{- if .Values.global.storage.enabled }}
+        {{- if .Values.global.storage.useStaticProvisioning }}
+        # Static provisioning with pre-created PV
+        persistence:
+          enabled: true
+          storageClassName: efs-sc
+          accessModes: ["ReadWriteMany"]
+          size: 10Gi
+        {{- else }}
         # Dynamic provisioning with existing efs-sc StorageClass
         persistence:
           enabled: true
           storageClassName: efs-sc
           accessModes: ["ReadWriteMany"]
           size: 10Gi
+        {{- end }}
         {{- else }}
         persistence:
           enabled: false
@@ -50,6 +74,49 @@ data:
       # Disable NodeExporter for Fargate compatibility
       nodeExporter:
         enabled: false
+
+{{- if and .Values.global.storage.enabled .Values.global.storage.useStaticProvisioning .Values.global.storage.efsFileSystemId }}
+---
+# Static PV for Prometheus
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-prometheus-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: prometheus
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
+---
+# Static PV for Grafana
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-grafana-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
+{{- end }}
 
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
 ---

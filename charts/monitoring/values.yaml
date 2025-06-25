@@ -10,6 +10,10 @@ global:
   storage:
     # Enable persistent storage (dynamically set by trh-sdk)
     enabled: false
+    # Use static provisioning instead of dynamic provisioning (for Fargate compatibility)
+    useStaticProvisioning: false
+    # EFS filesystem ID (will be set by trh-sdk)
+    efsFileSystemId: ""
   
   # Fargate-compatible security context (applied to all components)
   securityContext:
