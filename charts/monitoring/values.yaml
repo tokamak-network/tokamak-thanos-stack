@@ -10,8 +10,6 @@ global:
   storage:
     # Enable persistent storage (dynamically set by trh-sdk)
     enabled: false
-    # Use static provisioning instead of dynamic provisioning (for op-geth/op-node compatibility)
-    useStaticProvisioning: true
     # EFS filesystem ID (will be set by trh-sdk)
     efsFileSystemId: ""
   
