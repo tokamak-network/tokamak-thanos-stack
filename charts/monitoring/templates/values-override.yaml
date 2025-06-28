@@ -1,0 +1,112 @@
+# Values override for dynamic configuration based on global settings
+# This ConfigMap contains the computed values for the monitoring stack
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" . }}-values-override
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+data:
+  # Storage configuration
+  storage-enabled: {{ .Values.global.storage.enabled | quote }}
+  {{- if .Values.global.storage.efsFileSystemId }}
+  efs-filesystem-id: {{ .Values.global.storage.efsFileSystemId | quote }}
+  {{- end }}
+  
+  # Computed values for subchart configuration
+  values-override.yaml: |
+    # kube-prometheus-stack configuration
+    kube-prometheus-stack:
+      prometheus:
+        prometheusSpec:
+          {{- if .Values.global.storage.enabled }}
+          # Static provisioning with pre-created PVs
+          # Note: storageSpec is not needed as we use manually created PVCs
+          {{- end }}
+            
+      # Grafana configuration
+      grafana:
+        {{- if .Values.global.storage.enabled }}
+        # Static provisioning with pre-created PV
+        persistence:
+          enabled: true
+          storageClassName: efs-sc
+          accessModes: ["ReadWriteMany"]
+          size: 10Gi
+        {{- else }}
+        persistence:
+          enabled: false
+        {{- end }}
+          
+      # Disable NodeExporter for Fargate compatibility
+      nodeExporter:
+        enabled: false
+
+{{- if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId }}
+---
+# Static PV for Prometheus
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-prometheus-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: prometheus
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
+---
+# Static PV for Grafana
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-grafana-pv
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
+{{- end }}
+
+{{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
+---
+# ConfigMap for Prometheus additional scrape configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitoring.fullname" . }}-scrape-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+data:
+  additional-scrape-configs.yaml: |
+    {{- range $name, $config := .Values.scrapeTargets }}
+    {{- if $config.enabled }}
+    - job_name: {{ $name }}
+      static_configs:
+        - targets:
+            - "{{ $.Values.thanosStack.releaseName }}-{{ $name }}:{{ $config.port }}"
+      metrics_path: {{ $config.path }}
+      scrape_interval: {{ $config.interval }}
+    {{- end }}
+    {{- end }}
+{{- end }} 

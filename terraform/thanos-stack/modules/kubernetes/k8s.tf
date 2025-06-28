@@ -150,13 +150,7 @@ resource "helm_release" "aws-load-balancer-controller" {
   depends_on = [terraform_data.kubectl, module.lb_controller_role, aws_iam_role_policy.controller]
 }
 
-resource "kubernetes_storage_class" "efs-sc" {
-  metadata {
-    name = "efs-sc"
-  }
-  storage_provisioner = "efs.csi.aws.com"
-  depends_on = [ terraform_data.kubectl ]
-}
+
 
 module "eks-external-secrets" {
   source  = "DNXLabs/eks-external-secrets/aws"
@@ -201,5 +195,5 @@ resource "terraform_data" "thanos_stack_values" {
     }
   }
 
-  depends_on = [kubernetes_storage_class.efs-sc, module.eks-external-secrets, helm_release.aws-load-balancer-controller]
+  depends_on = [module.eks-external-secrets, helm_release.aws-load-balancer-controller]
 }

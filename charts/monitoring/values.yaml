@@ -1,0 +1,231 @@
+# Thanos Stack Monitoring Chart - Simplified Values
+# Based on Legacy structure optimization (trh-sdk Integration)
+
+# Global settings
+global:
+  # L1 RPC URL (will be set by Rollup Hub SDK)
+  l1RpcUrl: ""
+  
+  # Storage configuration
+  storage:
+    # Enable persistent storage (dynamically set by trh-sdk)
+    enabled: false
+    # EFS filesystem ID (will be set by trh-sdk)
+    efsFileSystemId: ""
+  
+  # Fargate-compatible security context (applied to all components)
+  # Using grafana user (472) for EFS compatibility
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 472
+    runAsGroup: 472
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+  
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 472
+    runAsGroup: 472
+    fsGroup: 472
+
+# Chart behavior settings  
+createNamespace: false  # Handled by Helm --create-namespace flag
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account settings
+serviceAccount:
+  create: true
+  name: ""
+  
+# Thanos Stack specific configuration (set by trh-sdk)
+thanosStack:
+  # Chain name (will be set by trh-sdk)
+  chainName: ""
+  # Namespace where Thanos Stack is deployed (will be set by trh-sdk)
+  namespace: ""
+  # Thanos Stack chart release name (will be set by trh-sdk)
+  releaseName: ""
+
+# ============================================================================
+# kube-prometheus-stack subchart configuration
+# ============================================================================
+kube-prometheus-stack:
+  # Prometheus configuration (based on Legacy structure)
+  prometheus:
+    prometheusSpec:
+      # Resource allocation (optimized for Thanos Stack)
+      resources:
+        requests:
+          cpu: 1500m      # From Legacy config
+          memory: 3Gi     # From Legacy config
+        
+      # Data retention settings
+      retention: 1y
+      retentionSize: 10GB
+      
+      # Scrape configuration
+      scrapeInterval: 1m
+      evaluationInterval: 1m
+      
+      # Storage configuration (will be set by trh-sdk via generated-values.yaml)
+      # storageSpec will be added when global.storage.enabled=true
+      
+      # Thanos Stack scrape targets (trh-sdk format)
+      additionalScrapeConfigs: []
+
+  # Grafana configuration
+  grafana:
+    enabled: true
+    
+    # Admin credentials (will be set by trh-sdk)
+    adminUser: admin
+    adminPassword: ""  # Will be set by user input
+    
+    # Resource allocation
+    resources:
+      requests:
+        cpu: 1500m
+        memory: 4Gi
+    
+    # Storage configuration (will be set by trh-sdk via generated-values.yaml)
+    # persistence will be added when global.storage.enabled=true
+    
+    # Ingress for ALB
+    ingress:
+      enabled: true
+      ingressClassName: alb
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/group.name: thanos-monitoring
+    
+    # Prometheus datasource configuration
+    defaultDashboardsEnabled: false
+    defaultDashboardsTimezone: utc
+    
+    # Dashboard providers
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: ALL
+      datasources:
+        enabled: true
+        defaultDatasourceEnabled: true
+
+  # Alertmanager (optional)
+  alertmanager:
+    enabled: false
+  
+  # Additional exporters (NodeExporter disabled for Fargate compatibility)
+  nodeExporter:
+    enabled: false  # Always disabled for Fargate compatibility
+  
+  kubeStateMetrics:
+    enabled: true
+
+# ============================================================================
+# prometheus-blackbox-exporter subchart configuration  
+# ============================================================================
+prometheus-blackbox-exporter:
+  enabled: true
+  
+  # Blackbox Exporter configuration (optimized for trh-sdk)
+  config:
+    modules:
+      # RPC sync status check (for L1 RPC)
+      http_post_eth_node_synced_2xx:
+        prober: http
+        timeout: 10s
+        http:
+          method: "POST"
+          headers:
+            Content-Type: application/json
+          body: '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
+          valid_status_codes: [200]
+          preferred_ip_protocol: ip4
+          fail_if_body_not_matches_regexp:
+            - '"result"\s*:\s*false'
+      # Block number check (for L1 RPC)
+      http_post_eth_block_number_2xx:
+        prober: http
+        timeout: 10s
+        http:
+          method: "POST"
+          headers:
+            Content-Type: application/json
+          body: '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}'
+          valid_status_codes: [200]
+          preferred_ip_protocol: ip4
+          fail_if_body_not_matches_regexp:
+            - '"result"\s*:\s*"0x[0-9a-fA-F]+"'
+      # TCP connectivity check (general purpose)
+      tcp_connect:
+        prober: tcp
+        timeout: 5s
+  
+  # Resource allocation
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 9115
+  
+  # ServiceMonitor for Prometheus discovery
+  serviceMonitor:
+    enabled: true
+    defaults:
+      labels:
+        app: blackbox-exporter
+      interval: 30s
+      scrapeTimeout: 30s
+
+# ============================================================================
+# Thanos Stack Integration
+# ============================================================================
+
+# Specific scrape targets
+scrapeTargets:
+  opNode:
+    enabled: true
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opBatcher:
+    enabled: true
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opProposer:
+    enabled: true
+    port: 7300
+    path: "/metrics"
+    interval: "30s"
+  opGeth:
+    enabled: true
+    port: 6060
+    path: "/debug/metrics/prometheus"
+    interval: "30s"
+  blockscout:
+    enabled: true
+    port: 3000
+    path: "/metrics"
+    interval: "1m"
+  blockExplorerFrontend:
+    enabled: true
+    port: 80
+    path: "/api/healthz"
+    interval: "1m"
+
+# Additional scrape configurations (for custom targets)
+additionalScrapeConfigs: []
+
