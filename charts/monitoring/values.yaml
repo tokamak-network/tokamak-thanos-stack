@@ -115,9 +115,30 @@ kube-prometheus-stack:
         enabled: true
         defaultDatasourceEnabled: true
 
-  # Alertmanager (optional)
+  # Alertmanager configuration
   alertmanager:
-    enabled: false
+    enabled: true
+    alertmanagerSpec:
+      # Resource allocation
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      
+      # Storage configuration (will be set by trh-sdk via generated-values.yaml)
+      # storage will be added when global.storage.enabled=true
+      
+      # Configuration from Secret
+      configSecret: alertmanager-config
+      
+      # Data retention
+      retention: 120h
+      
+      # Log level
+      logLevel: info
   
   # Additional exporters (NodeExporter disabled for Fargate compatibility)
   nodeExporter:
@@ -228,4 +249,52 @@ scrapeTargets:
 
 # Additional scrape configurations (for custom targets)
 additionalScrapeConfigs: []
+
+# ============================================================================
+# AlertManager Configuration
+# ============================================================================
+alertmanager:
+  # Telegram configuration for alerts (Critical only)
+  telegram:
+    enabled: true
+    # Bot name: @thanos_stack_monitor_bot
+    # Telegram Bot API Token
+    api_token: "7904495507:AAE54gXGoj5X7oLsQHk_xzMFdO1kkn4xME8"
+    
+    # Critical alert recipients
+    critical_receivers:
+      - chat_id: "1266746900" 
+  
+  # Email configuration (disabled, kept for fallback)
+  email:
+    enabled: true
+    smtp_smarthost: "smtp.gmail.com:587"
+    smtp_from: "theo@tokamak.network"
+    smtp_auth_username: "theo@tokamak.network"
+    smtp_auth_password: "myhz wsqg iqcs hwkv"
+    
+    default_receivers:
+      - "theo@tokamak.network"
+    
+    critical_receivers:
+      - "theo@tokamak.network"
+  
+  # Alert routing configuration (Critical only)
+  routing:
+    # Group alerts by these labels
+    group_by: ['alertname', 'cluster', 'service', 'severity']
+    # Wait time before sending first notification for a group
+    group_wait: 30s
+    # Wait time before sending next notification for same group
+    group_interval: 5m
+    # Wait time before re-sending an alert
+    repeat_interval: 4h
+  
+  # Alert inhibition rules (simplified for critical only)
+  inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['alertname', 'instance']
 
