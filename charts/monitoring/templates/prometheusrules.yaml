@@ -1,4 +1,4 @@
-{{- if and .Values.kube-prometheus-stack.alertmanager.enabled .Values.thanosStack.namespace }}
+{{- if .Values.kube-prometheus-stack.alertmanager.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -140,7 +140,7 @@ spec:
     - alert: HighCPUUsage
       expr: |
         (
-          rate(container_cpu_usage_seconds_total{namespace="{{ .Values.thanosStack.namespace }}"}[5m]) * 100
+          rate(container_cpu_usage_seconds_total{namespace="{{ .Values.thanosStack.namespace | default "thanos-stack" }}"}[5m]) * 100
         ) > 90
       for: 5m
       labels:
@@ -153,8 +153,8 @@ spec:
     - alert: HighMemoryUsage
       expr: |
         (
-          container_memory_usage_bytes{namespace="{{ .Values.thanosStack.namespace }}"} /
-          container_spec_memory_limit_bytes{namespace="{{ .Values.thanosStack.namespace }}"} * 100
+          container_memory_usage_bytes{namespace="{{ .Values.thanosStack.namespace | default "thanos-stack" }}"} /
+          container_spec_memory_limit_bytes{namespace="{{ .Values.thanosStack.namespace | default "thanos-stack" }}"} * 100
         ) > 90
       for: 5m
       labels:
@@ -182,7 +182,7 @@ spec:
 
     - alert: PodCrashLooping
       expr: |
-        rate(kube_pod_container_status_restarts_total{namespace="{{ .Values.thanosStack.namespace }}"}[15m]) > 0
+        rate(kube_pod_container_status_restarts_total{namespace="{{ .Values.thanosStack.namespace | default "thanos-stack" }}"}[15m]) > 0
       for: 5m
       labels:
         severity: critical
@@ -193,7 +193,7 @@ spec:
 
     - alert: PodNotReady
       expr: |
-        kube_pod_status_ready{condition="false", namespace="{{ .Values.thanosStack.namespace }}"} == 1
+        kube_pod_status_ready{condition="false", namespace="{{ .Values.thanosStack.namespace | default "thanos-stack" }}"} == 1
       for: 10m
       labels:
         severity: warning
