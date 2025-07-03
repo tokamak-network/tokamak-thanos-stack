@@ -1,1 +1,143 @@
- 
+{{- if .Values.kube-prometheus-stack.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "monitoring.fullname" . }}-thanos-stack-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: thanos-stack.critical
+    interval: 30s
+    rules:
+    # OP Stack Component Failures
+    - alert: OpNodeDown
+      expr: up{job="op-node"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: op-node
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Node is down"
+        description: "OP Node has been down for more than 1 minute"
+    
+    - alert: OpBatcherDown
+      expr: up{job="op-batcher"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: op-batcher
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Batcher is down"
+        description: "OP Batcher has been down for more than 1 minute"
+    
+    - alert: OpProposerDown
+      expr: up{job="op-proposer"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: op-proposer
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Proposer is down"
+        description: "OP Proposer has been down for more than 1 minute"
+    
+    - alert: OpGethDown
+      expr: up{job="op-geth"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: op-geth
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Geth is down"
+        description: "OP Geth has been down for more than 1 minute"
+    
+    # L1 RPC Connectivity
+    - alert: L1RpcDown
+      expr: probe_success{job=~"blackbox-eth.*"} == 0
+      for: 10s
+      labels:
+        severity: critical
+        component: l1-rpc
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "L1 RPC connection failed"
+        description: "L1 RPC endpoint {{ $labels.target }} is unreachable"
+    
+    # Balance Monitoring
+    - alert: OpBatcherBalanceCritical
+      expr: op_batcher_default_balance < 0.01
+      for: 10s
+      labels:
+        severity: critical
+        component: op-batcher
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Batcher ETH balance critically low"
+        description: "OP Batcher balance is {{ $value }} ETH, below 0.01 ETH threshold"
+    
+    - alert: OpProposerBalanceCritical
+      expr: op_proposer_default_balance < 0.01
+      for: 10s
+      labels:
+        severity: critical
+        component: op-proposer
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "OP Proposer ETH balance critically low"
+        description: "OP Proposer balance is {{ $value }} ETH, below 0.01 ETH threshold"
+    
+    # Block Production Issues
+    - alert: BlockProductionStalled
+      expr: increase(geth_chain_head_block[5m]) == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: op-geth
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "Block production has stalled"
+        description: "No new blocks have been produced in the last 5 minutes"
+    
+    # Container Resource Issues
+    - alert: ContainerCpuUsageHigh
+      expr: (sum(rate(container_cpu_usage_seconds_total{namespace=~"{{ .Values.thanosStack.namespace }}"}[5m])) by (pod) / sum(container_spec_cpu_quota{namespace=~"{{ .Values.thanosStack.namespace }}"}/container_spec_cpu_period{namespace=~"{{ .Values.thanosStack.namespace }}"}) by (pod)) * 100 > 80
+      for: 5m
+      labels:
+        severity: critical
+        component: kubernetes
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "High CPU usage in Thanos Stack pod"
+        description: "Pod {{ $labels.pod }} CPU usage is above 80%"
+    
+    - alert: ContainerMemoryUsageHigh
+      expr: (sum(container_memory_working_set_bytes{namespace=~"{{ .Values.thanosStack.namespace }}"}) by (pod) / sum(container_spec_memory_limit_bytes{namespace=~"{{ .Values.thanosStack.namespace }}"}) by (pod)) * 100 > 80
+      for: 5m
+      labels:
+        severity: critical
+        component: kubernetes
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "High memory usage in Thanos Stack pod"
+        description: "Pod {{ $labels.pod }} memory usage is above 80%"
+    
+    # Pod Status Issues
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{namespace=~"{{ .Values.thanosStack.namespace }}"}[5m]) > 0
+      for: 1m
+      labels:
+        severity: critical
+        component: kubernetes
+        chain_name: {{ .Values.thanosStack.chainName | quote }}
+      annotations:
+        summary: "Pod is crash looping"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
+        
+{{- end }}
