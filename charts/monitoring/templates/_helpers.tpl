@@ -119,4 +119,4 @@ Check if trh-sdk integration is enabled
 {{- else }}
 {{- "false" }}
 {{- end }}
-{{- end }}
+{{- end }} 
