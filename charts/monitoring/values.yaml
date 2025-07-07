@@ -150,6 +150,10 @@ kube-prometheus-stack:
   # Disable default PrometheusRules (only use thanos-stack-alerts)
   prometheusRule:
     enabled: false  # Disable default PrometheusRules
+  
+  # Disable all default rules to prevent conflicts
+  defaultRules:
+    enabled: false  # Disable all default rules
 
 # ============================================================================
 # prometheus-blackbox-exporter subchart configuration  
