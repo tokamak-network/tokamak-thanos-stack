@@ -44,48 +44,7 @@ data:
       nodeExporter:
         enabled: false
 
-{{- if and .Values.global.storage.enabled .Values.global.storage.efsFileSystemId }}
----
-# Static PV for Prometheus
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-prometheus-pv
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    app: prometheus
-spec:
-  capacity:
-    storage: 20Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: efs-sc
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
----
-# Static PV for Grafana
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-grafana-pv
-  labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
-    app: grafana
-spec:
-  capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: efs-sc
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.global.storage.efsFileSystemId }}
-{{- end }}
+# PersistentVolumes are now managed by trh-sdk createStaticPVs function
 
 {{- if and .Values.thanosStack.releaseName .Values.thanosStack.namespace }}
 ---
