@@ -5,6 +5,8 @@ metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-geth
   labels:
     {{- include "thanos-stack.labels" . | nindent 4 }}
+  annotations:
+    loki.grafana.com/scrape: "true"
 spec:
   selector:
     matchLabels:

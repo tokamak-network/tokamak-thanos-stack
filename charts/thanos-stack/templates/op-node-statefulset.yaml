@@ -3,6 +3,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-node
+  annotations:
+    loki.grafana.com/scrape: "true"
 spec:
   selector:
     matchLabels:
