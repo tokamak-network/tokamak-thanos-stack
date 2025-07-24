@@ -14,3 +14,11 @@ dependencies:
     version: "8.17.0"
     repository: "https://prometheus-community.github.io/helm-charts"
     condition: prometheus-blackbox-exporter.enabled
+  - name: loki
+    version: "5.41.4"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: loki.enabled
+  - name: promtail
+    version: "6.15.5"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: promtail.enabled
