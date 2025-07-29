@@ -271,6 +271,45 @@ additionalScrapeConfigs: []
 # - Email notifications (from user input)
 # - Alert routing and inhibition rules
 
-# Loki and Promtail configurations are managed by trh-sdk
+# ============================================================================
+# Grafana Agent subchart configuration (Fargate-compatible logging)
+# ============================================================================
+grafana-agent:
+  enabled: false  # Will be enabled by trh-sdk when logging is enabled
+  
+  # Fargate-compatible configuration
+  deployment:
+    enabled: true
+    replicas: 1
+  
+  # Persistence for agent positions
+  persistence:
+    enabled: true
+    storageClassName: efs-sc
+    accessModes: [ReadWriteMany]
+    size: 5Gi
+  
+  # Configuration for log collection
+  config:
+    server:
+      log_level: info
+    
+    logs:
+      configs:
+        - name: default
+          clients:
+            - url: http://loki:3100/loki/api/v1/push
+          scrape_configs:
+            - job_name: kubernetes-pods
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_annotation_loki_grafana_com_scrape]
+                  action: keep
+                  regex: "true"
+                - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+                  target_label: app
+
+# Loki and Grafana Agent configurations are managed by trh-sdk
 # and will be dynamically set based on user input during installation
 
