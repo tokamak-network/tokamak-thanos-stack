@@ -5,8 +5,6 @@ metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-geth
   labels:
     {{- include "thanos-stack.labels" . | nindent 4 }}
-  annotations:
-    loki.grafana.com/scrape: "true"
 spec:
   selector:
     matchLabels:
@@ -19,6 +17,7 @@ spec:
         app: {{ include "thanos-stack.fullname" . }}-op-geth
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/op-geth-cm.yaml") . | sha256sum }}
+        loki.grafana.com/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always

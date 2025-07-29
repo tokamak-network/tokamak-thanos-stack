@@ -4,8 +4,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-proposer
-  annotations:
-    loki.grafana.com/scrape: "true"
 spec:
   selector:
     matchLabels:
@@ -17,6 +15,7 @@ spec:
         app: {{ include "thanos-stack.fullname" . }}-op-proposer
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/op-proposer-cm.yaml") . | sha256sum }}
+        loki.grafana.com/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
