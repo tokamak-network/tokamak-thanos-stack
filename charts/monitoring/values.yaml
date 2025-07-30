@@ -286,6 +286,10 @@ grafana-agent:
   daemonset:
     enabled: false  
   
+  # Disable Operator for direct deployment
+  operator:
+    enabled: false
+  
   # Persistence for agent positions
   persistence:
     enabled: true
