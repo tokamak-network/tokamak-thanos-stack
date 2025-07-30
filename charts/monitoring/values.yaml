@@ -282,6 +282,10 @@ grafana-agent:
     enabled: true
     replicas: 1
   
+  # Disable DaemonSet for Fargate compatibility
+  daemonset:
+    enabled: false  
+  
   # Persistence for agent positions
   persistence:
     enabled: true
