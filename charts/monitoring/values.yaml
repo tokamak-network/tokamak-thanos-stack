@@ -277,6 +277,10 @@ additionalScrapeConfigs: []
 loki:
   enabled: false  # Will be enabled by trh-sdk when logging is enabled
   
+  # Single binary mode configuration
+  singleBinary:
+    replicas: 1
+  
   # Loki configuration with S3 storage
   loki:
     auth_enabled: false
@@ -304,10 +308,6 @@ loki:
     limits_config:
       retention_period: 744h  # 31 days
       max_query_length: 721h  # 30 days
-    
-    # Query scheduler configuration
-    query_scheduler:
-      max_outstanding_requests_per_tenant: 2048
     
     # Query range configuration
     query_range:
