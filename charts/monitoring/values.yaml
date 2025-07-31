@@ -288,6 +288,10 @@ loki:
   simpleScalable:
     replicas: 0
   
+  # Disable microservices mode
+  microservices:
+    replicas: 0
+  
   # Loki configuration with S3 storage
   loki:
     auth_enabled: false
