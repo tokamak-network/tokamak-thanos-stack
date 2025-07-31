@@ -281,6 +281,12 @@ loki:
   loki:
     auth_enabled: false
     
+    # Storage configuration
+    storage:
+      bucketNames:
+        chunks: "your-bucket-name"
+        ruler: "your-bucket-name"
+    
     # S3 storage configuration
     storage_config:
       aws:
