@@ -277,9 +277,16 @@ additionalScrapeConfigs: []
 loki:
   enabled: false  # Will be enabled by trh-sdk when logging is enabled
   
+  # Deployment mode configuration
+  deploymentMode: SingleBinary
+  
   # Single binary mode configuration
   singleBinary:
     replicas: 1
+  
+  # Disable simple scalable mode
+  simpleScalable:
+    replicas: 0
   
   # Loki configuration with S3 storage
   loki:
