@@ -293,51 +293,50 @@ loki:
     replicas: 0
   
   # Loki configuration with S3 storage
-  loki:
-    auth_enabled: false
-    
-    # Storage configuration
-    storage:
-      bucketNames:
-        chunks: "your-bucket-name"
-        ruler: "your-bucket-name"
-    
-    # S3 storage configuration
-    storage_config:
-      aws:
-        s3: "s3://your-bucket-name/loki"
-        region: "us-west-2"  # Will be set by trh-sdk
-        access_key_id: ""    # Will be set by trh-sdk
-        secret_access_key: "" # Will be set by trh-sdk
-        s3forcepathstyle: true
-    
-    # Chunk store configuration
-    chunk_store_config:
-      max_look_back_period: 24h
-    
-    # Limits configuration
-    limits_config:
-      retention_period: 744h  # 31 days
-      max_query_length: 721h  # 30 days
-    
-    # Query range configuration
-    query_range:
-      results_cache:
-        cache:
-          embedded_cache:
-            enabled: true
-            max_size_mb: 100
-    
-    # Schema configuration (v13 - latest)
-    schemaConfig:
-      configs:
-        - from: "2020-10-24"
-          store: tsdb
-          object_store: aws
-          schema: v13
-          index:
-            prefix: index_
-            period: 24h
+  auth_enabled: false
+  
+  # Storage configuration
+  storage:
+    bucketNames:
+      chunks: "your-bucket-name"
+      ruler: "your-bucket-name"
+  
+  # S3 storage configuration
+  storage_config:
+    aws:
+      s3: "s3://your-bucket-name/loki"
+      region: "us-west-2"  # Will be set by trh-sdk
+      access_key_id: ""    # Will be set by trh-sdk
+      secret_access_key: "" # Will be set by trh-sdk
+      s3forcepathstyle: true
+  
+  # Chunk store configuration
+  chunk_store_config:
+    max_look_back_period: 24h
+  
+  # Limits configuration
+  limits_config:
+    retention_period: 744h  # 31 days
+    max_query_length: 721h  # 30 days
+  
+  # Query range configuration
+  query_range:
+    results_cache:
+      cache:
+        embedded_cache:
+          enabled: true
+          max_size_mb: 100
+  
+  # Schema configuration (v13 - latest)
+  schemaConfig:
+    configs:
+      - from: "2020-10-24"
+        store: tsdb
+        object_store: aws
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
 
   # Service configuration
   service:
