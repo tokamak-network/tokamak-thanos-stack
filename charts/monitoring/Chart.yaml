@@ -15,6 +15,6 @@ dependencies:
     repository: "https://prometheus-community.github.io/helm-charts"
     condition: prometheus-blackbox-exporter.enabled
   - name: loki
-    version: "6.34.0"
+    version: "5.41.3"
     repository: "https://grafana.github.io/helm-charts"
     condition: loki.enabled
