@@ -17,7 +17,6 @@ spec:
         app: {{ include "thanos-stack.fullname" . }}-op-geth
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/op-geth-cm.yaml") . | sha256sum }}
-        loki.grafana.com/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always

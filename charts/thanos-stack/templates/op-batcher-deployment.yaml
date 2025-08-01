@@ -14,7 +14,6 @@ spec:
         app: {{ include "thanos-stack.fullname" . }}-op-batcher
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/op-batcher-cm.yaml") . | sha256sum }}
-        loki.grafana.com/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 10
       restartPolicy: Always
