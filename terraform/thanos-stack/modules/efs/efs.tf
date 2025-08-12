@@ -24,7 +24,7 @@ module "efs" {
     transition_to_ia = "AFTER_30_DAYS"
   }
 
-  # Backup policy
+  # Backup policy - Disable EFS built-in backup, use AWS Backup service instead
   enable_backup_policy = false
 }
 
@@ -64,12 +64,6 @@ resource "aws_backup_vault" "this" {
   name = var.backup_vault_name
 }
 
-# Create default vault if no custom vault is specified
-resource "aws_backup_vault" "default" {
-  count = var.backup_enabled && var.backup_vault_name == "" ? 1 : 0
-
-  name = "Default"
-}
 
 resource "aws_backup_plan" "this" {
   count = var.backup_enabled ? 1 : 0
@@ -86,7 +80,7 @@ resource "aws_backup_plan" "this" {
     }
   }
 
-  depends_on = [aws_backup_vault.this, aws_backup_vault.default]
+  depends_on = [aws_backup_vault.this]
 }
 
 data "aws_caller_identity" "current" {}
