@@ -61,7 +61,8 @@ resource "aws_backup_selection" "this" {
   name         = "${var.efs_name}-selection"
   plan_id      = aws_backup_plan.this[0].id
 
-  resources = var.backup_resource_tags == {} ? [
+  # Use resources when no tags are specified, otherwise use selection tags
+  resources = length(var.backup_resource_tags) == 0 ? [
     "arn:aws:elasticfilesystem:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:file-system/${module.efs.id}"
   ] : []
 
