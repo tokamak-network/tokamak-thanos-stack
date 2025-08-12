@@ -73,6 +73,8 @@ resource "aws_backup_selection" "this" {
       value = selection_tag.value
     }
   }
+
+  depends_on = [module.efs, aws_backup_plan.this]
 }
 
 resource "aws_security_group" "this" {
