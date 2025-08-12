@@ -28,6 +28,53 @@ module "efs" {
   enable_backup_policy = true
 }
 
+# Optional AWS Backup resources
+resource "aws_backup_vault" "this" {
+  count = var.backup_enabled && var.backup_vault_name != "" ? 1 : 0
+
+  name = var.backup_vault_name
+}
+
+resource "aws_backup_plan" "this" {
+  count = var.backup_enabled ? 1 : 0
+
+  name = "${var.efs_name}-backup-plan"
+
+  rule {
+    rule_name         = "${var.efs_name}-daily"
+    target_vault_name = var.backup_vault_name != "" ? var.backup_vault_name : "Default"
+    schedule          = var.backup_schedule_cron
+
+    lifecycle {
+      delete_after = var.backup_delete_after_days
+    }
+  }
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+resource "aws_backup_selection" "this" {
+  count = var.backup_enabled ? 1 : 0
+
+  iam_role_arn = var.backup_iam_role_arn != "" ? var.backup_iam_role_arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/service-role/AWSBackupDefaultServiceRole"
+  name         = "${var.efs_name}-selection"
+  plan_id      = aws_backup_plan.this[0].id
+
+  resources = var.backup_resource_tags == {} ? [
+    "arn:aws:elasticfilesystem:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:file-system/${module.efs.id}"
+  ] : []
+
+  dynamic "selection_tag" {
+    for_each = var.backup_resource_tags
+    content {
+      type  = "STRINGEQUALS"
+      key   = selection_tag.key
+      value = selection_tag.value
+    }
+  }
+}
+
 resource "aws_security_group" "this" {
   name        = var.efs_name
   description = "EFS security group"

@@ -46,4 +46,8 @@ module "rds" {
       apply_method = "pending-reboot"
     }
   ]
+
+  # Backup settings
+  backup_retention_period = var.backup_retention_period
+  preferred_backup_window = var.preferred_backup_window
 }

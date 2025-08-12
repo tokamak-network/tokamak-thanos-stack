@@ -39,3 +39,21 @@ variable "db_parameters" {
     }
   ]
 }
+
+# Backup settings
+variable "backup_retention_period" {
+  description = "RDS automated backup retention period in days (1-35). If null, provider default is used."
+  type        = number
+  default     = null
+}
+
+variable "preferred_backup_window" {
+  description = "Daily time range for taking automated backups, in UTC, format HH:MM-HH:MM (e.g., 03:00-04:00). If null, AWS chooses the window."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.preferred_backup_window == null || can(regex("^([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$", var.preferred_backup_window))
+    error_message = "preferred_backup_window must be in format HH:MM-HH:MM (UTC), e.g., 03:00-04:00."
+  }
+}

@@ -100,3 +100,34 @@ variable "stack_max_channel_duration" {
   description = "Max channel duration in seconds"
   type        = string
 }
+
+# EFS backup optional variables (wired from TF_VAR_* via trh-sdk)
+variable "backup_enabled" {
+  description = "Enable AWS Backup plan/selection for EFS"
+  type        = bool
+  default     = false
+}
+
+variable "backup_vault_name" {
+  description = "AWS Backup vault name for EFS backups (empty = Default vault)"
+  type        = string
+  default     = ""
+}
+
+variable "backup_schedule_cron" {
+  description = "Cron expression for EFS backup schedule"
+  type        = string
+  default     = "cron(0 3 * * ? *)"
+}
+
+variable "backup_delete_after_days" {
+  description = "Days after which EFS recovery points are deleted"
+  type        = number
+  default     = 35
+}
+
+variable "backup_iam_role_arn" {
+  description = "IAM role ARN that AWS Backup assumes for EFS selection (empty = default service role)"
+  type        = string
+  default     = ""
+}

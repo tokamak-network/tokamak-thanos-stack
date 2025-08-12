@@ -43,6 +43,13 @@ module "efs" {
   efs_name           = var.thanos_stack_name
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
+
+  # optional backup plan wiring
+  backup_enabled            = var.backup_enabled
+  backup_vault_name         = var.backup_vault_name
+  backup_schedule_cron      = var.backup_schedule_cron
+  backup_delete_after_days  = var.backup_delete_after_days
+  backup_iam_role_arn       = var.backup_iam_role_arn
 }
 
 module "k8s" {
