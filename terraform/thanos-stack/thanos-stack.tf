@@ -44,12 +44,9 @@ module "efs" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
 
-  # optional backup plan wiring
-  backup_enabled            = var.backup_enabled
-  backup_vault_name         = var.backup_vault_name
-  backup_schedule_cron      = var.backup_schedule_cron
-  backup_delete_after_days  = var.backup_delete_after_days
-  backup_iam_role_arn       = var.backup_iam_role_arn
+  # AWS Backup configuration - Always enabled for production-ready backup protection
+  backup_schedule_cron     = var.backup_schedule_cron
+  backup_delete_after_days = var.backup_delete_after_days
 }
 
 module "k8s" {

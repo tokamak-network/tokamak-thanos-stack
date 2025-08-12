@@ -24,16 +24,14 @@ module "efs" {
     transition_to_ia = "AFTER_30_DAYS"
   }
 
-  # Backup policy - Disable EFS built-in backup, use AWS Backup service instead
+  # Backup policy - Always disable EFS built-in backup, use AWS Backup service instead
   enable_backup_policy = false
 }
 
-# Custom AWS Backup resources
+# Custom AWS Backup resources - Always enabled for production-ready backup protection
 
-# Create IAM role for AWS Backup if not provided
+# Create IAM role for AWS Backup
 resource "aws_iam_role" "backup_service_role" {
-  count = var.backup_enabled ? 1 : 0
-
   name = "${var.efs_name}-backup-service-role"
 
   assume_role_policy = jsonencode({
@@ -52,27 +50,22 @@ resource "aws_iam_role" "backup_service_role" {
 
 # Attach AWS managed policy for backup service role
 resource "aws_iam_role_policy_attachment" "backup_service_role_policy" {
-  count = var.backup_enabled ? 1 : 0
-
-  role       = aws_iam_role.backup_service_role[0].name
+  role       = aws_iam_role.backup_service_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
 }
 
+# Create backup vault with stack name
 resource "aws_backup_vault" "this" {
-  count = var.backup_enabled && var.backup_vault_name != "" ? 1 : 0
-
-  name = var.backup_vault_name
+  name = "${var.efs_name}-backup-vault"
 }
 
-
+# Create backup plan
 resource "aws_backup_plan" "this" {
-  count = var.backup_enabled ? 1 : 0
-
   name = "${var.efs_name}-backup-plan"
 
   rule {
     rule_name         = "${var.efs_name}-daily"
-    target_vault_name = var.backup_vault_name != "" ? var.backup_vault_name : "Default"
+    target_vault_name = aws_backup_vault.this.name
     schedule          = var.backup_schedule_cron
 
     lifecycle {
@@ -86,26 +79,16 @@ resource "aws_backup_plan" "this" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+# Create backup selection to include this EFS
 resource "aws_backup_selection" "this" {
-  count = var.backup_enabled ? 1 : 0
-
-  iam_role_arn = var.backup_iam_role_arn != "" ? var.backup_iam_role_arn : aws_iam_role.backup_service_role[0].arn
+  iam_role_arn = aws_iam_role.backup_service_role.arn
   name         = "${var.efs_name}-selection"
-  plan_id      = aws_backup_plan.this[0].id
+  plan_id      = aws_backup_plan.this.id
 
-  # Use resources when no tags are specified, otherwise use selection tags
-  resources = length(var.backup_resource_tags) == 0 ? [
+  # Always include this EFS in backup selection
+  resources = [
     "arn:aws:elasticfilesystem:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:file-system/${module.efs.id}"
-  ] : []
-
-  dynamic "selection_tag" {
-    for_each = var.backup_resource_tags
-    content {
-      type  = "STRINGEQUALS"
-      key   = selection_tag.key
-      value = selection_tag.value
-    }
-  }
+  ]
 
   depends_on = [module.efs, aws_backup_plan.this, aws_iam_role.backup_service_role]
 }
