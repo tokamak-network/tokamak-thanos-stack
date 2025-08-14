@@ -74,6 +74,7 @@ resource "terraform_data" "kubectl" {
 
 module "lb_controller_role" {
   source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version = "5.60.0"
 
   create_role = true
 
