@@ -54,6 +54,12 @@ resource "aws_iam_role_policy_attachment" "backup_service_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
 }
 
+# Attach AWS managed policy for restore service role
+resource "aws_iam_role_policy_attachment" "backup_service_role_restore_policy" {
+  role       = aws_iam_role.backup_service_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
+}
+
 # Create backup vault with stack name
 resource "aws_backup_vault" "this" {
   name = "${var.efs_name}-backup-vault"
