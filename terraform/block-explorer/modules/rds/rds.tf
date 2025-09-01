@@ -53,5 +53,5 @@ resource "aws_db_instance" "default" {
 
   # Optional backup settings
   backup_retention_period = var.backup_retention_period
-  preferred_backup_window = var.preferred_backup_window
+  backup_window = var.preferred_backup_window
 }
