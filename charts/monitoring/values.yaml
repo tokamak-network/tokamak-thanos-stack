@@ -57,8 +57,8 @@ kube-prometheus-stack:
       # Resource allocation (optimized for Thanos Stack)
       resources:
         requests:
-          cpu: 1500m      # From Legacy config
-          memory: 3Gi     # From Legacy config
+          cpu: 100m      # From Legacy config
+          memory: 1Gi     # From Legacy config
         
       # Data retention settings
       retention: 1y
@@ -85,8 +85,8 @@ kube-prometheus-stack:
     # Resource allocation
     resources:
       requests:
-        cpu: 1500m
-        memory: 4Gi
+        cpu: 100m
+        memory: 256Mi
     
     # Storage configuration (will be set by trh-sdk via generated-values.yaml)
     # persistence will be added when global.storage.enabled=true
@@ -122,7 +122,7 @@ kube-prometheus-stack:
       # Resource allocation
       resources:
         requests:
-          cpu: 100m
+          cpu: 20m
           memory: 128Mi
         limits:
           cpu: 500m
@@ -198,7 +198,7 @@ prometheus-blackbox-exporter:
   # Resource allocation
   resources:
     requests:
-      cpu: 100m
+      cpu: 20m
       memory: 128Mi
     limits:
       cpu: 500m
