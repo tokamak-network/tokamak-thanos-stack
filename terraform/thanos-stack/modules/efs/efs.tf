@@ -74,8 +74,12 @@ resource "aws_backup_plan" "this" {
     target_vault_name = aws_backup_vault.this.name
     schedule          = var.backup_schedule_cron
 
-    lifecycle {
-      delete_after = var.backup_delete_after_days
+    # Only set lifecycle if retention is not unlimited (0)
+    dynamic "lifecycle" {
+      for_each = var.backup_delete_after_days > 0 ? [1] : []
+      content {
+        delete_after = var.backup_delete_after_days
+      }
     }
   }
 

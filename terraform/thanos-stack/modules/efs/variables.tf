@@ -21,7 +21,7 @@ variable "backup_schedule_cron" {
 }
 
 variable "backup_delete_after_days" {
-  description = "Number of days after which to delete the recovery point"
+  description = "Number of days after which to delete the recovery point (0 = unlimited retention, recommended for blockchain)"
   type        = number
-  default     = 35
+  default     = 0  # Changed to unlimited retention for blockchain safety
 }

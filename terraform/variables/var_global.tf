@@ -109,7 +109,7 @@ variable "backup_schedule_cron" {
 }
 
 variable "backup_delete_after_days" {
-  description = "Days after which EFS recovery points are deleted"
+  description = "Days after which EFS recovery points are deleted (0 = unlimited retention, recommended for blockchain)"
   type        = number
-  default     = 35
+  default     = 0  # Changed to unlimited retention for blockchain safety
 }
