@@ -33,6 +33,7 @@ module "rds" {
   db_username = var.db_username
   db_password = var.db_password
   db_name     = var.db_name
+  aws_region  = var.aws_region
   from_port = 5432
   to_port   = 5432
   rds_allocated_storage = 50

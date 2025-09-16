@@ -72,3 +72,8 @@ variable "preferred_backup_window" {
     error_message = "preferred_backup_window must be in format HH:MM-HH:MM (UTC), e.g., 03:00-04:00."
   }
 }
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-northeast-2"
+}
