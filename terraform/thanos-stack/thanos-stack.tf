@@ -43,6 +43,10 @@ module "efs" {
   efs_name           = var.thanos_stack_name
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
+
+  # AWS Backup configuration - Always enabled for production-ready backup protection
+  backup_schedule_cron     = var.backup_schedule_cron
+  backup_delete_after_days = var.backup_delete_after_days
 }
 
 module "k8s" {

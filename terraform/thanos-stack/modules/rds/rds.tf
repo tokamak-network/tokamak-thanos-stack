@@ -49,4 +49,8 @@ resource "aws_db_instance" "default" {
   parameter_group_name   = aws_db_parameter_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
   skip_final_snapshot    = true
+
+  # Optional backup settings
+  backup_retention_period = var.backup_retention_period
+  backup_window = var.preferred_backup_window
 }

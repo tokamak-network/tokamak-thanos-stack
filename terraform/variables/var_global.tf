@@ -100,3 +100,16 @@ variable "stack_max_channel_duration" {
   description = "Max channel duration in seconds"
   type        = string
 }
+
+# EFS backup configuration - Always enabled for production-ready backup protection
+variable "backup_schedule_cron" {
+  description = "Cron expression for EFS backup schedule"
+  type        = string
+  default     = "cron(0 3 * * ? *)"
+}
+
+variable "backup_delete_after_days" {
+  description = "Days after which EFS recovery points are deleted (0 = unlimited retention, recommended for blockchain)"
+  type        = number
+  default     = 0  # Changed to unlimited retention for blockchain safety
+}
