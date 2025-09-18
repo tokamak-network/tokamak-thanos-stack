@@ -1,5 +1,20 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  alias  = "vpc_region"
+  region = var.aws_region
+}
+
 data "aws_vpc" "vpc" {
-  id = var.vpc_id
+  provider = aws.vpc_region
+  id       = var.vpc_id
 }
 
 resource "aws_db_subnet_group" "default" {

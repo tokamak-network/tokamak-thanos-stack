@@ -7,6 +7,7 @@ variable "thanos_stack_name" {
 variable "aws_region" {
   description = "AWS region"
   default     = "ap-northeast-2"
+  type        = string
 }
 
 variable "db_username" {
