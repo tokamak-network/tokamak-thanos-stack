@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cross-trade.fullname" . }}
+  labels:
+    {{- include "cross-trade.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "cross-trade.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.cross_trade.spec.replicas }}
+  template:
+    metadata:
+      labels:
+        {{- include "cross-trade.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: bridge
+          image: "tokamaknetwork/cross-trade-app:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: app-config
+              mountPath: "/app/.env"
+              subPath: .env
+              readOnly: true
+      volumes:
+        - name: app-config 
+          configMap:
+            defaultMode: 0777
+            items:
+              - key: .env
+                path: .env
+            name: {{ include "cross-trade.fullname" . }}
