@@ -22,7 +22,7 @@ spec:
       containers:
         - name: bridge
           image: "tokamaknetwork/cross-trade-app:latest"
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
               protocol: TCP
