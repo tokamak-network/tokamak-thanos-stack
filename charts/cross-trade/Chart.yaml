@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cross-trade
+description: A Helm chart to deploy Tokamak Cross Trade
+version: 1.0.0
+type: application
