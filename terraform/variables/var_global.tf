@@ -18,6 +18,12 @@ variable "eks_cluster_admins" {
   type        = list(string)
 }
 
+variable "cluster_version" {
+  description = "EKS Cluster Version"
+  type        = string
+  default     = "1.34"
+}
+
 variable "vpc_cidr" {
   description = "VPC CIDR Range"
   type        = string

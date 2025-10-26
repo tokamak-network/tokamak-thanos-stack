@@ -18,7 +18,7 @@ provider "helm" {
     cluster_ca_certificate = base64decode(var.cluster_certificate_authority_data)
 
     exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
+      api_version = "client.authentication.k8s.io/v1"
       args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--profile", var.profile, "--region", var.region]
       command     = "aws"
     }
@@ -30,7 +30,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(var.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1"
     args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--profile", var.profile, "--region", var.region]
     command     = "aws"
   }
@@ -41,7 +41,7 @@ provider "kubectl" {
   cluster_ca_certificate = base64decode(var.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1"
     args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--profile", var.profile, "--region", var.region]
     command     = "aws"
   }
@@ -130,6 +130,7 @@ resource "helm_release" "aws-load-balancer-controller" {
   name       = "aws-load-balancer-controller"
   chart      = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
+  version    = "1.9.0"
   namespace  = "kube-system"
 
   dynamic "set" {
