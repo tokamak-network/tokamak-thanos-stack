@@ -11,7 +11,36 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/blockscout-stack-1.8.0/blockscout-stack-1.8.0.tgz
     version: 1.8.0
+  monitoring:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-10-27T05:45:45.508655547Z"
+    dependencies:
+    - condition: kube-prometheus-stack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 65.1.1
+    - condition: prometheus-blackbox-exporter.enabled
+      name: prometheus-blackbox-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 8.17.0
+    description: Thanos Stack Monitoring Chart - Optimized for OP Stack metrics
+    digest: a394e34362f55acfb3416890b9a1e09ca705b34fde3b0ec2e54fa357ebd706a1
+    name: monitoring
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/monitoring-1.0.0/monitoring-1.0.0.tgz
+    version: 1.0.0
   op-bridge:
+  - apiVersion: v2
+    created: "2025-10-27T05:45:45.676615066Z"
+    description: A Helm chart to deploy Optimistic bridge
+    digest: 39b2400c67145b4c353e7f0e3d8b6984ec9e6dc2b945c8eedcd59e119d490e63
+    name: op-bridge
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/op-bridge-1.0.2/op-bridge-1.0.2.tgz
+    version: 1.0.2
   - apiVersion: v2
     created: "2025-01-13T09:47:53.123525517Z"
     description: A Helm chart to deploy Optimistic bridge
@@ -31,6 +60,15 @@ entries:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/op-bridge-1.0.0/op-bridge-1.0.0.tgz
     version: 1.0.0
   thanos-stack:
+  - apiVersion: v2
+    created: "2025-10-27T05:45:45.863464701Z"
+    description: A Helm chart to deploy Thanos stack
+    digest: 240a015e4f1ec36a874c460af18ea9c2c83831c8b384ce95c01b563059007d0e
+    name: thanos-stack
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.5/thanos-stack-1.0.5.tgz
+    version: 1.0.5
   - apiVersion: v2
     created: "2025-01-14T03:41:33.380246015Z"
     description: A Helm chart to deploy Thanos stack
@@ -88,4 +126,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2025-03-27T15:56:04.191048908Z"
+generated: "2025-10-27T05:45:45.863527939Z"
