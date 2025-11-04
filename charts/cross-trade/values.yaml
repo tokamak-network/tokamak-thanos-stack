@@ -1,0 +1,27 @@
+nameOverride: ""
+
+fullnameOverride: ""
+
+cross_trade:
+  spec:
+    replicas: 1
+
+  env:
+    NEXT_PUBLIC_PROJECT_ID:
+    NEXT_PUBLIC_CHAIN_CONFIG:
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: ""
+    tls:
+      enabled: false
+    paths:
+      - path: /
+        pathType: Prefix
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""

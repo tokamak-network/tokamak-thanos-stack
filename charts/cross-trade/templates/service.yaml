@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cross-trade.fullname" . }}
+  labels:
+    {{- include "cross-trade.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "cross-trade.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
