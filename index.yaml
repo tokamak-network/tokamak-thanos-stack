@@ -11,6 +11,16 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/blockscout-stack-1.8.0/blockscout-stack-1.8.0.tgz
     version: 1.8.0
+  cross-trade:
+  - apiVersion: v2
+    created: "2025-11-04T05:54:38.69650524Z"
+    description: A Helm chart to deploy Tokamak Cross Trade
+    digest: 60e900feb1be339d42d9ec4556fee3863b25a3bf0a76b5593a795a9544dcd914
+    name: cross-trade
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/cross-trade-1.0.0/cross-trade-1.0.0.tgz
+    version: 1.0.0
   monitoring:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -126,4 +136,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2025-10-27T05:45:45.863527939Z"
+generated: "2025-11-04T05:54:38.696535327Z"
