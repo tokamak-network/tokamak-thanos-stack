@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: "1.23.16"
+deprecated: false
+description: A self-hosted Monitoring tool like "Uptime-Robot".
+home: https://github.com/dirsigler/uptime-kuma-helm
+name: uptime-kuma
+sources:
+  - https://github.com/louislam/uptime-kuma
+type: application
+version: 2.22.0
