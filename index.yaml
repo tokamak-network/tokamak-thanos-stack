@@ -136,4 +136,18 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.0/thanos-stack-1.0.0.tgz
     version: 1.0.0
-generated: "2025-11-04T05:54:38.696535327Z"
+  uptime-kuma:
+  - apiVersion: v2
+    appVersion: 1.23.16
+    created: "2025-11-11T15:23:53.137762789Z"
+    description: A self-hosted Monitoring tool like "Uptime-Robot".
+    digest: 97cbdf173533a7fa28d9ca79809d6f16c026336e03cca27f080f3dee3670c8c9
+    home: https://github.com/dirsigler/uptime-kuma-helm
+    name: uptime-kuma
+    sources:
+    - https://github.com/louislam/uptime-kuma
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/uptime-kuma-2.22.0/uptime-kuma-2.22.0.tgz
+    version: 2.22.0
+generated: "2025-11-11T15:23:53.137791453Z"
