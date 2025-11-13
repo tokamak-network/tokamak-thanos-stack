@@ -107,7 +107,9 @@ op_batcher:
     max_channel_duration: 1500
 
     batch_type: 1
-    data_availability_type: calldata
+    data_availability_type: blobs
+    compression_algo: "brotli-10"
+    target_num_frames: 6
 
 ## Proposer values
 op_proposer:
