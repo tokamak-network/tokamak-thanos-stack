@@ -82,7 +82,7 @@ blockscout:
   enabled: true
   image:
     repository: blockscout/blockscout-optimism
-    tag: 6.9.2
+    tag: 6.10.0
   env:
     CHAIN_TYPE: "optimism"
     DATABASE_URL: "$rds_connection_url/blockscout"
@@ -104,6 +104,8 @@ blockscout:
     MICROSERVICE_SC_VERIFIER_TYPE: eth_bytecode_db
     # Optimism
     INDEXER_OPTIMISM_L1_RPC: "$stack_l1_rpc_url"
+    INDEXER_OPTIMISM_L1_ETH_GET_LOGS_RANGE_SIZE: 10
+    INDEXER_OPTIMISM_L1_BATCH_BLOCKS_CHUNK_SIZE: 10
     INDEXER_OPTIMISM_L1_SYSTEM_CONFIG_CONTRACT: $l1_system_config_address
     INDEXER_OPTIMISM_L1_BATCH_START_BLOCK: "$l1_batch_start_block"
     INDEXER_OPTIMISM_L1_BATCH_INBOX: $batch_inbox_address
