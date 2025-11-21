@@ -171,7 +171,7 @@ frontend:
     FAVICON_MASTER_URL: "https://tokamak-thanos.s3.ap-northeast-2.amazonaws.com/thanos_favicon.png"
     # Optimistic rollup (L2) chain
     NEXT_PUBLIC_ROLLUP_TYPE: "optimistic"
-    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth.blockscout.com"
+    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth-sepolia.blockscout.com"
     NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
     NEXT_PUBLIC_API_PROTOCOL: http
     NEXT_PUBLIC_APP_PROTOCOL: http
