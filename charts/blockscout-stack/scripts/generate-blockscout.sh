@@ -82,7 +82,7 @@ blockscout:
   enabled: true
   image:
     repository: blockscout/blockscout-optimism
-    tag: 6.9.2
+    tag: 6.10.0
   env:
     CHAIN_TYPE: "optimism"
     DATABASE_URL: "$rds_connection_url/blockscout"
@@ -104,6 +104,8 @@ blockscout:
     MICROSERVICE_SC_VERIFIER_TYPE: eth_bytecode_db
     # Optimism
     INDEXER_OPTIMISM_L1_RPC: "$stack_l1_rpc_url"
+    INDEXER_OPTIMISM_L1_ETH_GET_LOGS_RANGE_SIZE: 10
+    INDEXER_OPTIMISM_L1_BATCH_BLOCKS_CHUNK_SIZE: 10
     INDEXER_OPTIMISM_L1_SYSTEM_CONFIG_CONTRACT: $l1_system_config_address
     INDEXER_OPTIMISM_L1_BATCH_START_BLOCK: "$l1_batch_start_block"
     INDEXER_OPTIMISM_L1_BATCH_INBOX: $batch_inbox_address
@@ -169,7 +171,7 @@ frontend:
     FAVICON_MASTER_URL: "https://tokamak-thanos.s3.ap-northeast-2.amazonaws.com/thanos_favicon.png"
     # Optimistic rollup (L2) chain
     NEXT_PUBLIC_ROLLUP_TYPE: "optimistic"
-    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth.blockscout.com"
+    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth-sepolia.blockscout.com"
     NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
     NEXT_PUBLIC_API_PROTOCOL: http
     NEXT_PUBLIC_APP_PROTOCOL: http
