@@ -33,6 +33,7 @@ reqenv "rds_connection_url"
 reqenv "l1_beacon_rpc_url"
 reqenv "op_geth_svc"
 reqenv "op_geth_public_url"
+reqenv "next_public_rollup_l1_base_url"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -171,7 +172,7 @@ frontend:
     FAVICON_MASTER_URL: "https://tokamak-thanos.s3.ap-northeast-2.amazonaws.com/thanos_favicon.png"
     # Optimistic rollup (L2) chain
     NEXT_PUBLIC_ROLLUP_TYPE: "optimistic"
-    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "https://eth-sepolia.blockscout.com"
+    NEXT_PUBLIC_ROLLUP_L1_BASE_URL: "$next_public_rollup_l1_base_url"
     NEXT_PUBLIC_ROLLUP_L2_WITHDRAWAL_URL: "https://app.optimism.io/bridge/withdraw"
     NEXT_PUBLIC_API_PROTOCOL: http
     NEXT_PUBLIC_APP_PROTOCOL: http
