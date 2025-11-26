@@ -119,3 +119,8 @@ variable "backup_delete_after_days" {
   type        = number
   default     = 0  # Changed to unlimited retention for blockchain safety
 }
+
+variable "txmgr_cell_proof_time" {
+  description = "Transaction manager cell proof time (activation timestamp)"
+  type        = string
+}

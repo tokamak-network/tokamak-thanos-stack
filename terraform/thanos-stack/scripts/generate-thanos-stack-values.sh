@@ -33,6 +33,7 @@ reqenv "stack_rollup_file_url"
 reqenv "stack_op_geth_image_tag"
 reqenv "stack_thanos_stack_image_tag"
 reqenv "stack_max_channel_duration"
+reqenv "txmgr_cell_proof_time"
 
 # Customizable variables with defaults
 : "${stack_nativetoken_name:=Tokamak Network Token}"
@@ -151,6 +152,7 @@ op_batcher:
   image: "tokamaknetwork/thanos-op-batcher:nightly-$thanos_stack_image_tag"
   env:
     max_channel_duration: $max_channel_duration
+    txmgr_cell_proof_time: "$txmgr_cell_proof_time"
 
 op_proposer:
   image: "tokamaknetwork/thanos-op-proposer:nightly-$thanos_stack_image_tag"

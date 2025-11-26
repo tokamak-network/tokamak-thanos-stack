@@ -112,3 +112,8 @@ variable "stack_max_channel_duration" {
   description = "Max channel duration"
   type        = string
 }
+
+variable "txmgr_cell_proof_time" {
+  description = "Transaction manager cell proof time (Fusaka activation timestamp)"
+  type        = string
+}
