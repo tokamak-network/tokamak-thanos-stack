@@ -147,6 +147,10 @@ op_node:
   env:
     rollup_config_url: $rollup_file_url
     l1_beacon: $stack_l1_beacon_url
+    # Op-node flags for rate limiting and optimization
+    l1_max_concurrency: 2
+    l1_rpc_rate_limit: 10
+    l1_http_poll_interval: 24s
 
 op_batcher:
   image: "tokamaknetwork/thanos-op-batcher:nightly-$thanos_stack_image_tag"
