@@ -1522,7 +1522,7 @@
           "refId": "A"
         }
       ],
-      "title": "P2P Peer Count",
+      "title": "P2P Peer Count (Mainnet only)",
       "type": "stat"
     },
     {

@@ -26,7 +26,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 17375,
   "graphTooltip": 0,
-  "id": 19,
+  "id": 10,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -888,7 +888,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red"
+                "color": "red",
+                "value": null
               },
               {
                 "color": "green",
@@ -1002,10 +1003,11 @@
     },
     {
       "datasource": {
+        "default": true,
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Duration of volume operations. High latency indicates disk saturation.",
+      "description": "Average duration of volume operations (mount/unmount). Spikes indicate storage infrastructure slowness.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1049,7 +1051,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -1112,13 +1115,13 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(volume_operation_total_seconds_sum[5m])",
-          "legendFormat": "{{operation_name}}",
+          "expr": "sum by (operation_name) (rate(volume_operation_total_seconds_sum[5m])) / sum by (operation_name) (rate(volume_operation_total_seconds_count[5m]))",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Volume Operations Latency",
+      "title": "Avg Volume Operation Latency",
       "type": "timeseries"
     }
   ],
