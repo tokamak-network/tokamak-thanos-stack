@@ -20,6 +20,10 @@ data "aws_vpc" "vpc" {
 resource "aws_db_subnet_group" "default" {
   name       = var.rds_name
   subnet_ids = var.private_subnet_ids
+
+  lifecycle {
+    create_before_destroy = false
+  }
 }
 
 resource "aws_security_group" "this" {
@@ -28,6 +32,10 @@ resource "aws_security_group" "this" {
 
   vpc_id                 = var.vpc_id
   revoke_rules_on_delete = true
+
+  lifecycle {
+    create_before_destroy = false
+  }
 
   ingress {
     description = "ingress from VPC private subnets"
@@ -41,6 +49,10 @@ resource "aws_security_group" "this" {
 resource "aws_db_parameter_group" "this" {
   name   = "${var.rds_name}-parameter-group"
   family = "postgres14"
+
+  lifecycle {
+    create_before_destroy = false
+  }
 
   dynamic "parameter" {
     for_each = var.db_parameters
