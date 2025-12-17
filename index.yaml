@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   blockscout-stack:
   - apiVersion: v2
+    appVersion: 6.10.0
+    created: "2025-12-17T03:05:22.497863053Z"
+    description: A Helm chart to deploy Blockscout stack
+    digest: ca248a638a63d2e4b370e73de6e65711b0ee11ed760236b9f9abcc6789b3c381
+    name: blockscout-stack
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/blockscout-stack-1.9.0/blockscout-stack-1.9.0.tgz
+    version: 1.9.0
+  - apiVersion: v2
     appVersion: 6.9.0
     created: "2025-03-27T15:56:04.191027487Z"
     description: A Helm chart to deploy Blockscout stack
@@ -70,6 +80,15 @@ entries:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/op-bridge-1.0.0/op-bridge-1.0.0.tgz
     version: 1.0.0
   thanos-stack:
+  - apiVersion: v2
+    created: "2025-12-17T03:05:22.98012081Z"
+    description: A Helm chart to deploy Thanos stack
+    digest: 10daeff696451787a25841b30d8b98990effce4450bcfc16ff780fae09cea52e
+    name: thanos-stack
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/thanos-stack-1.0.6/thanos-stack-1.0.6.tgz
+    version: 1.0.6
   - apiVersion: v2
     created: "2025-10-27T05:45:45.863464701Z"
     description: A Helm chart to deploy Thanos stack
@@ -150,4 +169,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/uptime-kuma-2.22.0/uptime-kuma-2.22.0.tgz
     version: 2.22.0
-generated: "2025-11-11T15:23:53.137791453Z"
+generated: "2025-12-17T03:05:22.980164371Z"
