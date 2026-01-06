@@ -1,0 +1,26 @@
+nameOverride: ""
+
+fullnameOverride: ""
+
+drb_node:
+  spec:
+    replicas: 1
+
+  env:
+    
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: ""
+    tls:
+      enabled: false
+    paths:
+      - path: /
+        pathType: Prefix
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
