@@ -1,41 +1,138 @@
+{{- if .Values.leader.enabled }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "drb-node.fullname" . }}
+  name: {{ include "drb-node.fullname" . }}-leader
   labels:
     {{- include "drb-node.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
 spec:
   selector:
     matchLabels:
       {{- include "drb-node.selectorLabels" . | nindent 6 }}
-  replicas: {{ .Values.cross_trade.spec.replicas }}
+      app.kubernetes.io/component: leader
+  replicas: 1
   template:
     metadata:
       labels:
         {{- include "drb-node.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: leader
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-
     spec:
+      serviceAccountName: {{ include "drb-node.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
-      restartPolicy: Always
+      {{- if and .Values.leader.extraHosts.enabled .Values.leader.extraHosts.hosts }}
+      hostAliases:
+        {{- range .Values.leader.extraHosts.hosts }}
+        - ip: {{ .ip }}
+          hostnames:
+            - {{ .hostname }}
+        {{- end }}
+      {{- end }}
+      {{- if and .Values.leader.persistence.enabled .Values.leader.staticKeySecret.enabled }}
+      initContainers:
+        {{- $initConfig := dict "key" .Values.leader.staticKeySecret.key }}
+        {{- include "drb-node.copyStaticKey" $initConfig | nindent 8 }}
+      {{- end }}
       containers:
-        - name: bridge
-          image: "tokamaknetwork/drb-node-app:latest"
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 3000
-              protocol: TCP
-          volumeMounts:
-            - name: app-config
-              mountPath: "/app/.env"
-              subPath: .env
-              readOnly: true
+        {{- $extraEnv := list }}
+        {{- if .Values.leader.EOA_PRIVATE_KEY }}
+        {{- $extraEnv = concat $extraEnv (list (dict "name" "EOA_PRIVATE_KEY" "value" .Values.leader.EOA_PRIVATE_KEY)) }}
+        {{- end }}
+        {{- $containerConfig := dict "image" .Values.image "port" .Values.leader.port "env" .Values.leader.env "extraEnv" $extraEnv "privateKeySecret" .Values.leader.privateKeySecret "persistence" .Values.leader.persistence "resources" .Values.leader.resources "healthcheck" .Values.leader.healthcheck }}
+        {{- include "drb-node.container" $containerConfig | nindent 8 }}
       volumes:
-        - name: app-config 
-          configMap:
-            defaultMode: 0777
-            items:
-              - key: .env
-                path: .env
-            name: {{ include "drb-node.fullname" . }}
+        {{- $volumesConfig := dict "configMapName" (printf "%s-leader" (include "drb-node.fullname" .)) "privateKeySecret" .Values.leader.privateKeySecret "staticKeySecret" .Values.leader.staticKeySecret "persistence" .Values.leader.persistence "pvcName" (printf "%s-leader-pvc" (include "drb-node.fullname" .)) }}
+        {{- include "drb-node.volumes" $volumesConfig | nindent 8 }}
+{{- end }}
+
+{{- if .Values.regular.enabled }}
+{{- range $nodeKey, $nodeConfig := .Values.regular.nodes }}
+{{- $nodePort := $nodeConfig.port | default $.Values.regular.basePort }}
+{{- $leaderService := $.Values.regular.leaderService | default (printf "%s-leader" (include "drb-node.fullname" $)) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drb-node.fullname" $ }}-{{ $nodeKey }}
+  labels:
+    {{- include "drb-node.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $nodeKey }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "drb-node.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $nodeKey }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{- include "drb-node.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $nodeKey }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "drb-node.serviceAccountName" $ }}
+      terminationGracePeriodSeconds: 10
+      {{- if and $.Values.regular.extraHosts.enabled $.Values.regular.extraHosts.hosts }}
+      hostAliases:
+        {{- range $.Values.regular.extraHosts.hosts }}
+        - ip: {{ .ip }}
+          hostnames:
+            - {{ .hostname }}
+        {{- end }}
+      {{- end }}
+      initContainers:
+        {{- $initConfig := dict "leaderService" $leaderService "leaderPort" ($.Values.leader.service.port | default "80") }}
+        {{- include "drb-node.waitForLeader" $initConfig | nindent 8 }}
+      containers:
+        {{- $extraEnv := list (dict "name" "LEADER_IP" "value" $leaderService) (dict "name" "PORT" "value" ($nodePort | toString)) }}
+        {{- if $nodeConfig.POSTGRES_HOST }}
+        {{- $extraEnv = concat $extraEnv (list (dict "name" "POSTGRES_HOST" "value" $nodeConfig.POSTGRES_HOST)) }}
+        {{- end }}
+        {{- if $nodeConfig.POSTGRES_PASSWORD }}
+        {{- $extraEnv = concat $extraEnv (list (dict "name" "POSTGRES_PASSWORD" "value" $nodeConfig.POSTGRES_PASSWORD)) }}
+        {{- end }}
+        {{- if $nodeConfig.EOA_PRIVATE_KEY }}
+        {{- $extraEnv = concat $extraEnv (list (dict "name" "EOA_PRIVATE_KEY" "value" $nodeConfig.EOA_PRIVATE_KEY)) }}
+        {{- else if $.Values.regular.EOA_PRIVATE_KEY }}
+        {{- $extraEnv = concat $extraEnv (list (dict "name" "EOA_PRIVATE_KEY" "value" $.Values.regular.EOA_PRIVATE_KEY)) }}
+        {{- end }}
+        {{- $privateKeySecret := $nodeConfig.privateKeySecret }}
+        {{- if not $privateKeySecret.enabled }}
+        {{- $privateKeySecret = $.Values.regular.privateKeySecret }}
+        {{- end }}
+        {{- $nodePersistence := dict }}
+        {{- $_ := set $nodePersistence "enabled" ($.Values.regular.persistence.enabled | default true) }}
+        {{- $_ := set $nodePersistence "storageClass" ($.Values.regular.persistence.storageClass | default "") }}
+        {{- $_ := set $nodePersistence "accessMode" ($.Values.regular.persistence.accessMode | default "ReadWriteMany") }}
+        {{- $_ := set $nodePersistence "size" ($.Values.regular.persistence.size | default "4Gi") }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.existingClaim }}
+        {{- $_ := set $nodePersistence "existingClaim" $nodeConfig.persistence.existingClaim }}
+        {{- else if $.Values.regular.persistence.existingClaim }}
+        {{- $_ := set $nodePersistence "existingClaim" $.Values.regular.persistence.existingClaim }}
+        {{- end }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.enabled }}
+        {{- $_ := set $nodePersistence "enabled" $nodeConfig.persistence.enabled }}
+        {{- end }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.storageClass }}
+        {{- $_ := set $nodePersistence "storageClass" $nodeConfig.persistence.storageClass }}
+        {{- end }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.accessMode }}
+        {{- $_ := set $nodePersistence "accessMode" $nodeConfig.persistence.accessMode }}
+        {{- end }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.size }}
+        {{- $_ := set $nodePersistence "size" $nodeConfig.persistence.size }}
+        {{- end }}
+        {{- if and $nodeConfig.persistence $nodeConfig.persistence.subPath }}
+        {{- $_ := set $nodePersistence "subPath" $nodeConfig.persistence.subPath }}
+        {{- end }}
+        {{- $containerConfig := dict "image" $.Values.image "port" $nodePort "env" $.Values.regular.env "extraEnv" $extraEnv "privateKeySecret" $privateKeySecret "persistence" $nodePersistence "resources" $.Values.regular.resources "healthcheck" $.Values.regular.healthcheck }}
+        {{- include "drb-node.container" $containerConfig | nindent 8 }}
+      volumes:
+        {{- $volumesConfig := dict "configMapName" (printf "%s-%s" (include "drb-node.fullname" $) $nodeKey) "privateKeySecret" $privateKeySecret "staticKeySecret" (dict "enabled" false) "persistence" $nodePersistence "pvcName" (printf "%s-%s-pvc" (include "drb-node.fullname" $) $nodeKey) }}
+        {{- include "drb-node.volumes" $volumesConfig | nindent 8 }}
+{{- end }}
+{{- end }}

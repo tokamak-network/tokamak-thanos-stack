@@ -1,11 +1,51 @@
+{{- if .Values.leader.enabled }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "drb-node.fullname" . }}
+  name: {{ include "drb-node.fullname" . }}-leader
   labels:
     {{- include "drb-node.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
 data:
   .env: |-
-{{- range $key, $value := .Values.cross_trade.env }}
+{{- range $key, $value := .Values.leader.env }}
     {{ $key }}={{ $value }}
+{{- end }}
+{{- if .Values.leader.EOA_PRIVATE_KEY }}
+    EOA_PRIVATE_KEY={{ .Values.leader.EOA_PRIVATE_KEY }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.regular.enabled }}
+{{- range $nodeKey, $nodeConfig := .Values.regular.nodes }}
+{{- $nodePort := $nodeConfig.port | default $.Values.regular.basePort }}
+{{- $leaderService := $.Values.regular.leaderService | default (printf "%s-leader" (include "drb-node.fullname" $)) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "drb-node.fullname" $ }}-{{ $nodeKey }}
+  labels:
+    {{- include "drb-node.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $nodeKey }}
+data:
+  .env: |-
+{{- range $key, $value := $.Values.regular.env }}
+    {{ $key }}={{ $value }}
+{{- end }}
+    LEADER_IP={{ $leaderService }}
+    PORT={{ $nodePort }}
+{{- if $nodeConfig.POSTGRES_HOST }}
+    POSTGRES_HOST={{ $nodeConfig.POSTGRES_HOST }}
+{{- end }}
+{{- if $nodeConfig.POSTGRES_PASSWORD }}
+    POSTGRES_PASSWORD={{ $nodeConfig.POSTGRES_PASSWORD }}
+{{- end }}
+{{- if $nodeConfig.EOA_PRIVATE_KEY }}
+    EOA_PRIVATE_KEY={{ $nodeConfig.EOA_PRIVATE_KEY }}
+{{- else if $.Values.regular.EOA_PRIVATE_KEY }}
+    EOA_PRIVATE_KEY={{ $.Values.regular.EOA_PRIVATE_KEY }}
+{{- end }}
+{{- end }}
 {{- end }}

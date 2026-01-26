@@ -1,41 +1,52 @@
-{{- if .Values.drb-node.ingress.enabled }}
-{{- $fullName := include "cross-trade.fullname" . -}}
-{{- if and .Values.drb-node.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.drb-node.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.drb-node.ingress.annotations "kubernetes.io/ingress.class" .Values.drb-node.ingress.className}}
+{{- if and .Values.leader.enabled (hasKey .Values "ingress") .Values.ingress.enabled }}
+{{- $fullName := include "drb-node.fullname" . }}
+{{- if and (hasKey .Values.ingress "className") .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if and (hasKey .Values.ingress "annotations") (not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class")) }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className }}
   {{- end }}
 {{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
+{{- else }}
 apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}-ingress
+  name: {{ $fullName }}-leader-ingress
   labels:
-    {{- include "cross-trade.labels" . | nindent 4 }}
-  {{- with .Values.drb-node.ingress.annotations }}
+    {{- include "drb-node.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+  {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.drb-node.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.drb-node.ingress.className }}
+  {{- if and (hasKey .Values.ingress "className") .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.drb-node.ingress.tls.enabled }}
+  {{- if and (hasKey .Values.ingress "tls") .Values.ingress.tls }}
+  {{- if gt (len .Values.ingress.tls) 0 }}
   tls:
+    {{- range .Values.ingress.tls }}
     - hosts:
-        - {{ .Values.drb-node.ingress.hostname | quote }}
-      secretName: {{ $fullName }}-tls
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- if .secretName }}
+      secretName: {{ .secretName }}
+      {{- end }}
+    {{- end }}
   {{- end }}
+  {{- end }}
+  {{- if hasKey .Values.ingress "hosts" }}
   rules:
-    - host: {{ .Values.drb-node.ingress.hostname | quote }}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
       http:
         paths:
-          {{- range .Values.drb-node.ingress.paths }}
+          {{- range .paths }}
           - path: {{ .path }}
             {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
             pathType: {{ .pathType }}
@@ -43,12 +54,14 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $fullName }}
+                name: {{ $fullName }}-leader
                 port:
-                  number: 3000
+                  number: {{ $.Values.leader.service.port }}
               {{- else }}
-              serviceName: {{ $fullName }}
-              servicePort: 3000
+              serviceName: {{ $fullName }}-leader
+              servicePort: {{ $.Values.leader.service.port }}
               {{- end }}
           {{- end }}
-{{- end}}
+    {{- end }}
+  {{- end }}
+{{- end }}

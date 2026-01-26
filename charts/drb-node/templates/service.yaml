@@ -1,13 +1,48 @@
+{{- if .Values.leader.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "drb-node.fullname" . }}
+  name: {{ include "drb-node.fullname" . }}-leader
   labels:
     {{- include "drb-node.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+  {{- if .Values.leader.service.annotations }}
+  annotations:
+    {{- toYaml .Values.leader.service.annotations | nindent 4 }}
+  {{- end }}
 spec:
+  type: {{ .Values.leader.service.type }}
   selector:
     {{- include "drb-node.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
   ports:
     - name: http
-      port: 3000
-      targetPort: 3000
+      port: {{ .Values.leader.service.port }}
+      targetPort: {{ .Values.leader.port }}
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.regular.enabled }}
+{{- range $nodeKey, $nodeConfig := .Values.regular.nodes }}
+{{- $nodePort := $nodeConfig.port | default $.Values.regular.basePort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "drb-node.fullname" $ }}-{{ $nodeKey }}
+  labels:
+    {{- include "drb-node.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $nodeKey }}
+spec:
+  type: {{ $.Values.regular.service.type }}
+  selector:
+    {{- include "drb-node.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $nodeKey }}
+  ports:
+    - name: http
+      port: {{ $nodePort }}
+      targetPort: {{ $nodePort }}
+      protocol: TCP
+{{- end }}
+{{- end }}

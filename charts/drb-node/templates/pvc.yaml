@@ -1,0 +1,47 @@
+{{- if and .Values.leader.enabled .Values.leader.persistence.enabled (not .Values.leader.persistence.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "drb-node.fullname" . }}-leader-pvc
+  labels:
+    {{- include "drb-node.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+spec:
+  accessModes:
+    - {{ .Values.leader.persistence.accessMode }}
+  {{- if .Values.leader.persistence.storageClass }}
+  storageClassName: {{ .Values.leader.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.leader.persistence.size }}
+{{- end }}
+
+{{- if and .Values.regular.enabled .Values.regular.persistence.enabled (not .Values.regular.persistence.existingClaim) }}
+{{- range $nodeKey, $nodeConfig := .Values.regular.nodes }}
+{{- $nodePersistence := $.Values.regular.persistence }}
+{{- if $nodeConfig.persistence }}
+{{- $nodePersistence = merge $.Values.regular.persistence $nodeConfig.persistence }}
+{{- end }}
+{{- if not $nodePersistence.existingClaim }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "drb-node.fullname" $ }}-{{ $nodeKey }}-pvc
+  labels:
+    {{- include "drb-node.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $nodeKey }}
+spec:
+  accessModes:
+    - {{ $.Values.regular.persistence.accessMode }}
+  {{- if $.Values.regular.persistence.storageClass }}
+  storageClassName: {{ $.Values.regular.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $.Values.regular.persistence.size }}
+{{- end }}
+{{- end }}
+{{- end }}

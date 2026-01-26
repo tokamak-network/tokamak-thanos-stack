@@ -60,3 +60,145 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Generate node container spec
+*/}}
+{{- define "drb-node.container" -}}
+- name: drb-node
+  image: {{ .image.repository }}:{{ .image.tag }}
+  imagePullPolicy: {{ .image.pullPolicy }}
+  ports:
+    - name: http
+      containerPort: {{ .port }}
+      protocol: TCP
+  env:
+    {{- range $key, $value := .env }}
+    - name: {{ $key }}
+      value: {{ $value | quote }}
+    {{- end }}
+    {{- if .extraEnv }}
+    {{- range .extraEnv }}
+    - name: {{ .name }}
+      value: {{ .value | quote }}
+    {{- end }}
+    {{- end }}
+  volumeMounts:
+    - name: app-config
+      mountPath: "/app/.env"
+      subPath: .env
+      readOnly: true
+    {{- if .privateKeySecret.enabled }}
+    - name: private-key
+      mountPath: "/app/static-key"
+      readOnly: true
+    {{- else if .persistence.enabled }}
+    - name: static-key
+      mountPath: "/app/static-key"
+      {{- if .persistence.subPath }}
+      subPath: {{ .persistence.subPath }}
+      {{- end }}
+    {{- end }}
+  {{- if .resources }}
+  resources:
+    {{- toYaml .resources | nindent 4 }}
+  {{- end }}
+  {{- if .healthcheck.enabled }}
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - "nc -z localhost {{ .port }} || exit 1"
+    initialDelaySeconds: {{ .healthcheck.startPeriod | replace "s" "" | int }}
+    periodSeconds: {{ .healthcheck.interval | replace "s" "" | int }}
+    timeoutSeconds: {{ .healthcheck.timeout | replace "s" "" | int }}
+    failureThreshold: {{ .healthcheck.retries }}
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - "nc -z localhost {{ .port }} || exit 1"
+    initialDelaySeconds: {{ .healthcheck.startPeriod | replace "s" "" | int }}
+    periodSeconds: {{ .healthcheck.interval | replace "s" "" | int }}
+    timeoutSeconds: {{ .healthcheck.timeout | replace "s" "" | int }}
+    failureThreshold: {{ .healthcheck.retries }}
+  {{- end }}
+{{- end }}
+
+{{/*
+Generate volumes spec
+*/}}
+{{- define "drb-node.volumes" -}}
+- name: app-config
+  configMap:
+    defaultMode: 0644
+    items:
+      - key: .env
+        path: .env
+    name: {{ .configMapName }}
+{{- if .privateKeySecret.enabled }}
+- name: private-key
+  secret:
+    secretName: {{ .privateKeySecret.secretName }}
+    defaultMode: 0600
+{{- else if .persistence.enabled }}
+- name: static-key
+  persistentVolumeClaim:
+    {{- if .persistence.existingClaim }}
+    claimName: {{ .persistence.existingClaim }}
+    {{- else }}
+    claimName: {{ .pvcName }}
+    {{- end }}
+{{- end }}
+{{- if and .staticKeySecret .staticKeySecret.enabled }}
+- name: secret-static-key
+  secret:
+    secretName: {{ .staticKeySecret.secretName }}
+    defaultMode: 0600
+{{- end }}
+{{- end }}
+
+{{/*
+Generate init container for waiting on leader
+*/}}
+{{- define "drb-node.waitForLeader" -}}
+- name: wait-for-leader
+  image: busybox:1.35
+  command:
+    - sh
+    - -c
+    - |
+      until nc -z {{ .leaderService }} {{ .leaderPort }}; do
+        echo "Waiting for leader node..."
+        sleep 2
+      done
+{{- end }}
+
+{{/*
+Generate init container for copying leadernode.bin from Secret to PVC
+*/}}
+{{- define "drb-node.copyStaticKey" -}}
+- name: copy-static-key
+  image: busybox:1.35
+  command:
+    - sh
+    - -c
+    - |
+      if [ -f /secret/{{ .key }} ]; then
+        echo "Copying {{ .key }} to PVC..."
+        cp /secret/{{ .key }} /static-key/{{ .key }}
+        chmod 0600 /static-key/{{ .key }}
+        echo "Successfully copied {{ .key }}"
+      else
+        echo "Error: {{ .key }} not found in Secret"
+        exit 1
+      fi
+  volumeMounts:
+    - name: secret-static-key
+      mountPath: /secret
+      readOnly: true
+    - name: static-key
+      mountPath: /static-key
+{{- end }}

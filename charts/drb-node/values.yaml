@@ -1,26 +1,255 @@
 nameOverride: ""
-
 fullnameOverride: ""
 
-drb_node:
-  spec:
-    replicas: 1
+# Global image configuration
+image:
+  repository: maniis/drb-node
+  tag: alpha
+  pullPolicy: Always
 
+# Leader node configuration
+leader:
+  enabled: true
+  port: 61280
+  
+  # Environment variables
   env:
-    
-
-  ingress:
+    LEADER_PORT: "61280"
+    NODE_TYPE: "leader"
+    PORT: "61280"
+    # Database configuration (set these or use external postgres)
+    POSTGRES_HOST: ""  # e.g., "leaderpostgres" or external service
+    POSTGRES_PORT: "5432"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: ""
+    POSTGRES_DB: "drb"
+    # Network configuration
+    CHAIN_ID: ""
+    ETH_RPC_URLS: ""  # RPC URLs for the blockchain network (comma-separated, e.g., "https://rpc1.example.com,https://rpc2.example.com")
+    CONTRACT_ADDRESS: ""  # DRB contract address
+    # Leader-specific configuration
+    LEADER_PRIVATE_KEY: ""  # Leader private key
+    LEADER_EOA: ""  # Leader EOA address
+    OFF_CHAIN_SUBMISSION_PERIOD: "40"
+    REQUEST_OR_SUBMIT_OR_FAIL_DECISION_PERIOD: "30"
+    ON_CHAIN_SUBMISSION_PERIOD: "60"
+    OFF_CHAIN_SUBMISSION_PERIOD_PER_OPERATOR: "20"
+    ON_CHAIN_SUBMISSION_PERIOD_PER_OPERATOR: "30"
+  
+  # Private key configuration
+  privateKeySecret:
     enabled: false
-    className: ""
-    annotations: {}
-    hostname: ""
-    tls:
-      enabled: false
-    paths:
-      - path: /
-        pathType: Prefix
+    secretName: ""  # Name of the secret containing the private key
+    key: private-key  # Key in the secret
+  # Static key (leadernode.bin) - if enabled, copies from Secret to PVC on startup
+  staticKeySecret:
+    enabled: true
+    secretName: "drb-leader-static-key"  # Name of the secret containing leadernode.bin
+    key: leadernode.bin  # Key in the secret (should be "leadernode.bin")
+  # Or use env var (EOA_PRIVATE_KEY is separate from LEADER_PRIVATE_KEY)
+  EOA_PRIVATE_KEY: ""
+  
+  # Service configuration
+  service:
+    type: LoadBalancer
+    port: 61280
+    targetPort: 61280
+    nodePort:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb-ip
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+  
+  # Health check (using nc -z like docker-compose)
+  healthcheck:
+    enabled: true
+    test: ["nc", "-z", "localhost", "61280"]
+    interval: 15s
+    timeout: 3s
+    retries: 5
+    startPeriod: 30s  # Increased to allow app time to start and initialize
+  
+  # Extra hosts (host.docker.internal) - Docker-specific, usually not needed in K8s
+  # Only enable if your application needs to access the host machine
+  extraHosts:
+    enabled: false
+    hosts: []
+      # - hostname: host.docker.internal
+      #   ip: host-gateway
+  
+  # Restart policy
+  restartPolicy: OnFailure
+  
+  # Resource limits
+  resources: {}
+    # limits:
+    #   cpu: 500m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 250m
+    #   memory: 256Mi
 
+  # PVC configuration for static-key volume
+  # NOTE: The /app/static-key directory must contain leadernode.bin file for leader nodes
+  # Generate the key file using ./run_generator.sh from the DRB-node repository
+  # The file should be at /app/static-key/leadernode.bin in the container
+  persistence:
+    enabled: true
+    storageClass: ""  # Use default storage class if empty
+    accessMode: ReadWriteMany
+    size: 4Gi
+    # Use an existing PVC instead of creating a new one
+    existingClaim: ""  # e.g., "existing-pvc-name"
+
+# Regular nodes configuration
+regular:
+  enabled: false  # Set to true to enable regular nodes
+  count: 3  # Number of regular nodes (1, 2, or 3) - not used when using map-based nodes
+  
+  # Base port for regular nodes (regularnode1: 61281, regularnode2: 61282, etc.)
+  basePort: 61281
+  
+  # Leader node service name (for LEADER_IP env var)
+  leaderService: ""  # Will default to leader service name if not set
+  
+  # Common environment variables for all regular nodes
+  env:
+    LEADER_PORT: "80"
+    NODE_TYPE: "regular"
+    # Database configuration (each node can have its own postgres)
+    POSTGRES_PORT: "5432"
+    POSTGRES_USER: "postgres"
+    POSTGRES_DB: "drb"
+    # Network configuration
+    CHAIN_ID: ""
+    ETH_RPC_URLS: ""  # RPC URLs for the blockchain network (comma-separated, e.g., "https://rpc1.example.com,https://rpc2.example.com")
+    CONTRACT_ADDRESS: ""  # DRB contract address
+    # Leader connection configuration
+    LEADER_PEER_ID: ""  # Leader peer ID for connection
+    LEADER_EOA: ""  # Leader EOA address
+    OFF_CHAIN_SUBMISSION_PERIOD: "40"
+    REQUEST_OR_SUBMIT_OR_FAIL_DECISION_PERIOD: "30"
+    ON_CHAIN_SUBMISSION_PERIOD: "60"
+    OFF_CHAIN_SUBMISSION_PERIOD_PER_OPERATOR: "20"
+    ON_CHAIN_SUBMISSION_PERIOD_PER_OPERATOR: "30"
+  
+  # Private key configuration (can be per-node or shared)
+  # If per-node, use regular.nodes[].EOA_PRIVATE_KEY or regular.nodes[].privateKeySecret
+  # If shared, use regular.EOA_PRIVATE_KEY or regular.privateKeySecret
+  privateKeySecret:
+    enabled: false
+    secretName: ""  # Name of the secret containing the private key
+    key: private-key  # Key in the secret
+  EOA_PRIVATE_KEY: ""  # Shared private key (if not using per-node)
+  
+  # Per-node configuration (overrides common settings)
+  # Use map keys (node1, node2, node3) for easier YAML field updates
+  nodes:
+    node1:
+      port: 61281
+      POSTGRES_HOST: ""  # e.g., "regular1postgres"
+      EOA_PRIVATE_KEY: ""  # Override common EOA_PRIVATE_KEY
+      privateKeySecret:
+        enabled: false
+        secretName: ""
+        key: private-key
+      # Per-node persistence (overrides regular.persistence)
+      # persistence:
+      #   existingClaim: ""  # e.g., "drb-node-1768683010-regular1-pvc"
+      #   subPath: ""  # e.g., "regular1" - automatically set by deployment script for EFS isolation
+      # Per-node persistence (overrides regular.persistence)
+      # persistence:
+      #   existingClaim: ""  # e.g., "drb-node-1768683010-regular2-pvc"
+      #   subPath: ""  # e.g., "regular2" - automatically set by deployment script for EFS isolation
+    node2:
+      port: 61282
+      POSTGRES_HOST: ""  # e.g., "regular2postgres"
+      EOA_PRIVATE_KEY: ""  # Override common EOA_PRIVATE_KEY
+      privateKeySecret:
+        enabled: false
+        secretName: ""
+        key: private-key
+      # Per-node persistence (overrides regular.persistence)
+      # persistence:
+      #   existingClaim: ""  # e.g., "drb-node-1768683010-regular2-pvc"
+      #   subPath: ""  # e.g., "regular2" - automatically set by deployment script for EFS isolation
+    node3:
+      port: 61283
+      POSTGRES_HOST: ""  # e.g., "regular3postgres"
+      EOA_PRIVATE_KEY: ""  # Override common EOA_PRIVATE_KEY
+      privateKeySecret:
+        enabled: false
+        secretName: ""
+        key: private-key
+      # Per-node persistence (overrides regular.persistence)
+      # persistence:
+      #   existingClaim: ""  # e.g., "drb-node-1768683010-regular3-pvc"
+      #   subPath: ""  # e.g., "regular3" - automatically set by deployment script for EFS isolation
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+  
+  # Health check (using nc -z like docker-compose)
+  healthcheck:
+    enabled: true
+    test: ["nc", "-z", "localhost"]
+    interval: 15s
+    timeout: 3s
+    retries: 5
+    startPeriod: 30s  # Increased to allow app time to start and initialize
+  
+  # Extra hosts (host.docker.internal) - Docker-specific, usually not needed in K8s
+  # Only enable if your application needs to access the host machine
+  extraHosts:
+    enabled: false
+    hosts: []
+      # - hostname: host.docker.internal
+      #   ip: host-gateway
+  
+  # Restart policy
+  restartPolicy: OnFailure
+  
+  # Resource limits
+  resources: {}
+    # limits:
+    #   cpu: 500m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 250m
+    #   memory: 256Mi
+
+  # PVC configuration for static-key volumes
+  # NOTE: For EFS-based storage, subPath is automatically set per-node (regular1, regular2, regular3)
+  # to isolate files in separate subdirectories. Each node writes to /app/static-key/regularnode.bin
+  # but in EFS they're isolated: regular1/regularnode.bin, regular2/regularnode.bin, etc.
+  persistence:
+    enabled: true
+    storageClass: ""  # Use default storage class if empty
+    accessMode: ReadWriteMany
+    size: 4Gi
+    # Use an existing PVC instead of creating a new one
+    existingClaim: ""  # e.g., "existing-pvc-name" (shared across all regular nodes)
+    # subPath: ""  # Automatically set per-node by deployment script (regular1, regular2, regular3)
+
+# Service account configuration
+# Set create: false to use the default service account (if no special permissions needed)
 serviceAccount:
-  create: true
+  create: false  # Set to true if you need a dedicated service account
   annotations: {}
   name: ""
+
+# Ingress configuration (for leader node)
+ingress:
+  enabled: false
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: uptime-kuma
+  hosts:
+    - host: "*"
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
