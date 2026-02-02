@@ -1,6 +1,7 @@
 variable "thanos_stack_name" {
   description = "Thanos stack name"
   type        = string
+  default     = "drb"
 }
 
 

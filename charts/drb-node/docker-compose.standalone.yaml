@@ -1,0 +1,17 @@
+# Docker Compose for DRB regular node with external Postgres.
+# Used by: trh-sdk install drb regular-node when POSTGRES_HOST is external.
+version: "3.8"
+
+services:
+  regular-node:
+    image: ${DRB_NODE_IMAGE}
+    container_name: regular-node
+    env_file: ./.env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - regular-node-key:/app/static-key
+    restart: on-failure
+
+volumes:
+  regular-node-key:

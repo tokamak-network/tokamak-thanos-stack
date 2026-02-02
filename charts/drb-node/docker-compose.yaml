@@ -1,0 +1,35 @@
+# Docker Compose for DRB regular node with local Postgres.
+# Used by: trh-sdk install drb regular-node when using local Postgres.
+version: "3.8"
+
+services:
+  regular-postgres:
+    image: postgres:14.13
+    container_name: regular-postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    env_file: ./.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - regular-postgres-data:/var/lib/postgresql/data
+
+  regular-node:
+    image: ${DRB_NODE_IMAGE}
+    container_name: regular-node
+    depends_on:
+      regular-postgres:
+        condition: service_healthy
+    env_file: ./.env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - regular-node-key:/app/static-key
+    restart: on-failure
+
+volumes:
+  regular-postgres-data:
+  regular-node-key:
