@@ -22,6 +22,7 @@ common:
 
 ## Geth values
 op_geth:
+  client_type: "geth" # "geth" or "py-ethclient"
   image: ""
   resources:
     cpu: # option

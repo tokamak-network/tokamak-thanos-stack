@@ -98,6 +98,12 @@ variable "stack_rollup_file_url" {
   type        = string
 }
 
+variable "stack_op_geth_image_repo" {
+  description = "Execution client image repository override (empty = default tokamaknetwork/thanos-op-geth)"
+  type        = string
+  default     = ""
+}
+
 variable "stack_op_geth_image_tag" {
   description = "OP Geth image tag"
   type        = string

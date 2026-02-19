@@ -14,7 +14,11 @@ kind: ConfigMap
 metadata:
   name: {{ include "thanos-stack.fullname" . }}-op-geth-scripts
 data:
+{{- if eq (default "geth" .Values.op_geth.client_type) "py-ethclient" }}
+{{- (.Files.Glob "files/op-geth/entrypoint-py-ethclient.sh").AsConfig | nindent 2}}
+{{- else }}
 {{- (.Files.Glob "files/op-geth/entrypoint-op-geth.sh").AsConfig | nindent 2}}
+{{- end }}
 
 ---
 apiVersion: v1

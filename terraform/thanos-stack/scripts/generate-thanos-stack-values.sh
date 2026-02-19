@@ -85,7 +85,17 @@ genesis_file_url="$stack_genesis_file_url"
 prestate_file_url="$stack_prestate_file_url"
 rollup_file_url="$stack_rollup_file_url"
 op_geth_image_tag="$stack_op_geth_image_tag"
+op_geth_image_repo="${stack_op_geth_image_repo:-}"
 thanos_stack_image_tag="$stack_thanos_stack_image_tag"
+
+# Determine execution client image and type
+if [ -n "$op_geth_image_repo" ]; then
+  op_geth_image="${op_geth_image_repo}:${op_geth_image_tag}"
+  op_geth_client_type="py-ethclient"
+else
+  op_geth_image="tokamaknetwork/thanos-op-geth:nightly-${op_geth_image_tag}"
+  op_geth_client_type="geth"
+fi
 max_channel_duration="$stack_max_channel_duration"
 
 # Download rollup.json file
@@ -123,7 +133,8 @@ l1_rpc:
   kind: $stack_l1_rpc_provider
 
 op_geth:
-  image: "tokamaknetwork/thanos-op-geth:nightly-$op_geth_image_tag"
+  client_type: "$op_geth_client_type"
+  image: "$op_geth_image"
   volume:
     csi:
       volumeHandle: "$efs_id"

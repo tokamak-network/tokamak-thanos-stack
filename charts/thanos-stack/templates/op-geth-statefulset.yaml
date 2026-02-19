@@ -24,7 +24,11 @@ spec:
         - name: {{ include "thanos-stack.fullname" . }}-op-geth
           image: {{ .Values.op_geth.image }}          
           imagePullPolicy: IfNotPresent
+          {{- if eq (default "geth" .Values.op_geth.client_type) "py-ethclient" }}
+          command: ["/bin/sh", "/op-geth-scripts/entrypoint-py-ethclient.sh"]
+          {{- else }}
           command: ["/bin/sh", "/op-geth-scripts/entrypoint-op-geth.sh"]
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "thanos-stack.fullname" . }}-op-geth
