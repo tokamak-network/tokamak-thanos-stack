@@ -77,4 +77,5 @@ module "k8s" {
   stack_thanos_stack_image_tag       = var.stack_thanos_stack_image_tag
   stack_max_channel_duration         = var.stack_max_channel_duration
   txmgr_cell_proof_time              = var.txmgr_cell_proof_time
+  enable_fault_proof                 = var.enable_fault_proof
 }

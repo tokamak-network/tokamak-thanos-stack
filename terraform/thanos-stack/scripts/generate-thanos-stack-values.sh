@@ -39,6 +39,7 @@ reqenv "txmgr_cell_proof_time"
 : "${stack_nativetoken_name:=Tokamak Network Token}"
 : "${stack_nativetoken_symbol:=TON}"
 : "${stack_nativetoken_decimals:=18}"
+: "${enable_fault_proof:=false}"
 
 # Check if the deployments file exists
 if [ ! -f "$stack_deployments_path" ]; then
@@ -50,15 +51,17 @@ fi
 DisputeGameFactoryProxy=$(jq -r '.DisputeGameFactoryProxy // empty' "$stack_deployments_path")
 L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$stack_deployments_path")
 
-# Validate parsed values
-if [ -z "$DisputeGameFactoryProxy" ]; then
-    echo "Error: 'DisputeGameFactoryProxy' value not found in $stack_deployments_path"
-    exit 1
-fi
-
-if [ -z "$L2OutputOracleProxy" ]; then
-    echo "Error: 'L2OutputOracleProxy' value not found in $stack_deployments_path"
-    exit 1
+# Validate parsed values (conditional based on fault proof mode)
+if [ "$enable_fault_proof" = "true" ]; then
+    if [ -z "$DisputeGameFactoryProxy" ]; then
+        echo "Error: 'DisputeGameFactoryProxy' value not found in $stack_deployments_path (required for fault proof)"
+        exit 1
+    fi
+else
+    if [ -z "$L2OutputOracleProxy" ]; then
+        echo "Error: 'L2OutputOracleProxy' value not found in $stack_deployments_path"
+        exit 1
+    fi
 fi
 
 # Extract values from terraform output
@@ -87,6 +90,33 @@ rollup_file_url="$stack_rollup_file_url"
 op_geth_image_tag="$stack_op_geth_image_tag"
 thanos_stack_image_tag="$stack_thanos_stack_image_tag"
 max_channel_duration="$stack_max_channel_duration"
+
+# Build conditional YAML sections based on fault proof mode
+if [ "$enable_fault_proof" = "true" ]; then
+    proposer_section="op_proposer:
+  image: \"tokamaknetwork/thanos-op-proposer:nightly-${thanos_stack_image_tag}\"
+  enabled: false"
+    challenger_section="op_challenger:
+  image: \"tokamaknetwork/thanos-op-challenger:nightly-${thanos_stack_image_tag}\"
+  enabled: true
+  volume:
+    csi:
+      volumeHandle: \"${efs_id}\"
+  env:
+    l1_beacon: ${stack_l1_beacon_url}
+    trace_type: cannon
+    game_factory_address: ${DisputeGameFactoryProxy}
+    cannon_rollup_config_url: ${rollup_file_url}
+    cannon_l2_genesis_url: ${genesis_file_url}
+    cannon_prestates_url: ${prestate_file_url}"
+else
+    proposer_section="op_proposer:
+  image: \"tokamaknetwork/thanos-op-proposer:nightly-${thanos_stack_image_tag}\"
+  enabled: true
+  env:
+    l2oo_address: ${L2OutputOracleProxy}"
+    challenger_section=""
+fi
 
 # Download rollup.json file
 echo ""
@@ -157,11 +187,8 @@ op_batcher:
     max_channel_duration: $max_channel_duration
     txmgr_cell_proof_time: "$txmgr_cell_proof_time"
 
-op_proposer:
-  image: "tokamaknetwork/thanos-op-proposer:nightly-$thanos_stack_image_tag"
-  enabled: true
-  env:
-    l2oo_address: $L2OutputOracleProxy
+${proposer_section}
+${challenger_section}
 EOL
 )
 

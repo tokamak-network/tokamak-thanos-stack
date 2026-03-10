@@ -195,6 +195,7 @@ resource "terraform_data" "thanos_stack_values" {
       stack_thanos_stack_image_tag = var.stack_thanos_stack_image_tag
       stack_max_channel_duration   = var.stack_max_channel_duration
       txmgr_cell_proof_time        = var.txmgr_cell_proof_time
+      enable_fault_proof           = tostring(var.enable_fault_proof)
     }
   }
 

@@ -117,3 +117,9 @@ variable "txmgr_cell_proof_time" {
   description = "Transaction manager cell proof time (Fusaka activation timestamp)"
   type        = string
 }
+
+variable "enable_fault_proof" {
+  description = "Enable the fault proof system (deploys op-challenger, disables op-proposer)"
+  type        = bool
+  default     = false
+}
