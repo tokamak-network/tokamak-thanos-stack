@@ -1,0 +1,19 @@
+{{- if .Values.enable_deployment }}
+{{- if .Values.op_challenger.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos-stack.fullname" . }}-op-challenger
+spec:
+  selector:
+    app: {{ include "thanos-stack.fullname" . }}-op-challenger
+  ports:
+    - name: http
+      port: 8560
+      protocol: TCP
+      targetPort: 8560
+    - name: metric
+      port: 7300
+      targetPort: 7300
+{{- end}}
+{{- end}}

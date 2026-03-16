@@ -39,6 +39,7 @@ reqenv "next_public_rollup_l1_base_url"
 : "${stack_nativetoken_name:=Tokamak Network Token}"
 : "${stack_nativetoken_symbol:=TON}"
 : "${stack_nativetoken_decimals:=18}"
+: "${enable_fault_proof:=false}"
 
 # Check if the deployments file exists
 if [ ! -f "$stack_deployments_path" ]; then
@@ -57,15 +58,17 @@ fi
 DisputeGameFactoryProxy=$(jq -r '.DisputeGameFactoryProxy // empty' "$stack_deployments_path")
 L2OutputOracleProxy=$(jq -r '.L2OutputOracleProxy // empty' "$stack_deployments_path")
 
-# Validate parsed values
-if [ -z "$DisputeGameFactoryProxy" ]; then
-    echo "Error: 'DisputeGameFactoryProxy' value not found in $stack_deployments_path"
-    exit 1
-fi
-
-if [ -z "$L2OutputOracleProxy" ]; then
-    echo "Error: 'L2OutputOracleProxy' value not found in $stack_deployments_path"
-    exit 1
+# Validate parsed values based on fault proof mode
+if [ "$enable_fault_proof" = "true" ]; then
+    if [ -z "$DisputeGameFactoryProxy" ]; then
+        echo "Error: 'DisputeGameFactoryProxy' required for fault proof mode"
+        exit 1
+    fi
+else
+    if [ -z "$L2OutputOracleProxy" ]; then
+        echo "Error: 'L2OutputOracleProxy' required"
+        exit 1
+    fi
 fi
 
 # Extract values from the rollup.json file
@@ -77,6 +80,12 @@ l2_batch_genesis_block_number=$(jq '.genesis.l2.number' "$rollup_path")
 l1_portal_contract=$(jq '.deposit_contract_address' "$rollup_path")
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' "$rollup_path")
+# Set indexer oracle/dispute config based on fault proof mode
+if [ "$enable_fault_proof" = "true" ]; then
+    indexer_output_section="    INDEXER_OPTIMISM_L1_DISPUTE_GAME_FACTORY_CONTRACT: \"$DisputeGameFactoryProxy\""
+else
+    indexer_output_section="    INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: \"$L2OutputOracleProxy\""
+fi
 # Generate the YAML file
 yaml=$(cat <<EOL
 blockscout:
@@ -114,7 +123,7 @@ blockscout:
     INDEXER_OPTIMISM_L1_BATCH_BLOCKSCOUT_BLOBS_API_URL: "https://eth.blockscout.com/api/v2/blobs"
     INDEXER_OPTIMISM_L2_BATCH_GENESIS_BLOCK_NUMBER: "$l2_batch_genesis_block_number"
     INDEXER_OPTIMISM_L1_OUTPUT_ROOTS_START_BLOCK: "$l1_batch_start_block"
-    INDEXER_OPTIMISM_L1_OUTPUT_ORACLE_CONTRACT: "$L2OutputOracleProxy"
+${indexer_output_section}
     INDEXER_OPTIMISM_L1_PORTAL_CONTRACT: $l1_portal_contract
     INDEXER_OPTIMISM_L1_DEPOSITS_START_BLOCK: "$l1_batch_start_block"
     INDEXER_OPTIMISM_L1_WITHDRAWALS_START_BLOCK: "$l1_batch_start_block"
@@ -177,7 +186,7 @@ frontend:
     NEXT_PUBLIC_API_PROTOCOL: http
     NEXT_PUBLIC_APP_PROTOCOL: http
     NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: ws
-    NEXT_PUBLIC_FAULT_PROOF_ENABLED: false
+    NEXT_PUBLIC_FAULT_PROOF_ENABLED: ${enable_fault_proof}
     NEXT_PUBLIC_API_HOST: 
     NEXT_PUBLIC_APP_HOST: 
 
