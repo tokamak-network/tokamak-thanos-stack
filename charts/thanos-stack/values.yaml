@@ -1,3 +1,12 @@
+## Deployment metadata
+metadata:
+  preset: ""
+  native_token:
+    name: "Tokamak Network Token"
+    symbol: "TON"
+    decimals: 18
+    l1_address: ""
+
 enable_vpc: false
 enable_deployment: false
 

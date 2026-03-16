@@ -130,3 +130,31 @@ variable "enable_fault_proof" {
   type        = bool
   default     = false
 }
+
+variable "preset" {
+  description = "Thanos chain preset (general/defi/gaming/full)"
+  type        = string
+  default     = "defi"
+  validation {
+    condition     = contains(["general", "defi", "gaming", "full"], var.preset)
+    error_message = "preset must be one of: general, defi, gaming, full"
+  }
+}
+
+variable "native_token_name" {
+  description = "Native token name for block explorer and bridge display"
+  type        = string
+  default     = "Tokamak Network Token"
+}
+
+variable "native_token_symbol" {
+  description = "Native token symbol for block explorer and bridge display"
+  type        = string
+  default     = "TON"
+}
+
+variable "native_token_address" {
+  description = "Native token L1 contract address"
+  type        = string
+  default     = ""
+}

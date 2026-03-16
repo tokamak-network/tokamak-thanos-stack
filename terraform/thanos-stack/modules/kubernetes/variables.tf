@@ -123,3 +123,27 @@ variable "enable_fault_proof" {
   type        = bool
   default     = false
 }
+
+variable "stack_preset" {
+  description = "Thanos chain preset (general/defi/gaming/full)"
+  type        = string
+  default     = "defi"
+}
+
+variable "stack_native_token_name" {
+  description = "Native token name for block explorer and bridge display"
+  type        = string
+  default     = "Tokamak Network Token"
+}
+
+variable "stack_native_token_symbol" {
+  description = "Native token symbol for block explorer and bridge display"
+  type        = string
+  default     = "TON"
+}
+
+variable "stack_native_token_address" {
+  description = "Native token L1 contract address"
+  type        = string
+  default     = ""
+}

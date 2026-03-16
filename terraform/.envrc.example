@@ -33,3 +33,9 @@ export TF_VAR_stack_deployments_path=
 export TF_VAR_stack_l1_rpc_url=
 export TF_VAR_stack_l1_rpc_provider=
 export TF_VAR_stack_l1_beacon_url=
+
+# Preset and native token configuration
+export TF_VAR_preset="defi"
+export TF_VAR_native_token_name="Tokamak Network Token"
+export TF_VAR_native_token_symbol="TON"
+export TF_VAR_native_token_address=""

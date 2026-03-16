@@ -36,9 +36,11 @@ reqenv "stack_max_channel_duration"
 reqenv "txmgr_cell_proof_time"
 
 # Customizable variables with defaults
+: "${stack_preset:=defi}"
 : "${stack_nativetoken_name:=Tokamak Network Token}"
 : "${stack_nativetoken_symbol:=TON}"
 : "${stack_nativetoken_decimals:=18}"
+: "${stack_nativetoken_address:=}"
 : "${enable_fault_proof:=false}"
 
 # Check if the deployments file exists
@@ -141,6 +143,14 @@ echo -e "[INFO] rollup.json file deleted successfully"
 
 # Generate the YAML file
 yaml=$(cat <<EOL
+metadata:
+  preset: "${stack_preset}"
+  native_token:
+    name: "${stack_nativetoken_name}"
+    symbol: "${stack_nativetoken_symbol}"
+    decimals: ${stack_nativetoken_decimals}
+    l1_address: "${stack_nativetoken_address}"
+
 thanos_stack_infra:
   name: "$stack_infra_name"
   region: "$stack_infra_region"

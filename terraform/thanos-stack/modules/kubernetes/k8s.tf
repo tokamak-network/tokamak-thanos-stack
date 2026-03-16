@@ -196,6 +196,10 @@ resource "terraform_data" "thanos_stack_values" {
       stack_max_channel_duration   = var.stack_max_channel_duration
       txmgr_cell_proof_time        = var.txmgr_cell_proof_time
       enable_fault_proof           = tostring(var.enable_fault_proof)
+      stack_preset                 = var.stack_preset
+      stack_nativetoken_name       = var.stack_native_token_name
+      stack_nativetoken_symbol     = var.stack_native_token_symbol
+      stack_nativetoken_address    = var.stack_native_token_address
     }
   }
 
