@@ -126,7 +126,7 @@ variable "txmgr_cell_proof_time" {
 }
 
 variable "enable_fault_proof" {
-  description = "Enable the fault proof system (deploys op-challenger, disables op-proposer)"
+  description = "Enable the fault proof system (deploys op-challenger, switches op-proposer to DisputeGameFactory mode)"
   type        = bool
   default     = false
 }

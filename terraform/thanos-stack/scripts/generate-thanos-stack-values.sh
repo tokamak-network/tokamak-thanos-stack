@@ -97,7 +97,11 @@ max_channel_duration="$stack_max_channel_duration"
 if [ "$enable_fault_proof" = "true" ]; then
     proposer_section="op_proposer:
   image: \"tokamaknetwork/thanos-op-proposer:nightly-${thanos_stack_image_tag}\"
-  enabled: false"
+  enabled: true
+  env:
+    game_factory_address: ${DisputeGameFactoryProxy}
+    proposal_interval: 120s
+    poll_interval: 30s"
     challenger_section="op_challenger:
   image: \"tokamaknetwork/thanos-op-challenger:nightly-${thanos_stack_image_tag}\"
   enabled: true
@@ -110,7 +114,9 @@ if [ "$enable_fault_proof" = "true" ]; then
     game_factory_address: ${DisputeGameFactoryProxy}
     cannon_rollup_config_url: ${rollup_file_url}
     cannon_l2_genesis_url: ${genesis_file_url}
-    cannon_prestates_url: ${prestate_file_url}"
+    cannon_prestates_url: ${prestate_file_url}
+    http_poll_interval: 60s
+    max_concurrency: 2"
 else
     proposer_section="op_proposer:
   image: \"tokamaknetwork/thanos-op-proposer:nightly-${thanos_stack_image_tag}\"
