@@ -6,6 +6,9 @@ cross_trade:
   spec:
     replicas: 1
 
+  image: "tokamaknetwork/cross-trade-app:latest"
+  imagePullPolicy: Always
+
   env:
     NEXT_PUBLIC_PROJECT_ID:
     NEXT_PUBLIC_CHAIN_CONFIG:

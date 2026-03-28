@@ -21,8 +21,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: bridge
-          image: "tokamaknetwork/cross-trade-app:latest"
-          imagePullPolicy: Always
+          image: {{ .Values.cross_trade.image | default "tokamaknetwork/cross-trade-app:latest" | quote }}
+          imagePullPolicy: {{ .Values.cross_trade.imagePullPolicy | default "Always" }}
           ports:
             - containerPort: 3000
               protocol: TCP
