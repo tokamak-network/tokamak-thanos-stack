@@ -98,6 +98,9 @@ op_node:
       ## Batcher values
 op_batcher:
   image: ""
+  resources:
+    cpu: # option
+    memory: # option
   env:
     poll_interval: 1s
     sub_safety_margin: 6
@@ -125,6 +128,9 @@ op_batcher:
 op_proposer:
   image: ""
   enabled: true # option
+  resources:
+    cpu: # option
+    memory: # option
   env:
     poll_interval: 12s # option
     rpc_port: 8560

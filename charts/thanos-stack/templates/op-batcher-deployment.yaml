@@ -36,7 +36,10 @@ spec:
               protocol: TCP
             - containerPort: 7300
               protocol: TCP
-          resources: {}
+          resources:
+            requests:
+              cpu: {{ default "250m" .Values.op_batcher.resources.cpu }}
+              memory: {{ default "512Mi" .Values.op_batcher.resources.memory }}
           envFrom:
             - configMapRef:
                 name: {{ include "thanos-stack.fullname" . }}-op-batcher

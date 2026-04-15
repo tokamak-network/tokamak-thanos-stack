@@ -6,6 +6,10 @@ op_bridge:
   spec:
     replicas: 1
 
+  resources:
+    cpu: # option
+    memory: # option
+
   env:
     l1_chain_name:
     l1_chain_id:
