@@ -47,6 +47,19 @@ spec:
             - name: op-geth-volume
               mountPath: /db
               subPath: {{ include "thanos-stack.fullname" . }}-op-geth
+          readinessProbe:
+            tcpSocket:
+              port: 8545
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 200
+            successThreshold: 1
+          livenessProbe:
+            tcpSocket:
+              port: 8545
+            initialDelaySeconds: 600
+            periodSeconds: 30
+            failureThreshold: 10
           resources:
             requests:
               cpu: {{ default 1 .Values.op_geth.resources.cpu }}

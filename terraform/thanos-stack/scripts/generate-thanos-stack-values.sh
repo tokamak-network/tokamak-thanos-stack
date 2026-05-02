@@ -34,9 +34,9 @@ reqenv "stack_op_geth_image_tag"
 reqenv "stack_thanos_stack_image_tag"
 reqenv "stack_max_channel_duration"
 reqenv "txmgr_cell_proof_time"
+reqenv "stack_preset"
 
 # Customizable variables with defaults
-: "${stack_preset:=defi}"
 : "${stack_nativetoken_name:=Tokamak Network Token}"
 : "${stack_nativetoken_symbol:=TON}"
 : "${stack_nativetoken_decimals:=18}"
@@ -169,7 +169,7 @@ l1_rpc:
   kind: $stack_l1_rpc_provider
 
 op_geth:
-  image: "tokamaknetwork/thanos-op-geth:nightly-$op_geth_image_tag"
+  image: "tokamaknetwork/thanos-op-geth:$op_geth_image_tag"
   volume:
     csi:
       volumeHandle: "$efs_id"
