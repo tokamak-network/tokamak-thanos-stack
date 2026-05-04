@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drb-vrf.fullname" . }}-leader
+  labels:
+    {{- include "drb-vrf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "drb-vrf.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: leader
+  template:
+    metadata:
+      labels:
+        {{- include "drb-vrf.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: leader
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: drb-leader
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: p2p
+              containerPort: {{ .Values.leader.port }}
+              protocol: TCP
+          env:
+            - name: NODE_TYPE
+              value: "leader"
+            - name: LEADER_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "drb-vrf.fullname" . }}-secrets
+                  key: leader-private-key
+            - name: LEADER_EOA
+              value: {{ .Values.leader.eoa | quote }}
+            - name: LEADER_PORT
+              value: {{ .Values.leader.port | quote }}
+            - name: ETH_RPC_URLS
+              value: {{ .Values.ethRpcUrls | quote }}
+            - name: CONTRACT_ADDRESS
+              value: {{ .Values.contractAddress | quote }}
+            - name: CHAIN_ID
+              value: {{ .Values.chainID | quote }}
+            - name: STATUS
+              value: "dev"
+            - name: POSTGRES_PASSWORD
+              value: "drbpassword"
+            - name: POSTGRES_HOST
+              value: {{ include "drb-vrf.fullname" . }}-leader-postgres
+            - name: POSTGRES_DB
+              value: "drb_leader"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: leader-peer-id
+              mountPath: /app/static-key
+              readOnly: true
+      volumes:
+        - name: leader-peer-id
+          secret:
+            secretName: {{ include "drb-vrf.fullname" . }}-secrets
+            items:
+              - key: leader-peer-id-bytes
+                path: leadernode.bin

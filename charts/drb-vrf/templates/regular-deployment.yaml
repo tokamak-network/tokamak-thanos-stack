@@ -1,0 +1,79 @@
+{{- range $i, $r := .Values.regulars }}
+{{- $idx := add $i 1 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drb-vrf.fullname" $ }}-regular-{{ $idx }}
+  labels:
+    {{- include "drb-vrf.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "drb-vrf.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: regular-{{ $idx }}
+  template:
+    metadata:
+      labels:
+        {{- include "drb-vrf.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: regular-{{ $idx }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: drb-regular
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: p2p
+              containerPort: {{ $r.port }}
+              protocol: TCP
+          env:
+            - name: NODE_TYPE
+              value: "regular"
+            - name: REGULAR_INDEX
+              value: {{ $idx | quote }}
+            - name: EOA_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "drb-vrf.fullname" $ }}-secrets
+                  key: regular-{{ $idx }}-private-key
+            - name: LEADER_IP
+              value: {{ include "drb-vrf.fullname" $ }}-leader
+            - name: LEADER_PEER_ID
+              value: {{ $.Values.leader.peerID | quote }}
+            - name: LEADER_MULTIADDR
+              value: {{ printf "%s@%s-leader:%d" $.Values.leader.peerID (include "drb-vrf.fullname" $) (int $.Values.leader.port) | quote }}
+            - name: LEADER_PORT
+              value: {{ $.Values.leader.port | quote }}
+            - name: PORT
+              value: {{ $r.port | quote }}
+            - name: ETH_RPC_URLS
+              value: {{ $.Values.ethRpcUrls | quote }}
+            - name: CONTRACT_ADDRESS
+              value: {{ $.Values.contractAddress | quote }}
+            - name: CHAIN_ID
+              value: {{ $.Values.chainID | quote }}
+            - name: STATUS
+              value: "dev"
+            - name: POSTGRES_PASSWORD
+              value: "drbpassword"
+            - name: POSTGRES_HOST
+              value: {{ include "drb-vrf.fullname" $ }}-regular-{{ $idx }}-postgres
+            - name: POSTGRES_DB
+              value: {{ printf "drb_regular_%d" $idx | quote }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: regular-peer-id
+              mountPath: /app/static-key
+              readOnly: true
+      volumes:
+        - name: regular-peer-id
+          secret:
+            secretName: {{ include "drb-vrf.fullname" $ }}-secrets
+            items:
+              - key: regular-{{ $idx }}-peer-id-bytes
+                path: regularnode.bin
+{{- end }}

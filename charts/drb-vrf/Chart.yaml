@@ -1,0 +1,5 @@
+apiVersion: v2
+name: drb-vrf
+description: A Helm chart to deploy DRB (Distributed Random Beacon) VRF node
+version: 1.0.0
+type: application

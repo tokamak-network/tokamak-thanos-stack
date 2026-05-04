@@ -1,0 +1,48 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: tokamaknetwork/drb-node
+  tag: ""
+  pullPolicy: Always
+
+postgresImage:
+  repository: postgres
+  tag: "14.13-alpine"
+  pullPolicy: IfNotPresent
+
+# Injected by trh-sdk at deploy time
+contractAddress: "0x4200000000000000000000000000000000000060"
+chainID: ""
+ethRpcUrls: ""
+
+leader:
+  privateKey: ""   # hex without 0x prefix
+  eoa: ""          # 0x... hex address
+  peerID: ""       # libp2p peer ID string
+  peerIDBytes: "" # base64-encoded Ed25519 keypair bytes → /app/static-key/leadernode.bin
+  port: 9600
+
+# Ordered list: index 0 = regular-1, 1 = regular-2, 2 = regular-3
+# All fields are injected by trh-sdk; defaults are documentation only.
+regulars:
+  - privateKey: ""
+    peerID: ""
+    peerIDBytes: ""
+    port: 9601
+  - privateKey: ""
+    peerID: ""
+    peerIDBytes: ""
+    port: 9602
+  - privateKey: ""
+    peerID: ""
+    peerIDBytes: ""
+    port: 9603
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"

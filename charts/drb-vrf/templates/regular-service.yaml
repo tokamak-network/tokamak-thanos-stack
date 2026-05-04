@@ -1,0 +1,39 @@
+{{- range $i, $r := .Values.regulars }}
+{{- $idx := add $i 1 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "drb-vrf.fullname" $ }}-regular-{{ $idx }}
+  labels:
+    {{- include "drb-vrf.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "drb-vrf.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}
+  ports:
+    - name: p2p
+      port: {{ $r.port }}
+      targetPort: {{ $r.port }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "drb-vrf.fullname" $ }}-regular-{{ $idx }}-postgres
+  labels:
+    {{- include "drb-vrf.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}-postgres
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "drb-vrf.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+{{- end }}

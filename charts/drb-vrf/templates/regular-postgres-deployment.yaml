@@ -1,0 +1,47 @@
+{{- range $i, $r := .Values.regulars }}
+{{- $idx := add $i 1 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drb-vrf.fullname" $ }}-regular-{{ $idx }}-postgres
+  labels:
+    {{- include "drb-vrf.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: regular-{{ $idx }}-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "drb-vrf.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: regular-{{ $idx }}-postgres
+  template:
+    metadata:
+      labels:
+        {{- include "drb-vrf.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: regular-{{ $idx }}-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ $.Values.postgresImage.repository }}:{{ $.Values.postgresImage.tag }}"
+          imagePullPolicy: {{ $.Values.postgresImage.pullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "drbpassword"
+            - name: POSTGRES_DB
+              value: {{ printf "drb_regular_%d" $idx | quote }}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+{{- end }}

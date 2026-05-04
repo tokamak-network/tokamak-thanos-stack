@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "drb-vrf.fullname" . }}-leader
+  labels:
+    {{- include "drb-vrf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "drb-vrf.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: leader
+  ports:
+    - name: p2p
+      port: {{ .Values.leader.port }}
+      targetPort: {{ .Values.leader.port }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "drb-vrf.fullname" . }}-leader-postgres
+  labels:
+    {{- include "drb-vrf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: leader-postgres
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "drb-vrf.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: leader-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
