@@ -31,6 +31,16 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/cross-trade-1.0.0/cross-trade-1.0.0.tgz
     version: 1.0.0
+  drb-vrf:
+  - apiVersion: v2
+    created: "2026-05-04T13:22:41.908708266Z"
+    description: A Helm chart to deploy DRB (Distributed Random Beacon) VRF node
+    digest: 2f80b3a681de30c221840dbad10cffd60e971fd54a255ce3eac5dc2434c10bc6
+    name: drb-vrf
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/drb-vrf-1.0.0/drb-vrf-1.0.0.tgz
+    version: 1.0.0
   monitoring:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -169,4 +179,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/uptime-kuma-2.22.0/uptime-kuma-2.22.0.tgz
     version: 2.22.0
-generated: "2025-12-17T03:05:22.980164371Z"
+generated: "2026-05-04T13:22:42.613458794Z"
