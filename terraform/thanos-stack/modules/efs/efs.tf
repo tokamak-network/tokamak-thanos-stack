@@ -13,7 +13,7 @@ module "efs" {
 
   # File system
   name           = var.efs_name
-  creation_token = "${var.efs_name}-token"
+  creation_token = "console-7536ef7e-b184-48a3-acfa-d4cc58a0f34f"
   encrypted      = true
   attach_policy  = false
 

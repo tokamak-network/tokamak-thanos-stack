@@ -19,6 +19,7 @@ common:
 
 ## Geth values
 op_geth:
+  image: "tokamaknetwork/thanos-op-geth:nightly-25d0c60d"
   resources:
     cpu: # option
     memory: # option
@@ -43,6 +44,7 @@ op_geth:
 
 ## Node values
 op_node:
+  image: "tokamaknetwork/thanos-op-node:nightly-11435dd7"
   resources:
     cpu: # option
     memory: # option
@@ -72,6 +74,7 @@ op_node:
 
 ## Batcher values
 op_batcher:
+  image: "tokamaknetwork/thanos-op-batcher:nightly-11435dd7"
   env:
     poll_interval: 1s
     sub_safety_margin: 6

@@ -27,8 +27,8 @@ spec:
                 name: {{ include "thanos-stack.fullname" . }}-common
       containers:
         - name: op-node
-          image: "tokamaknetwork/thanos-op-node:nightly-011bec4a"
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.op_node.image }}"
+          imagePullPolicy: Always
           command: ['/bin/sh', '/op-node-scripts/entrypoint-op-node.sh']
           envFrom:
             - configMapRef:
