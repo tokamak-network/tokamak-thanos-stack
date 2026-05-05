@@ -1,0 +1,24 @@
+# values-gaming.yaml — Gaming preset overrides.
+# Modules: Bridge + Block Explorer + Monitoring + Uptime + DRB VRF + AA Paymaster.
+# CrossTrade is excluded — Gaming does not include DeFi modules.
+
+bridge:
+  enabled: true
+
+blockExplorer:
+  enabled: true
+
+monitoring:
+  enabled: true
+
+uptime:
+  enabled: true
+
+crossTrade:
+  enabled: false
+
+drb:
+  enabled: true
+
+aaPaymaster:
+  enabled: true

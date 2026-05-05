@@ -1,0 +1,45 @@
+nameOverride: ""
+fullnameOverride: ""
+
+aa_paymaster:
+  spec:
+    replicas: 1
+
+  image:
+    repository: tokamaknetwork/aa-paymaster
+    tag: "latest"
+    pullPolicy: Always
+
+  env:
+    # Required: L2 RPC endpoint; provided by trh-sdk at deploy time
+    l2_rpc_url: ""
+    # Required: ERC-4337 EntryPoint contract address on L2
+    entry_point_address: ""
+    # Required: Paymaster contract address on L2
+    paymaster_address: ""
+    # Required: paymaster signer private key (injected from Secrets Manager)
+    signer_private_key: ""
+    # Optional: log verbosity
+    log_level: "info"
+
+  service:
+    port: 3000
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: ""
+    tls:
+      enabled: false
+    paths:
+      - path: /
+        pathType: Prefix

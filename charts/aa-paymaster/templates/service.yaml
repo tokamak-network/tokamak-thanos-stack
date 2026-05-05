@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aa-paymaster.fullname" . }}
+  labels:
+    {{- include "aa-paymaster.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "aa-paymaster.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.aa_paymaster.service.port }}
+      targetPort: {{ .Values.aa_paymaster.service.port }}

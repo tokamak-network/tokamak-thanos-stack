@@ -1,7 +1,7 @@
 # ADR ①: Preset별 Helm Values 분기
 
 ```
-Status: Draft
+Status: Accepted
 Date: 2026-04-14
 Owner: trh-platform team
 Relates-to: trh-backend/docs/design/preset-module-install-aws.md (ADR ④)
@@ -111,13 +111,13 @@ helm upgrade --install thanos-stack thanos-stack/thanos-stack \
 
 ## Implementation checklist
 
-- [ ] `charts/thanos-stack/values-base.yaml` 생성 (현재 values.yaml에서 공통 추출)
-- [ ] `charts/thanos-stack/values-{general,defi,gaming,full}.yaml` 4개 생성
-- [ ] 각 preset values 파일의 enable/disable 플래그 정의 (위 표 기준)
+- [x] `charts/thanos-stack/values-base.yaml` 생성 (현재 values.yaml에서 공통 추출)
+- [x] `charts/thanos-stack/values-{general,defi,gaming,full}.yaml` 4개 생성
+- [x] 각 preset values 파일의 enable/disable 플래그 정의 (위 표 기준)
 - [ ] trh-sdk `deploy_chain.go` helm 2-pass 호출에 `--values values-{preset}.yaml` 추가
 - [ ] trh-sdk `DeployInput`에 `Preset string` 필드가 전달되는지 확인 (이미 있을 경우 재사용)
 - [ ] `deploy_chain.go:561-590`의 Go preset 조건부 로직 중 Helm으로 위임 가능한 부분 제거
 - [ ] DRB/AA 이미지 태그 `constants.go`에서 values 파일 자동 치환 경로 확인
-- [ ] Local Docker 배포 경로에 영향 없음 확인 (이 ADR은 AWS Helm 경로만)
-- [ ] `Status: Accepted` 로 업데이트 (리뷰 완료 시)
+- [x] Local Docker 배포 경로에 영향 없음 확인 (이 ADR은 AWS Helm 경로만)
+- [x] `Status: Accepted` 로 업데이트 (리뷰 완료 시)
 - [ ] 구현 PR merge 후 `Status: Shipped` + `trh-wiki/wiki/workflows/ec2-deploy.md` gap 제거

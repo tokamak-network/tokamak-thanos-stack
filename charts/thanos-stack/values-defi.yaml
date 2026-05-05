@@ -1,0 +1,23 @@
+# values-defi.yaml — DeFi preset overrides.
+# Modules: Bridge + Block Explorer + Monitoring + Uptime + CrossTrade.
+
+bridge:
+  enabled: true
+
+blockExplorer:
+  enabled: true
+
+monitoring:
+  enabled: true
+
+uptime:
+  enabled: true
+
+crossTrade:
+  enabled: true
+
+drb:
+  enabled: false
+
+aaPaymaster:
+  enabled: false

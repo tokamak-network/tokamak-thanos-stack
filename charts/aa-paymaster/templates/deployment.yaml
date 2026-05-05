@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aa-paymaster.fullname" . }}
+  labels:
+    {{- include "aa-paymaster.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "aa-paymaster.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.aa_paymaster.spec.replicas }}
+  template:
+    metadata:
+      labels:
+        {{- include "aa-paymaster.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+        - name: aa-paymaster
+          image: "{{ .Values.aa_paymaster.image.repository }}:{{ .Values.aa_paymaster.image.tag }}"
+          imagePullPolicy: {{ .Values.aa_paymaster.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.aa_paymaster.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.aa_paymaster.resources | nindent 12 }}
+          volumeMounts:
+            - name: app-config
+              mountPath: "/app/.env"
+              subPath: .env
+              readOnly: true
+      volumes:
+        - name: app-config
+          configMap:
+            defaultMode: 0777
+            items:
+              - key: .env
+                path: .env
+            name: {{ include "aa-paymaster.fullname" . }}

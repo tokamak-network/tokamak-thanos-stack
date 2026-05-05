@@ -1,0 +1,32 @@
+# values-base.yaml — Common defaults shared across all presets.
+# Applied first in the 2-pass helm install; preset-specific values override these.
+# Dynamic infra values (chain_id, EFS handle, endpoints) are injected by
+# generate-thanos-stack-values.sh and take final precedence.
+
+## Module enable/disable flags (all off by default; preset files turn them on)
+bridge:
+  enabled: false
+
+blockExplorer:
+  enabled: false
+
+monitoring:
+  enabled: false
+
+uptime:
+  enabled: false
+
+crossTrade:
+  enabled: false
+
+drb:
+  enabled: false
+  image:
+    repository: tokamaknetwork/drb-node
+    tag: "latest"
+
+aaPaymaster:
+  enabled: false
+  image:
+    repository: tokamaknetwork/aa-paymaster
+    tag: "latest"

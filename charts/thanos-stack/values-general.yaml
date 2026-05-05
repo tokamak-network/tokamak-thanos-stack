@@ -1,0 +1,23 @@
+# values-general.yaml — General preset overrides.
+# Modules: Bridge + Block Explorer only.
+
+bridge:
+  enabled: true
+
+blockExplorer:
+  enabled: true
+
+monitoring:
+  enabled: false
+
+uptime:
+  enabled: false
+
+crossTrade:
+  enabled: false
+
+drb:
+  enabled: false
+
+aaPaymaster:
+  enabled: false

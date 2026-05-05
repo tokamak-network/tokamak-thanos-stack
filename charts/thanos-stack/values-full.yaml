@@ -1,0 +1,24 @@
+# values-full.yaml — Full preset overrides.
+# All modules enabled: Bridge + Block Explorer + Monitoring + Uptime +
+# CrossTrade + DRB VRF + AA Paymaster.
+
+bridge:
+  enabled: true
+
+blockExplorer:
+  enabled: true
+
+monitoring:
+  enabled: true
+
+uptime:
+  enabled: true
+
+crossTrade:
+  enabled: true
+
+drb:
+  enabled: true
+
+aaPaymaster:
+  enabled: true
