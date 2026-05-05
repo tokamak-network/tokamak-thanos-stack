@@ -1,5 +1,15 @@
 apiVersion: v1
 entries:
+  aa-paymaster:
+  - apiVersion: v2
+    created: "2026-05-05T01:29:56.73943545Z"
+    description: A Helm chart to deploy ERC-4337 AA Paymaster
+    digest: 2f2f2f74e51e5aeeb276291ac098903f72c05319e65c7917897e946b7c8dbfae
+    name: aa-paymaster
+    type: application
+    urls:
+    - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/aa-paymaster-1.0.0/aa-paymaster-1.0.0.tgz
+    version: 1.0.0
   blockscout-stack:
   - apiVersion: v2
     appVersion: 6.10.0
@@ -179,4 +189,4 @@ entries:
     urls:
     - https://github.com/tokamak-network/tokamak-thanos-stack/releases/download/uptime-kuma-2.22.0/uptime-kuma-2.22.0.tgz
     version: 2.22.0
-generated: "2026-05-04T13:22:42.613458794Z"
+generated: "2026-05-05T01:29:56.883888213Z"
