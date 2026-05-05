@@ -1,2 +1,15 @@
 docs/superpowers/
 docs/codex-review/
+
+# macOS
+.DS_Store
+
+# claude-mem auto-generated context files
+**/CLAUDE.md
+
+# Terraform
+**/*.tfplan
+tfplan
+
+# Local values files with sensitive data
+*-values.yaml
