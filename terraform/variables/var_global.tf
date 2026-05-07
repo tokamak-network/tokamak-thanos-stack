@@ -58,18 +58,22 @@ variable "challenger_key" {
 
 variable "genesis_file_path" {
   description = "Local path to the Genesis file for uploading"
+  default     = ""
 }
 
 variable "rollup_file_path" {
   description = "Local path to the Rollup file for uploading"
+  default     = ""
 }
 
 variable "prestate_file_path" {
   description = "Local path to the Rollup file for uploading"
+  default     = ""
 }
 
 variable "prestate_hash" {
   description = "Prestate hash"
+  default     = ""
 }
 
 variable "stack_deployments_path" {
