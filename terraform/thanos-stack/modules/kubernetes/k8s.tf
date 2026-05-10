@@ -53,8 +53,7 @@ resource "terraform_data" "kubectl" {
   }
 
   provisioner "local-exec" {
-    command    = "kubectl --kubeconfig ~/.kube/config_temp patch deployment coredns -n kube-system --type json -p='[{\"op\": \"remove\", \"path\": \"/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type\"}]'"
-    on_failure = continue
+    command = "kubectl --kubeconfig ~/.kube/config_temp patch deployment coredns -n kube-system --type=merge -p='{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"eks.amazonaws.com/compute-type\":null}}}}}'"
   }
 
   provisioner "local-exec" {
