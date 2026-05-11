@@ -181,6 +181,15 @@ op_geth:
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
       alb.ingress.kubernetes.io/group.name: op-geth
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+      alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+      alb.ingress.kubernetes.io/healthcheck-path: /
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: '10'
+      alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+      alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+      alb.ingress.kubernetes.io/unhealthy-threshold-count: '3'
+      alb.ingress.kubernetes.io/success-codes: '200-499'
+      alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=10
   env:
     chain_id: "$l2_chain_id"
     genesis_file_url: $genesis_file_url

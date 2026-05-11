@@ -50,9 +50,9 @@ spec:
           readinessProbe:
             tcpSocket:
               port: 8545
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            failureThreshold: 200
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60
             successThreshold: 1
           livenessProbe:
             tcpSocket:
