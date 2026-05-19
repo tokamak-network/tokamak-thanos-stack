@@ -41,6 +41,7 @@ reqenv "next_public_rollup_l1_base_url"
 : "${stack_coinmarketcap_coin_id:=}"
 : "${stack_coingecko_coin_id:=tokamak-network}"
 : "${stack_wallet_connect_project_id:=}"
+: "${stack_disable_exchange_rates:=false}"
 
 # Check if the deployments file exists
 if [ ! -f "$stack_deployments_path" ]; then
@@ -81,8 +82,10 @@ l2_batch_genesis_block_number=$(jq '.genesis.l2.number' "$rollup_path")
 l1_portal_contract=$(jq '.deposit_contract_address' "$rollup_path")
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' "$rollup_path")
-# Set exchange rate config: CMC if both key and coin ID provided, otherwise CoinGecko (no API key required)
-if [ -n "$stack_coinmarketcap_api_key" ] && [ -n "$stack_coinmarketcap_coin_id" ]; then
+# Set exchange rate config: stablecoin disables entirely, CMC if both key and coin ID provided, otherwise CoinGecko
+if [ "$stack_disable_exchange_rates" = "true" ]; then
+    exchange_rates_section="    DISABLE_EXCHANGE_RATES: \"true\""
+elif [ -n "$stack_coinmarketcap_api_key" ] && [ -n "$stack_coinmarketcap_coin_id" ]; then
     exchange_rates_section="    EXCHANGE_RATES_MARKET_CAP_SOURCE: coin_market_cap
     EXCHANGE_RATES_SOURCE: coin_market_cap
     EXCHANGE_RATES_COINMARKETCAP_API_KEY: $stack_coinmarketcap_api_key
