@@ -39,6 +39,7 @@ reqenv "next_public_rollup_l1_base_url"
 : "${enable_fault_proof:=false}"
 : "${stack_coinmarketcap_api_key:=}"
 : "${stack_coinmarketcap_coin_id:=}"
+: "${stack_coingecko_coin_id:=tokamak-network}"
 : "${stack_wallet_connect_project_id:=}"
 
 # Check if the deployments file exists
@@ -80,14 +81,16 @@ l2_batch_genesis_block_number=$(jq '.genesis.l2.number' "$rollup_path")
 l1_portal_contract=$(jq '.deposit_contract_address' "$rollup_path")
 l2_withdrawals_start_block=$((l2_batch_genesis_block_number + 1))
 block_duration=$(jq '.block_time' "$rollup_path")
-# Set exchange rate config based on CoinMarketCap key availability
+# Set exchange rate config: CMC if both key and coin ID provided, otherwise CoinGecko (no API key required)
 if [ -n "$stack_coinmarketcap_api_key" ] && [ -n "$stack_coinmarketcap_coin_id" ]; then
     exchange_rates_section="    EXCHANGE_RATES_MARKET_CAP_SOURCE: coin_market_cap
     EXCHANGE_RATES_SOURCE: coin_market_cap
     EXCHANGE_RATES_COINMARKETCAP_API_KEY: $stack_coinmarketcap_api_key
     EXCHANGE_RATES_COINMARKETCAP_COIN_ID: \"$stack_coinmarketcap_coin_id\""
 else
-    exchange_rates_section="    EXCHANGE_RATES_ENABLED: \"false\""
+    exchange_rates_section="    EXCHANGE_RATES_MARKET_CAP_SOURCE: coin_gecko
+    EXCHANGE_RATES_SOURCE: coin_gecko
+    EXCHANGE_RATES_COINGECKO_COIN_ID: \"$stack_coingecko_coin_id\""
 fi
 
 # Set indexer oracle/dispute config based on fault proof mode
